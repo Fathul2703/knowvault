@@ -90,6 +90,8 @@ class Document(TimestampMixin, Base):
     # Incremented whenever the content changes; processing results for older versions are
     # discarded.
     content_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    # Model that produced the chunks' embeddings; documents from another model are re-embedded.
+    embedding_model: Mapped[str | None] = mapped_column(String(100))
 
 
 class Note(Base):

@@ -18,7 +18,7 @@ help: ## Show this help
 
 # --- Docker Compose -------------------------------------------------------------------
 
-.PHONY: up down logs invite-docker test-docker
+.PHONY: up down logs invite-docker test-docker model-docker reindex-docker
 up: .env ## Start the full stack with Docker Compose
 	docker compose up --build
 
@@ -34,9 +34,15 @@ invite-docker: ## Create a registration invite inside the running api container
 test-docker: ## Run the API tests inside the api container
 	docker compose exec api pytest
 
+model-docker: ## Download the embedding model into the shared volume now
+	docker compose exec api knowvault download-model
+
+reindex-docker: ## Queue documents that still need (re-)embedding
+	docker compose exec api knowvault reindex
+
 # --- Local (no Docker for the apps; needs PostgreSQL) ---------------------------------
 
-.PHONY: install migrate invite api worker web
+.PHONY: install migrate invite api worker web model reindex
 install: .env ## Install API and web dependencies
 	cd $(API) && uv sync
 	cd $(WEB) && npm ci
@@ -52,6 +58,12 @@ api: ## Run the API with auto-reload on http://localhost:8000
 
 worker: ## Run the document-processing worker
 	$(LOAD_ENV) cd $(API) && uv run knowvault worker
+
+model: ## Download the embedding model now instead of on first use
+	$(LOAD_ENV) cd $(API) && uv run knowvault download-model
+
+reindex: ## Queue documents that still need (re-)embedding
+	$(LOAD_ENV) cd $(API) && uv run knowvault reindex
 
 web: ## Run the web app on http://localhost:3000
 	$(LOAD_ENV) cd $(WEB) && npm run dev

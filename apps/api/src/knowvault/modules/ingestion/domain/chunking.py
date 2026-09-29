@@ -146,3 +146,13 @@ def chunk_blocks(blocks: list[Block], config: ChunkingConfig | None = None) -> l
             k = j
         i = k
     return drafts
+
+
+def embedding_text(title: str, chunk: ChunkDraft) -> str:
+    """The text that is embedded for a chunk: document title and heading trail as context.
+
+    Passages like "It returns the top-k results." are ambiguous on their own; the header ties
+    them to their document and section. The stored chunk content stays unchanged.
+    """
+    header = " > ".join((title, *chunk.heading_path))
+    return f"{header}\n\n{chunk.content}"

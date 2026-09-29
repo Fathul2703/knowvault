@@ -10,6 +10,9 @@ x-api-environment: &api-environment
   SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
   # Uploaded files, on a volume shared by the api and the worker.
   STORAGE_DIR: /data/uploads
+  # bge-m3 (int8, ~570 MB) is downloaded on first use into a volume shared by api and worker.
+  EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-bge-m3}
+  EMBEDDING_CACHE_DIR: /data/models
 
 services:
   db:
@@ -50,6 +53,7 @@ services:
     volumes:
       - ./apps/api:/app
       - uploads:/data/uploads
+      - models:/data/models
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -74,6 +78,7 @@ services:
     volumes:
       - ./apps/api:/app
       - uploads:/data/uploads
+      - models:/data/models
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -100,3 +105,4 @@ services:
 volumes:
   pgdata:
   uploads:
+  models:

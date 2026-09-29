@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 
 from knowvault.core.config import Settings
+from knowvault.core.embeddings import EmbeddingModel
 from knowvault.core.storage import ObjectStorage
 
 
@@ -22,3 +23,11 @@ def get_storage(request: Request) -> ObjectStorage:
 
 
 StorageDep = Annotated[ObjectStorage, Depends(get_storage)]
+
+
+def get_embeddings(request: Request) -> EmbeddingModel:
+    embeddings: EmbeddingModel = request.app.state.embeddings
+    return embeddings
+
+
+EmbeddingsDep = Annotated[EmbeddingModel, Depends(get_embeddings)]

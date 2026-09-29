@@ -6,10 +6,12 @@ import logging
 import signal
 from datetime import timedelta
 
+from knowvault.adapters.embeddings import build_embedding_model
 from knowvault.adapters.storage.filesystem import FilesystemStorage
 from knowvault.core import jobs
 from knowvault.core.config import Settings
 from knowvault.core.db import Database
+from knowvault.core.embeddings import EmbeddingModel
 from knowvault.core.logging import configure_logging
 from knowvault.modules.ingestion.application.pipeline import IngestionPipeline
 from knowvault.modules.ingestion.infrastructure.chunks import SqlChunkWriter
@@ -21,7 +23,9 @@ from knowvault.modules.library.processing import PROCESS_DOCUMENT_JOB
 logger = logging.getLogger("knowvault.worker")
 
 
-def build_pipeline(settings: Settings, database: Database) -> IngestionPipeline:
+def build_pipeline(
+    settings: Settings, database: Database, embeddings: EmbeddingModel | None = None
+) -> IngestionPipeline:
     return IngestionPipeline(
         sessions=database.sessionmaker,
         storage=FilesystemStorage(settings.storage_dir),
@@ -32,6 +36,7 @@ def build_pipeline(settings: Settings, database: Database) -> IngestionPipeline:
             memory_mb=settings.parse_memory_mb,
         ),
         chunk_writer=SqlChunkWriter(),
+        embeddings=embeddings or build_embedding_model(settings),
     )
 
 

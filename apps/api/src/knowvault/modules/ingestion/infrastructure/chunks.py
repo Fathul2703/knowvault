@@ -4,9 +4,11 @@ import uuid
 from collections.abc import Sequence
 from datetime import datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     Text,
     UniqueConstraint,
@@ -21,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
 from knowvault.core.db import Base
+from knowvault.core.embeddings import EMBEDDING_DIMENSIONS
 from knowvault.modules.ingestion.domain.model import ChunkDraft
 
 
@@ -28,6 +31,14 @@ class Chunk(Base):
     __tablename__ = "chunks"
     __table_args__ = (
         UniqueConstraint("document_id", "ordinal", name="uq_chunks_document_ordinal"),
+        # Approximate nearest-neighbour search by cosine distance.
+        Index(
+            "ix_chunks_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_with={"m": 16, "ef_construction": 64},
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -53,6 +64,8 @@ class Chunk(Base):
     heading_path: Mapped[list[str]] = mapped_column(
         ARRAY(Text), nullable=False, server_default=text("'{}'")
     )
+    # Null until the chunk has been embedded (e.g. chunks created before Phase 3).
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -66,7 +79,10 @@ class SqlChunkWriter:
         document_id: uuid.UUID,
         owner_id: uuid.UUID,
         chunks: list[ChunkDraft],
+        embeddings: list[list[float]],
     ) -> None:
+        if len(embeddings) != len(chunks):
+            raise ValueError("every chunk needs exactly one embedding")
         await session.execute(delete(Chunk).where(Chunk.document_id == document_id))
         if not chunks:
             return
@@ -85,8 +101,9 @@ class SqlChunkWriter:
                     "page_start": c.page_start,
                     "page_end": c.page_end,
                     "heading_path": list(c.heading_path),
+                    "embedding": vector,
                 }
-                for c in chunks
+                for c, vector in zip(chunks, embeddings, strict=True)
             ],
         )
 

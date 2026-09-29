@@ -77,6 +77,7 @@ def settings(database_url: str, tmp_path: Path) -> Settings:
         storage_dir=tmp_path / "uploads",
         max_upload_mb=1,
         parse_timeout_seconds=30,
+        embedding_provider="fake",
     )
 
 

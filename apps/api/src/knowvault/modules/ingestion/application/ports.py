@@ -22,6 +22,8 @@ class ChunkWriter(Protocol):
         document_id: uuid.UUID,
         owner_id: uuid.UUID,
         chunks: list[ChunkDraft],
+        embeddings: list[list[float]],
     ) -> None:
-        """Replaces all chunks of the document, inside the caller's transaction."""
+        """Replaces all chunks of the document with their embeddings (same order), inside the
+        caller's transaction."""
         ...
