@@ -8,6 +8,8 @@ x-api-environment: &api-environment
   TEST_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}_test
   APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
   SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+  # Uploaded files, on a volume shared by the api and the worker.
+  STORAGE_DIR: /data/uploads
 
 services:
   db:
@@ -47,6 +49,7 @@ services:
       - "127.0.0.1:8000:8000"
     volumes:
       - ./apps/api:/app
+      - uploads:/data/uploads
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -60,6 +63,21 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  worker:
+    build:
+      context: ./apps/api
+      target: dev
+    # Processes uploaded documents and notes. Restart it to pick up code changes.
+    command: ["knowvault", "worker"]
+    environment: *api-environment
+    volumes:
+      - ./apps/api:/app
+      - uploads:/data/uploads
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
   web:
     build:
@@ -81,3 +99,4 @@ services:
 
 volumes:
   pgdata:
+  uploads:

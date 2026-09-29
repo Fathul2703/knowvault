@@ -1,4 +1,4 @@
-"""ASGI middleware: request context/logging and CSRF protection."""
+"""ASGI middleware: request context/logging, upload size limits and CSRF protection."""
 
 import logging
 import re
@@ -7,6 +7,7 @@ import uuid
 from collections.abc import Iterable
 
 from starlette.datastructures import Headers, MutableHeaders
+from starlette.responses import Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from knowvault.core.errors import Problem, problem_response
@@ -58,6 +59,73 @@ class RequestContextMiddleware:
                 },
             )
             request_id_var.reset(token)
+
+
+class BodySizeLimitMiddleware:
+    """Rejects request bodies larger than `max_bytes` on the given paths with 413.
+
+    The limit is enforced on the bytes actually received, not only on `Content-Length`, so
+    chunked uploads cannot bypass it. Once the limit is crossed the application sees a client
+    disconnect, and whatever response it produces is replaced by the 413 problem response.
+    """
+
+    def __init__(self, app: ASGIApp, *, max_bytes: int, paths: Iterable[str]) -> None:
+        self.app = app
+        self.max_bytes = max_bytes
+        self.paths = frozenset(paths)
+
+    def _too_large(self) -> Response:
+        return problem_response(
+            Problem(
+                title="Payload too large",
+                status=413,
+                code="payload_too_large",
+                detail=f"The upload limit is {self.max_bytes // (1024 * 1024)} MB.",
+            )
+        )
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if (
+            scope["type"] != "http"
+            or scope["method"] not in UNSAFE_METHODS
+            or scope["path"] not in self.paths
+        ):
+            await self.app(scope, receive, send)
+            return
+
+        declared = Headers(scope=scope).get("content-length", "")
+        if declared.isdigit() and int(declared) > self.max_bytes:
+            await self._too_large()(scope, receive, send)
+            return
+
+        received = 0
+        exceeded = False
+        response_started = False
+
+        async def limited_receive() -> Message:
+            nonlocal received, exceeded
+            if exceeded:
+                return {"type": "http.disconnect"}
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    exceeded = True
+                    return {"type": "http.disconnect"}
+            return message
+
+        async def guarded_send(message: Message) -> None:
+            nonlocal response_started
+            if exceeded:
+                if message["type"] == "http.response.start" and not response_started:
+                    response_started = True
+                    await self._too_large()(scope, receive, send)
+                return
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+
+        await self.app(scope, limited_receive, guarded_send)
 
 
 class CsrfProtectionMiddleware:

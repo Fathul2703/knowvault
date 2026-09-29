@@ -63,6 +63,7 @@ def main(argv: list[str] | None = None) -> None:
     reset.add_argument("email")
 
     commands.add_parser("export-openapi", help="print the OpenAPI schema as JSON")
+    commands.add_parser("worker", help="run the background worker that processes documents")
 
     args = parser.parse_args(argv)
 
@@ -71,7 +72,11 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     settings = get_settings()
-    if args.command == "create-invite":
+    if args.command == "worker":
+        from knowvault.worker import run
+
+        asyncio.run(run(settings))
+    elif args.command == "create-invite":
         code = asyncio.run(_create_invite(settings, args.days or settings.invite_ttl_days))
         print(f"Invite code (shown once): {code}")
     elif args.command == "reset-password":

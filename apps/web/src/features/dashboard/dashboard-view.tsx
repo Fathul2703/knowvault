@@ -7,7 +7,7 @@ import { useCurrentUser } from "@/features/auth/hooks";
 
 const ROADMAP = [
   { title: "Sign in securely", detail: "Invite-based accounts with server-side sessions.", phase: "Phase 1", done: true },
-  { title: "Build your library", detail: "Upload PDFs, Word files and Markdown, or write notes.", phase: "Phase 2", done: false },
+  { title: "Build your library", detail: "Upload PDFs, Word files and Markdown, or write notes.", phase: "Phase 2", done: true },
   { title: "Search by meaning", detail: "Hybrid semantic and keyword search across everything.", phase: "Phase 3", done: false },
   { title: "Ask with citations", detail: "Answers grounded in your documents, with sources.", phase: "Phase 4", done: false },
 ] as const;

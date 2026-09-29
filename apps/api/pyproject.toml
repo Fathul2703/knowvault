@@ -11,6 +11,9 @@ dependencies = [
     "email-validator>=2.2",
     "fastapi>=0.115",
     "pydantic-settings>=2.4",
+    "pypdf>=5",
+    "python-docx>=1.1",
+    "python-multipart>=0.0.12",
     "sqlalchemy[asyncio]>=2.0.36",
     "uvicorn[standard]>=0.30",
 ]
@@ -31,7 +34,7 @@ select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "ASYNC", "PT", "N"]
 ignore = []
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S105", "S106", "S107"]
+"tests/**" = ["S101", "S105", "S106", "S107", "S311", "ASYNC240"]
 "migrations/**" = ["N999"]
 
 [tool.mypy]
@@ -53,6 +56,7 @@ filterwarnings = ["error"]
 
 [tool.importlinter]
 root_package = "knowvault"
+include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Core does not depend on feature modules"
@@ -76,3 +80,28 @@ dev = [
     "pytest-asyncio>=0.24",
     "ruff>=0.8",
 ]
+
+[[tool.importlinter.contracts]]
+name = "Feature modules use ports, never adapters (wired only in main.py / worker.py)"
+type = "forbidden"
+source_modules = ["knowvault.core", "knowvault.modules"]
+forbidden_modules = ["knowvault.adapters", "knowvault.worker"]
+
+[[tool.importlinter.contracts]]
+name = "Ingestion layers: api -> infrastructure -> application -> domain"
+type = "layers"
+containers = ["knowvault.modules.ingestion"]
+layers = ["api", "infrastructure", "application", "domain"]
+
+[[tool.importlinter.contracts]]
+name = "Ingestion domain is pure (no framework or database imports)"
+type = "forbidden"
+source_modules = ["knowvault.modules.ingestion.domain"]
+forbidden_modules = ["sqlalchemy", "fastapi", "pydantic", "knowvault.core", "knowvault.modules.library"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Library does not depend on ingestion (ingestion uses library.processing)"
+type = "forbidden"
+source_modules = ["knowvault.modules.library"]
+forbidden_modules = ["knowvault.modules.ingestion"]

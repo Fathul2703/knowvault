@@ -24,5 +24,11 @@ the browser sees a single origin, and proposes Testcontainers for integration te
 ## Consequences
 
 - One service fewer to run and configure during development.
+- The Next.js proxy buffers request bodies and, by default, truncates them at 10 MB, which
+  corrupted larger uploads (found in Phase 2). `experimental.proxyClientMaxBodySize` in
+  `apps/web/next.config.ts` is set to 32 MB, above the API's upload limit plus multipart
+  overhead, so oversized uploads still reach the API whole and receive a 413. Uploads are
+  therefore buffered in the Next.js server's memory in development; Caddy removes this in
+  Phase 4.
 - Streaming responses (Phase 4) must be re-checked through the Next.js proxy or moved behind
   Caddy.

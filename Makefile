@@ -36,7 +36,7 @@ test-docker: ## Run the API tests inside the api container
 
 # --- Local (no Docker for the apps; needs PostgreSQL) ---------------------------------
 
-.PHONY: install migrate invite api web
+.PHONY: install migrate invite api worker web
 install: .env ## Install API and web dependencies
 	cd $(API) && uv sync
 	cd $(WEB) && npm ci
@@ -49,6 +49,9 @@ invite: ## Create a registration invite
 
 api: ## Run the API with auto-reload on http://localhost:8000
 	$(LOAD_ENV) cd $(API) && uv run uvicorn knowvault.main:create_app --factory --reload --reload-dir src --port 8000
+
+worker: ## Run the document-processing worker
+	$(LOAD_ENV) cd $(API) && uv run knowvault worker
 
 web: ## Run the web app on http://localhost:3000
 	$(LOAD_ENV) cd $(WEB) && npm run dev

@@ -3,9 +3,10 @@
 Personal knowledge management with AI answers that are grounded in your own documents and
 cite their sources.
 
-> **Status: Phase 1 — Foundation.** Accounts, sessions, the app shell, dashboard and the
-> (still empty) document library are in place. Document upload arrives in Phase 2, search in
-> Phase 3 and cited Q&A in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
+> **Status: Phase 2 — Knowledge library.** Accounts, collections, notes and document upload
+> work end to end: a background worker extracts the text of PDF, Word, Markdown and text files
+> and splits it into chunks that keep their page or section. Search arrives in Phase 3 and
+> cited Q&A in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
 
 ## Stack
 
@@ -13,11 +14,13 @@ cite their sources.
 |---|---|
 | Web | Next.js 16 (App Router), TypeScript, Tailwind CSS 4, TanStack Query |
 | API | Python 3.13, FastAPI, SQLAlchemy 2 (async), Alembic |
+| Worker | Same codebase as the API; PostgreSQL job queue; `pypdf`, `python-docx` in a sandboxed child process |
 | Database | PostgreSQL 17 (pgvector image, used from Phase 3) |
 | Dev environment | Docker Compose |
 
 The browser only talks to the Next.js server, which forwards `/api/*` to FastAPI. Sessions are
-server-side, stored as hashed tokens in PostgreSQL. More in
+server-side, stored as hashed tokens in PostgreSQL. Uploads are stored on disk and queued; the
+worker processes them and the web app polls until they are ready. More in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the [ADRs](docs/adr/).
 
 ## Quick start (Docker)
@@ -31,8 +34,8 @@ cp .env.example .env
 docker compose up --build
 ```
 
-This starts PostgreSQL, applies migrations, then runs the API on http://localhost:8000 and the
-web app on http://localhost:3000. The first build takes a few minutes.
+This starts PostgreSQL, applies migrations, then runs the API on http://localhost:8000, the
+document worker, and the web app on http://localhost:3000. The first build takes a few minutes.
 
 Registration is invite-only. In a second terminal, create an invite:
 
@@ -93,7 +96,8 @@ createdb knowvault       # or create it with your usual tool; must match DATABAS
 make migrate
 make invite
 make api                 # terminal 1: http://localhost:8000
-make web                 # terminal 2: http://localhost:3000
+make worker              # terminal 2: processes uploads and notes
+make web                 # terminal 3: http://localhost:3000
 ```
 
 `make` loads `.env` automatically, and its values replace variables already exported in your
@@ -128,6 +132,9 @@ Secrets are never committed.
 | `APP_ORIGIN` | API | Origin of the web app; other origins cannot make state-changing requests |
 | `SESSION_COOKIE_SECURE` | API | `true` in production (HTTPS); required when `ENVIRONMENT=production` |
 | `ENVIRONMENT`, `LOG_LEVEL` | API | `development`, `test` or `production`; log verbosity |
+| `STORAGE_DIR` | API, worker on the host | Directory for uploaded files, relative to `apps/api`; Compose uses the `uploads` volume |
+| `MAX_UPLOAD_MB`, `MAX_PAGES`, `MAX_EXTRACTED_CHARS`, `MAX_NOTE_CHARS` | API, worker | Optional limits (defaults 25 MB, 500 pages, 5,000,000 and 200,000 characters). If you raise `MAX_UPLOAD_MB`, raise `proxyClientMaxBodySize` in `apps/web/next.config.ts` too |
+| `PARSE_TIMEOUT_SECONDS`, `PARSE_MEMORY_MB` | Worker | Optional limits for the parser process (defaults 60 s, 1024 MB; memory is enforced on Linux only) |
 | `API_INTERNAL_URL` | Web | Where the Next.js server forwards `/api/*` |
 
 ## Admin commands
@@ -136,14 +143,30 @@ Secrets are never committed.
 knowvault create-invite [--days N]   # single-use registration invite
 knowvault reset-password EMAIL       # prompts for a new password, signs the user out everywhere
 knowvault export-openapi             # prints the OpenAPI schema
+knowvault worker                     # runs the document worker (the `worker` service in Compose)
 ```
 
 Run them with `docker compose exec api …` or, locally, `cd apps/api && uv run …` with the
 environment loaded.
 
+## Library
+
+- **Supported files:** PDF, Word (`.docx`), Markdown (`.md`) and plain text (`.txt`), up to
+  25 MB and 500 pages. The type is detected from the file's content, not its name or the
+  browser's declared type. Uploading the same file twice is refused.
+- **Processing:** each upload or note edit is queued. The worker extracts the text in a
+  separate, time- and memory-limited process, normalises it and splits it into chunks of about
+  1,800 characters that never cross a heading. PDF chunks keep their page numbers; other
+  formats keep their heading trail. Open a document to see exactly what was extracted.
+- **Failures** are shown with a reason (for example, scanned PDFs without a text layer are not
+  supported yet) and can be retried with **Try again**.
+- **Collections** group documents; deleting a collection keeps its documents.
+
 ## API
 
 - Health: `GET /healthz` (process up), `GET /readyz` (database reachable)
+- Library: `/api/v1/collections`, `/api/v1/documents` (upload, list, detail, `/file`,
+  `/chunks`, `/reprocess`), `/api/v1/notes`
 - Interactive docs (development only): http://localhost:8000/api/docs
 - Errors use [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details with a stable `code`.
 
@@ -153,12 +176,19 @@ environment loaded.
 apps/
   api/                 FastAPI app, Alembic migrations, tests
     src/knowvault/
-      core/            config, database, errors, logging, middleware, rate limiting, health
-      modules/identity users, sessions, invites, auth endpoints
-      main.py          app factory (composition root)
+      core/            config, database, errors, logging, middleware, rate limiting, job queue,
+                       storage port, health
+      adapters/        port implementations (filesystem storage)
+      modules/
+        identity/      users, sessions, invites, auth endpoints
+        library/       collections, documents, notes, uploads; `processing.py` for ingestion
+        ingestion/     domain (normalise, chunk) → application (pipeline) →
+                       infrastructure (parsers, parser process, chunks) → api
+      main.py          API composition root
+      worker.py        worker composition root
       cli.py           admin commands
   web/                 Next.js app
-    src/app/           routes: (auth)/login, (auth)/register, (app)/dashboard, (app)/library
+    src/app/           routes: login, register, dashboard, library, library/[id], library/notes/…
     src/features/      auth, dashboard, library
     src/lib/api/       typed API client and generated types
 docs/                  architecture and ADRs

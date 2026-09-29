@@ -7,11 +7,8 @@ from alembic import context
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
-# Imported for their side effect of registering tables on the metadata.
-import knowvault.core.rate_limit
-import knowvault.modules.identity.models  # noqa: F401
 from knowvault.core.config import get_settings
-from knowvault.core.db import Base
+from knowvault.models import Base
 
 config = context.config
 if config.config_file_name is not None and config.attributes.get("configure_logger", True):

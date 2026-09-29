@@ -28,5 +28,6 @@ coverage/
 *.tsbuildinfo
 next-env.d.ts
 
-# Local data
+# Local data (uploaded files when running outside Docker)
 /data/
+/apps/api/data/

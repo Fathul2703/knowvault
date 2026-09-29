@@ -4,6 +4,14 @@ import type { components, paths } from "./schema";
 
 export type Problem = components["schemas"]["Problem"];
 export type User = components["schemas"]["UserOut"];
+export type DocumentItem = components["schemas"]["DocumentOut"];
+export type DocumentPage = components["schemas"]["DocumentPage"];
+export type DocumentStatus = DocumentItem["status"];
+export type DocumentKind = DocumentItem["kind"];
+export type Collection = components["schemas"]["CollectionOut"];
+export type Note = components["schemas"]["NoteOut"];
+export type Chunk = components["schemas"]["ChunkOut"];
+export type ChunkPage = components["schemas"]["ChunkPage"];
 
 /** Typed client for the KnowVault API. Requests go to the same origin and carry the session cookie. */
 export const api = createClient<paths>({
