@@ -1,0 +1,78 @@
+[project]
+name = "knowvault"
+version = "0.1.0"
+description = "KnowVault API: personal knowledge management with grounded AI."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.14",
+    "argon2-cffi>=23.1",
+    "asyncpg>=0.30",
+    "email-validator>=2.2",
+    "fastapi>=0.115",
+    "pydantic-settings>=2.4",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "uvicorn[standard]>=0.30",
+]
+
+[project.scripts]
+knowvault = "knowvault.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.8,<1"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "ASYNC", "PT", "N"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S107"]
+"migrations/**" = ["N999"]
+
+[tool.mypy]
+strict = true
+python_version = "3.13"
+plugins = ["pydantic.mypy"]
+files = ["src", "tests", "migrations"]
+
+[[tool.mypy.overrides]]
+module = ["alembic.*"]
+ignore_missing_imports = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-ra --strict-markers"
+filterwarnings = ["error"]
+
+[tool.importlinter]
+root_package = "knowvault"
+
+[[tool.importlinter.contracts]]
+name = "Core does not depend on feature modules"
+type = "forbidden"
+source_modules = ["knowvault.core"]
+forbidden_modules = ["knowvault.modules"]
+
+[[tool.importlinter.contracts]]
+name = "Feature modules do not depend on application entry points"
+type = "forbidden"
+source_modules = ["knowvault.modules"]
+forbidden_modules = ["knowvault.main", "knowvault.cli"]
+
+[dependency-groups]
+dev = [
+    "asyncpg-stubs>=0.30",
+    "httpx>=0.27",
+    "import-linter>=2.1",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+]

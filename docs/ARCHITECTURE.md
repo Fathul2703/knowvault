@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **Draft v0.2** — dokumen perencanaan sebelum implementasi.
+> Status: **v0.3** — Phase 1 diimplementasikan; keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -14,6 +14,7 @@
 |---|---|
 | v0.1 | Draft awal discovery & arsitektur. |
 | v0.2 | Hasil architecture review: penyederhanaan (tanpa MinIO, tanpa tabel embedding terpisah, tanpa soft delete, lapisan clean architecture hanya di modul yang punya logika, CI bertahap); perbaikan desain citation (snapshot, satu `[n]` = satu chunk, lokasi non-PDF); evidence gate tidak lagi bergantung pada threshold yang belum dikalibrasi; label eval berbasis teks bukti, bukan ID chunk; registrasi berbasis undangan; CSRF via verifikasi `Origin`; parser di subprocess dengan timeout; aturan koneksi DB saat streaming; rate limit berbasis Postgres. |
+| v0.3 | Penyesuaian saat implementasi Phase 1 (ADR 0001–0003): npm menggantikan pnpm; Caddy ditunda ke Phase 4 dan dev memakai rewrites Next.js; test memakai Postgres nyata via `TEST_DATABASE_URL` alih-alih Testcontainers; rate limit per IP ditunda ke Phase 4; kolom `users.is_admin` dan `invites.created_by` dihapus karena administrasi dilakukan lewat CLI. |
 
 ---
 
@@ -220,7 +221,7 @@ Alasan:
 
 ```mermaid
 flowchart LR
-    Browser["Browser<br/>(Next.js UI)"] -->|HTTP/HTTPS| Proxy["Reverse proxy<br/>(Caddy)"]
+    Browser["Browser<br/>(Next.js UI)"] -->|HTTP/HTTPS| Proxy["Reverse proxy<br/>(Caddy, Phase 4;<br/>dev: rewrites Next.js)"]
     Proxy -->|"/"| Web["Next.js server"]
     Proxy -->|"/api/*"| API["FastAPI API"]
     API --> PG[("PostgreSQL<br/>+ pgvector")]
@@ -238,7 +239,7 @@ flowchart LR
 | Komponen | Tanggung jawab | Teknologi |
 |---|---|---|
 | **Web** | UI; data diambil dari browser ke API. Tidak menyimpan secret dan tidak memanggil LLM langsung. | Next.js (App Router), TypeScript, Tailwind CSS |
-| **Reverse proxy** | Satu origin untuk web + API (cookie sederhana, tanpa CORS), TLS otomatis di production, flush langsung untuk SSE. | Caddy (satu file konfigurasi) |
+| **Reverse proxy** | Satu origin untuk web + API (cookie sederhana, tanpa CORS), TLS otomatis di production, flush langsung untuk SSE. | Phase 1–3: rewrites `/api/*` di Next.js. Phase 4: Caddy (ADR 0003) |
 | **API** | Auth, otorisasi, CRUD, search, orkestrasi RAG, streaming. | FastAPI, Pydantic v2, SQLAlchemy 2.x (async) |
 | **Worker** | Ekstraksi, chunking, embedding. | Python, codebase yang sama dengan API |
 | **PostgreSQL + pgvector** | Data relasional, vector, full-text, job queue, rate limit & kuota. | PostgreSQL 17 + pgvector |
@@ -286,7 +287,7 @@ Job queue **tidak** dibuat sebagai port: hanya ada satu implementasi (Postgres) 
 | Migrasi | Alembic | Standar untuk SQLAlchemy. |
 | Job queue | Tabel Postgres + `FOR UPDATE SKIP LOCKED`, ditulis sendiri dengan fitur minimal | Tanpa Redis/broker; transaksional dengan data; menunjukkan skill DB. |
 | Tokenizer | Tidak ada di MVP — ukuran chunk dan budget konteks memakai estimasi berbasis karakter dengan margin aman | Menghindari dependensi tokenizer per provider. |
-| Frontend package manager | `pnpm` | Cepat, strict. |
+| Frontend package manager | `npm` | Sudah ada bersama Node; satu tool lebih sedikit bagi kontributor (ADR 0001). |
 | Type API frontend | Generate dari OpenAPI (`openapi-typescript`), hasilnya di-commit | Kontrak frontend–backend tidak bisa drift diam-diam. |
 | Data fetching frontend | TanStack Query | Cache, retry, dan status loading yang konsisten untuk halaman interaktif. |
 | Observability | Structured JSON log + request ID | Cukup untuk debugging awal; OpenTelemetry ditunda. |
@@ -324,9 +325,9 @@ erDiagram
 
 ### 7.3 Tabel
 
-**`users`** — `id`, `email` (disimpan lowercase; unique), `password_hash` (Argon2id), `display_name`, `is_admin`, `is_active`, `created_at`, `updated_at`.
+**`users`** — `id`, `email` (disimpan lowercase; unique), `password_hash` (Argon2id), `display_name`, `is_active`, `created_at`, `updated_at`. Tidak ada peran admin di aplikasi; administrasi lewat CLI.
 
-**`invites`** — `id`, `code_hash`, `created_by`, `used_by` (nullable), `expires_at`, `used_at`.
+**`invites`** — `id`, `code_hash`, `used_by` (nullable), `created_at`, `expires_at`, `used_at`.
 
 **`sessions`** — `id`, `user_id`, `token_hash` (SHA-256 dari token acak; token asli hanya ada di cookie), `created_at`, `last_seen_at`, `expires_at`, `revoked_at`, `user_agent`. IP tidak disimpan (hash IPv4 mudah dibalik dengan brute force).
 
@@ -589,7 +590,7 @@ kualitas terlihat dalam riwayat Git.
 | Registrasi | **Hanya dengan kode undangan** (dibuat admin via CLI). Mencegah penyalahgunaan biaya LLM di demo publik tanpa perlu layanan email. |
 | Reset password | Via CLI admin di MVP. Reset mandiri melalui email ditunda sampai registrasi publik dibutuhkan. |
 | Password | Argon2id; panjang minimal 12 dan **maksimal 128 karakter** (mencegah DoS lewat hashing input sangat panjang). |
-| Brute force | Rate limit login per email dan per IP (IP hanya dipakai di memori/kunci counter berumur pendek, tidak disimpan permanen), disimpan di `usage_counters`; pesan error generik. |
+| Brute force | Rate limit kegagalan login per email, disimpan di `usage_counters`; pesan error generik. Rate limit per IP ditunda ke Phase 4 karena butuh reverse proxy tepercaya yang meneruskan IP klien (ADR 0002). |
 | Enumeration | Login tidak membedakan "email tidak ada" dan "password salah". Registrasi secara inheren dapat mengungkap email terdaftar; risiko ini diterima karena registrasi dibatasi undangan. |
 
 **Mengapa bukan JWT?** Untuk aplikasi dengan satu backend dan satu origin, JWT menambah masalah
@@ -638,7 +639,7 @@ Middleware Next.js hanya untuk redirect UX berdasarkan keberadaan cookie; keputu
 | **Kebocoran data ke provider pihak ketiga** | Dijelaskan di UI/README bahwa potongan dokumen dikirim ke provider yang dikonfigurasi; opsi provider lokal; hanya chunk terpilih yang dikirim. |
 | **Secret bocor** | Secret hanya via environment; `.env` di-`.gitignore`; `.env.example` tanpa nilai asli; GitHub secret scanning + push protection. |
 | **Log berisi data sensitif** | Log tidak berisi isi dokumen, isi pertanyaan, password, atau token; hanya ID. |
-| **Dependency rentan** | Dependabot; `pip-audit` dan `pnpm audit` di CI mulai Phase 4. |
+| **Dependency rentan** | Dependabot; `pip-audit` dan `npm audit` di CI mulai Phase 4. |
 | **SQL injection** | Hanya query terparameterisasi; input FTS lewat `websearch_to_tsquery`. |
 | **Kehabisan koneksi DB saat streaming** | Aturan §10.2: koneksi tidak ditahan selama streaming; batas konkurensi stream per user. |
 | **SSRF** | MVP tidak mengambil URL dari pengguna. Fitur "import from URL" di masa depan wajib allowlist skema, blokir IP privat, dan timeout. |
@@ -661,7 +662,7 @@ Middleware Next.js hanya untuk redirect UX berdasarkan keberadaan cookie; keputu
 | Level | Cakupan | Tools | Kapan mulai |
 |---|---|---|---|
 | **Unit** | Chunker, normalizer, RRF, context assembly, deteksi `NO_ANSWER`, validasi indeks citation, pembersihan `[n]` dari riwayat, kebijakan password, service dengan fake port. | `pytest` (opsional `hypothesis` untuk properti chunker: tidak ada teks hilang, batas ukuran dipatuhi, offset konsisten) | Phase 1 |
-| **Integration** | Repository, query pgvector/FTS, job queue `SKIP LOCKED` (termasuk dua worker bersamaan, visibility timeout, penggabungan job), transaksi commit ingestion dengan `content_version` basi, migrasi Alembic. | `pytest` + **Testcontainers** (Postgres+pgvector) | Phase 1 |
+| **Integration** | Repository, query pgvector/FTS, job queue `SKIP LOCKED` (termasuk dua worker bersamaan, visibility timeout, penggabungan job), transaksi commit ingestion dengan `content_version` basi, migrasi Alembic. | `pytest` + Postgres nyata dari `TEST_DATABASE_URL` (service container di CI; ADR 0003) | Phase 1 |
 | **API** | Endpoint via `httpx.AsyncClient`: status code, schema, error format, **matriks otorisasi lintas user**, verifikasi `Origin`, rate limit. | `pytest`, fake providers | Phase 1 |
 | **Pipeline** | Ingestion end-to-end dengan fixture PDF/DOCX/MD kecil, termasuk file rusak, file tanpa teks, dan file yang membuat parser timeout. | `pytest`, fixtures di repo | Phase 2 |
 | **Frontend** | Logika komponen dan parsing stream SSE (render `[n]` hanya untuk sumber valid). | Vitest + Testing Library | Phase 1 (sedikit), bertambah di Phase 4 |
@@ -683,8 +684,7 @@ Middleware Next.js hanya untuk redirect UX berdasarkan keberadaan cookie; keputu
 
 | Service | Image / build | Port (host) | Catatan |
 |---|---|---|---|
-| `proxy` | Caddy | `8080` | Satu origin: `/` → web, `/api` → api. Flush langsung untuk SSE. |
-| `web` | build `apps/web` (target `dev`) | – | `pnpm dev` dengan hot reload (bind mount source). |
+| `web` | build `apps/web` (target `dev`) | `3000` | `npm run dev` dengan hot reload (bind mount source); meneruskan `/api/*` ke `api`. |
 | `api` | build `apps/api` (target `dev`) | – | `uvicorn --reload`, bind mount source, volume `uploads`. |
 | `worker` | build `apps/api` (target `dev`) | – | Perintah berbeda dari image yang sama; volume `uploads`. |
 | `db` | `pgvector/pgvector` (Postgres 17) | `5432` (dev saja) | Volume bernama; healthcheck. |
@@ -715,7 +715,7 @@ profile Compose opsional jika dibutuhkan.
 | PR | Template singkat: konteks, perubahan, cara test, checklist (test, docs, migrasi, security). PR kecil dan fokus. |
 | Planning | GitHub Issues + Milestones per Phase. |
 | ADR | `docs/adr/NNNN-judul.md` (format ringkas) untuk setiap keputusan yang sulit dibalik. |
-| CI bertahap | **Phase 1:** api (ruff, type check, import-linter, pytest + testcontainers) dan web (eslint, tsc, vitest, build), dengan path filter. **Phase 1–2:** cek type OpenAPI yang di-generate sesuai. **Phase 4:** E2E Playwright, `pip-audit`, `pnpm audit`. |
+| CI bertahap | **Phase 1:** api (ruff, type check, import-linter, pytest dengan Postgres service container) dan web (eslint, tsc, vitest, build), dengan path filter. **Phase 1–2:** cek type OpenAPI yang di-generate sesuai. **Phase 4:** E2E Playwright, `pip-audit`, `npm audit`. |
 | Eval | Dijalankan manual (`make eval`), bukan per PR, karena memakai API berbayar; laporan di-commit. |
 | Release | Tag SemVer (`v0.1.0` = MVP) dengan catatan rilis manual. Publikasi image & changelog otomatis ditunda sampai benar-benar dibutuhkan. |
 | Hygiene | `.gitignore` (termasuk `.DS_Store`, `.env`, `node_modules`, `.venv`), `.editorconfig`, pre-commit (ruff, eslint, deteksi secret), Dependabot. |
@@ -768,7 +768,7 @@ knowvault/
 │   ├── datasets/                      # Pertanyaan + label teks bukti
 │   ├── runners/                       # Script eval retrieval & answer
 │   └── reports/                       # Laporan bertanggal (di-commit)
-├── infra/
+├── infra/                           # Phase 4
 │   └── caddy/Caddyfile
 ├── docs/
 │   ├── ARCHITECTURE.md                # Dokumen ini
