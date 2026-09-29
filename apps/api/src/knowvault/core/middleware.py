@@ -1,0 +1,129 @@
+"""ASGI middleware: request context/logging and CSRF protection."""
+
+import logging
+import re
+import time
+import uuid
+from collections.abc import Iterable
+
+from starlette.datastructures import Headers, MutableHeaders
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+from knowvault.core.errors import Problem, problem_response
+from knowvault.core.logging import request_id_var
+
+logger = logging.getLogger("knowvault.request")
+
+_REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
+UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+
+class RequestContextMiddleware:
+    """Assigns a request ID, adds baseline headers and logs one line per request."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        incoming = Headers(scope=scope).get("x-request-id", "")
+        request_id = incoming if _REQUEST_ID_PATTERN.match(incoming) else uuid.uuid4().hex
+        token = request_id_var.set(request_id)
+        started = time.perf_counter()
+        status_code = 500
+
+        async def send_wrapper(message: Message) -> None:
+            nonlocal status_code
+            if message["type"] == "http.response.start":
+                status_code = message["status"]
+                headers = MutableHeaders(scope=message)
+                headers["x-request-id"] = request_id
+                headers["x-content-type-options"] = "nosniff"
+                headers.setdefault("cache-control", "no-store")
+            await send(message)
+
+        try:
+            await self.app(scope, receive, send_wrapper)
+        finally:
+            logger.info(
+                "request",
+                extra={
+                    "method": scope["method"],
+                    "path": scope["path"],
+                    "status": status_code,
+                    "duration_ms": round((time.perf_counter() - started) * 1000, 1),
+                },
+            )
+            request_id_var.reset(token)
+
+
+class CsrfProtectionMiddleware:
+    """Rejects cross-site state-changing requests.
+
+    Browsers attach `Origin` (or at least `Sec-Fetch-Site`) to state-changing requests, so a
+    mismatch means the request was triggered by another site. Requests with neither header come
+    from non-browser clients, which cannot ride on a victim's cookies. Requiring a JSON body
+    additionally blocks HTML form posts, which cannot set that content type.
+    """
+
+    def __init__(
+        self,
+        app: ASGIApp,
+        *,
+        allowed_origin: str,
+        protected_prefix: str = "/api/",
+        non_json_paths: Iterable[str] = (),
+    ) -> None:
+        self.app = app
+        self.allowed_origin = allowed_origin
+        self.protected_prefix = protected_prefix
+        self.non_json_paths = frozenset(non_json_paths)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if (
+            scope["type"] != "http"
+            or scope["method"] not in UNSAFE_METHODS
+            or not scope["path"].startswith(self.protected_prefix)
+        ):
+            await self.app(scope, receive, send)
+            return
+
+        headers = Headers(scope=scope)
+        origin = headers.get("origin")
+        fetch_site = headers.get("sec-fetch-site")
+        if (origin is not None and origin.rstrip("/") != self.allowed_origin) or (
+            origin is None and fetch_site not in (None, "same-origin", "none")
+        ):
+            response = problem_response(
+                Problem(
+                    title="Request origin not allowed",
+                    status=403,
+                    code="forbidden_origin",
+                    detail="State-changing requests must come from the KnowVault web app.",
+                )
+            )
+            await response(scope, receive, send)
+            return
+
+        has_body = headers.get("content-length", "0") != "0" or "transfer-encoding" in headers
+        content_type = headers.get("content-type", "").split(";")[0].strip().lower()
+        if (
+            has_body
+            and scope["path"] not in self.non_json_paths
+            and content_type != "application/json"
+        ):
+            response = problem_response(
+                Problem(
+                    title="Unsupported media type",
+                    status=415,
+                    code="unsupported_media_type",
+                    detail="Request bodies must be sent as application/json.",
+                )
+            )
+            await response(scope, receive, send)
+            return
+
+        await self.app(scope, receive, send)
