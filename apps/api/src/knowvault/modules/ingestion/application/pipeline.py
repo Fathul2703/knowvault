@@ -1,4 +1,4 @@
-"""The document processing use case: extract → normalise → chunk → store."""
+"""The document processing use case: extract → normalise → chunk → embed → store."""
 
 import logging
 from dataclasses import dataclass
@@ -6,9 +6,14 @@ from dataclasses import dataclass
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from knowvault.core import jobs
+from knowvault.core.embeddings import EmbeddingModel
 from knowvault.core.storage import ObjectStorage, StoredObjectNotFoundError
 from knowvault.modules.ingestion.application.ports import ChunkWriter, DocumentParser
-from knowvault.modules.ingestion.domain.chunking import ChunkingConfig, chunk_blocks
+from knowvault.modules.ingestion.domain.chunking import (
+    ChunkingConfig,
+    chunk_blocks,
+    embedding_text,
+)
 from knowvault.modules.ingestion.domain.model import (
     ChunkDraft,
     ExtractionError,
@@ -24,6 +29,7 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class _Result:
     chunks: list[ChunkDraft]
+    embeddings: list[list[float]]
     page_count: int | None
 
 
@@ -34,12 +40,14 @@ class IngestionPipeline:
         storage: ObjectStorage,
         parser: DocumentParser,
         chunk_writer: ChunkWriter,
+        embeddings: EmbeddingModel,
         chunking: ChunkingConfig | None = None,
     ) -> None:
         self._sessions = sessions
         self._storage = storage
         self._parser = parser
         self._chunk_writer = chunk_writer
+        self._embeddings = embeddings
         self._chunking = chunking or ChunkingConfig()
 
     async def process(self, job: jobs.ClaimedJob) -> None:
@@ -74,8 +82,14 @@ class IngestionPipeline:
                     document_id=document_id,
                     owner_id=target.owner_id,
                     chunks=result.chunks,
+                    embeddings=result.embeddings,
                 )
-                await processing.mark_ready(session, document_id, page_count=result.page_count)
+                await processing.mark_ready(
+                    session,
+                    document_id,
+                    page_count=result.page_count,
+                    embedding_model=self._embeddings.model_id,
+                )
                 await jobs.mark_succeeded(session, job.id)
                 await session.commit()
             logger.info("document_processed", extra={**log, "chunks": len(result.chunks)})
@@ -125,4 +139,10 @@ class IngestionPipeline:
         blocks = normalize_blocks(extraction.blocks)
         if not blocks:
             raise ExtractionError(FailureCode.NO_EXTRACTABLE_TEXT)
-        return _Result(chunk_blocks(blocks, self._chunking), extraction.page_count)
+        chunks = chunk_blocks(blocks, self._chunking)
+        # Computed before the storing transaction opens: embedding can take a while and must
+        # not hold a database connection. Failures here are transient and retried.
+        vectors = await self._embeddings.embed_documents(
+            [embedding_text(target.title, chunk) for chunk in chunks]
+        )
+        return _Result(chunks, vectors, extraction.page_count)

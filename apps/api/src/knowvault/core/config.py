@@ -3,7 +3,7 @@
 from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import Field, PostgresDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -49,6 +49,15 @@ class Settings(BaseSettings):
     parse_timeout_seconds: float = Field(default=60, gt=0)
     parse_memory_mb: int = Field(default=1024, ge=64)
 
+    # --- Embeddings -------------------------------------------------------------------------
+    # "bge-m3": BAAI/bge-m3 (int8 ONNX) run locally; "fake": deterministic, for tests only.
+    embedding_provider: Literal["bge-m3", "fake"] = "bge-m3"
+    # Where model files are downloaded; shared by the API and the worker.
+    embedding_cache_dir: Path = Path("data/models")
+    # ONNX Runtime threads per process; None lets the runtime decide.
+    embedding_threads: int | None = Field(default=None, ge=1)
+    embedding_batch_size: int = Field(default=8, ge=1)
+
     worker_poll_interval_seconds: float = Field(default=1.0, gt=0)
     job_max_attempts: int = Field(default=3, ge=1)
     # A running job whose worker has been silent this long is considered abandoned.
@@ -77,6 +86,8 @@ class Settings(BaseSettings):
                 raise ValueError("SESSION_COOKIE_SECURE must be true in production")
             if not self.app_origin.startswith("https://"):
                 raise ValueError("APP_ORIGIN must use https in production")
+            if self.embedding_provider == "fake":
+                raise ValueError("EMBEDDING_PROVIDER=fake is for tests only")
         return self
 
 

@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v0.4** — Phase 1–2 diimplementasikan; keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v0.5** — Phase 1–2 dan vector search Phase 3 diimplementasikan; keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -16,6 +16,7 @@
 | v0.2 | Hasil architecture review: penyederhanaan (tanpa MinIO, tanpa tabel embedding terpisah, tanpa soft delete, lapisan clean architecture hanya di modul yang punya logika, CI bertahap); perbaikan desain citation (snapshot, satu `[n]` = satu chunk, lokasi non-PDF); evidence gate tidak lagi bergantung pada threshold yang belum dikalibrasi; label eval berbasis teks bukti, bukan ID chunk; registrasi berbasis undangan; CSRF via verifikasi `Origin`; parser di subprocess dengan timeout; aturan koneksi DB saat streaming; rate limit berbasis Postgres. |
 | v0.3 | Penyesuaian saat implementasi Phase 1 (ADR 0001–0003): npm menggantikan pnpm; Caddy ditunda ke Phase 4 dan dev memakai rewrites Next.js; test memakai Postgres nyata via `TEST_DATABASE_URL` alih-alih Testcontainers; rate limit per IP ditunda ke Phase 4; kolom `users.is_admin` dan `invites.created_by` dihapus karena administrasi dilakukan lewat CLI. |
 | v0.4 | Penyesuaian saat implementasi Phase 2 (ADR 0004): tabel `jobs` generik (`type` + `resource_id`, tanpa FK ke `documents`) agar `core` tidak bergantung pada modul; ukuran chunk ditetapkan 1.800 target / 2.400 maksimum / 200 overlap karakter; parser `pypdf` + `python-docx` (D6); batas upload 25 MB, 500 halaman, 5 juta karakter hasil ekstraksi, note 200.000 karakter (D9); ingestion memakai antarmuka publik `library.processing`, bukan model ORM library; proxy Next.js dikonfigurasi agar tidak memotong upload (ADR 0003). |
+| v0.5 | Phase 3 bagian vector search (ADR 0005): D5 diputuskan — BAAI/bge-m3 varian int8 ONNX (revisi terkunci), 1024 dimensi, dijalankan lokal via fastembed; kolom `chunks.embedding vector(1024)` dengan indeks HNSW cosine dan `documents.embedding_model`; endpoint `POST /api/v1/retrieval/search` (user selalu dari sesi, bukan dari body). Full-text search, hybrid RRF, UI pencarian, dan eval harness Phase 3 belum dikerjakan. |
 
 ---
 
@@ -348,7 +349,7 @@ Unique parsial `(owner_id, sha256) WHERE kind = 'file'` untuk deduplikasi upload
 `id`, `document_id` (`ON DELETE CASCADE`), `owner_id` (denormalisasi, immutable),
 `ordinal`, `content`, `char_count`,
 `page_start`, `page_end` (nullable — hanya PDF), `heading_path` (`text[]`), `char_start`, `char_end`,
-`content_tsv` (`tsvector`, generated column), `embedding` (`vector(N)`, nullable sampai tahap embed), `created_at`.
+`content_tsv` (`tsvector`, generated column — belum dibuat, menyusul bersama full-text search), `embedding` (`vector(1024)`, nullable untuk chunk yang belum di-embed; indeks HNSW `vector_cosine_ops`), `created_at`. `documents.embedding_model` mencatat model yang meng-embed dokumen.
 
 Filter collection dilakukan dengan join ke `documents` (jumlah dokumen per pengguna kecil), sehingga memindahkan dokumen antar-collection tidak perlu memperbarui ribuan chunk.
 
@@ -432,7 +433,7 @@ yang dipakai **perlu diverifikasi, jangan diasumsikan**.
 | `POST` | `/api/v1/documents/{id}/reprocess` | Ulangi ingestion yang gagal. |
 | `POST` | `/api/v1/notes` | Buat note (menjadi document `kind=note`). |
 | `GET/PUT` | `/api/v1/notes/{id}` | Baca / ubah note → re-index (digabung jika beruntun). |
-| `POST` | `/api/v1/search` | Hybrid search. Body: `query`, `filters`, `limit`, `mode` (`hybrid`/`vector`/`fulltext` untuk debugging & eval). |
+| `POST` | `/api/v1/retrieval/search` | Vector search (sudah ada, ADR 0005). Body: `query`, `top_k`, `collection_id`, `document_ids`; user dari sesi. Mode `hybrid`/`fulltext` untuk debugging & eval menyusul. |
 | `GET/POST` | `/api/v1/conversations` | List / create dengan `scope`. |
 | `GET/DELETE` | `/api/v1/conversations/{id}` | Detail + messages + citations / hapus. |
 | `POST` | `/api/v1/conversations/{id}/messages` | Kirim pertanyaan → **SSE stream**. |
@@ -819,7 +820,7 @@ Kolom rekomendasi adalah saran dokumen ini; keputusan akhir ada di pemilik proje
 | D2 | **Nama produk & lisensi** | "KnowVault" tetap / ganti; MIT / Apache-2.0 | Cek ketersediaan nama; **MIT atau Apache-2.0**. Lisensi memengaruhi D6. |
 | D3 | **Model pengguna** | Satu user / multi-user | **Multi-user dengan isolasi owner**, registrasi via undangan. |
 | D4 | **Provider LLM** | Anthropic / OpenAI-compatible / lokal | Satu provider hosted (mis. `claude-opus-5`, dengan model murah untuk condensation) + **provider fake sebagai default dev/CI**. Adapter lokal opsional. |
-| D5 | **Model embedding & dimensi** | Hosted API vs lokal open-weight multilingual | Harus multilingual (ID + EN). Tentukan satu model dan dimensinya sebelum migrasi tabel `chunks` dibuat. |
+| D5 | **Model embedding & dimensi** | Hosted API vs lokal open-weight multilingual | **Diputuskan (ADR 0005): BAAI/bge-m3, int8 ONNX, 1024 dimensi, lokal via fastembed.** |
 | D6 | **Library parser** | pypdf / pdfplumber / PyMuPDF / Docling / Unstructured | **Diputuskan (ADR 0004): pypdf + python-docx.** PyMuPDF (AGPL) dihindari. Docling sebagai kandidat upgrade jika eval menunjukkan ekstraksi jadi bottleneck. |
 | D7 | **Job queue** | Postgres custom / Procrastinate / Celery+Redis | **Postgres custom dengan fitur minimal** (satu tipe job, retry, visibility timeout, coalescing). |
 | D8 | **Auth** | Session cookie / JWT / auth provider eksternal | **Session cookie server-side** + verifikasi `Origin` (§11). |

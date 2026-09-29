@@ -3,10 +3,11 @@
 Personal knowledge management with AI answers that are grounded in your own documents and
 cite their sources.
 
-> **Status: Phase 2 — Knowledge library.** Accounts, collections, notes and document upload
-> work end to end: a background worker extracts the text of PDF, Word, Markdown and text files
-> and splits it into chunks that keep their page or section. Search arrives in Phase 3 and
-> cited Q&A in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
+> **Status: Phase 3 — Retrieval (vector search).** Accounts, collections, notes and document
+> upload work end to end: a background worker extracts the text of PDF, Word, Markdown and text
+> files, splits it into chunks that keep their page or section, and embeds each chunk with
+> BAAI/bge-m3 (multilingual, run locally). A search API returns the most similar chunks with
+> citation data. Hybrid search and a search page are next; cited Q&A arrives in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
 
 ## Stack
 
@@ -15,7 +16,8 @@ cite their sources.
 | Web | Next.js 16 (App Router), TypeScript, Tailwind CSS 4, TanStack Query |
 | API | Python 3.13, FastAPI, SQLAlchemy 2 (async), Alembic |
 | Worker | Same codebase as the API; PostgreSQL job queue; `pypdf`, `python-docx` in a sandboxed child process |
-| Database | PostgreSQL 17 (pgvector image, used from Phase 3) |
+| Embeddings | BAAI/bge-m3 (int8 ONNX, 1024 dimensions) via fastembed / ONNX Runtime, on CPU |
+| Database | PostgreSQL 17 with pgvector 0.8 (HNSW index, cosine distance) |
 | Dev environment | Docker Compose |
 
 The browser only talks to the Next.js server, which forwards `/api/*` to FastAPI. Sessions are
@@ -25,7 +27,8 @@ worker processes them and the web app polls until they are ready. More in
 
 ## Quick start (Docker)
 
-Requirements: Docker with Compose v2.
+Requirements: Docker with Compose v2, with at least 4 GB of memory for Docker (the API and the
+worker each load the embedding model, about 1 GB apiece).
 
 ```bash
 git clone https://github.com/Fathul2703/knowvault.git
@@ -36,6 +39,10 @@ docker compose up --build
 
 This starts PostgreSQL, applies migrations, then runs the API on http://localhost:8000, the
 document worker, and the web app on http://localhost:3000. The first build takes a few minutes.
+
+The embedding model (569 MB) is downloaded the first time a document is processed or a search
+runs. To fetch it up front: `make model-docker`. If you are upgrading from Phase 2, embed the
+documents you already have with `make reindex-docker`.
 
 Registration is invite-only. In a second terminal, create an invite:
 
@@ -112,9 +119,14 @@ make test-api   # API tests; needs TEST_DATABASE_URL
 make test-web   # web tests
 ```
 
-API tests run against a real PostgreSQL database. The database named in `TEST_DATABASE_URL`
-is **dropped and recreated** on every run, so its name must end in `_test`. With Docker you can
-run them inside the stack: `docker compose exec api pytest`.
+API tests run against a real PostgreSQL database **with the pgvector extension** (the Compose
+database has it; a plain Homebrew PostgreSQL does not). The database named in
+`TEST_DATABASE_URL` is **dropped and recreated** on every run, so its name must end in `_test`.
+With Docker you can run them inside the stack: `docker compose exec api pytest`.
+
+Tests use deterministic fake embeddings and never download the model. To also check the real
+bge-m3 model, point `KNOWVAULT_TEST_MODEL_DIR` at a model cache directory (it is downloaded
+there if missing) and run `make test-api`.
 
 After changing API endpoints or schemas, run `make openapi` to regenerate
 `apps/api/openapi.json` and the web app's types. CI fails if they are out of date.
@@ -135,6 +147,9 @@ Secrets are never committed.
 | `STORAGE_DIR` | API, worker on the host | Directory for uploaded files, relative to `apps/api`; Compose uses the `uploads` volume |
 | `MAX_UPLOAD_MB`, `MAX_PAGES`, `MAX_EXTRACTED_CHARS`, `MAX_NOTE_CHARS` | API, worker | Optional limits (defaults 25 MB, 500 pages, 5,000,000 and 200,000 characters). If you raise `MAX_UPLOAD_MB`, raise `proxyClientMaxBodySize` in `apps/web/next.config.ts` too |
 | `PARSE_TIMEOUT_SECONDS`, `PARSE_MEMORY_MB` | Worker | Optional limits for the parser process (defaults 60 s, 1024 MB; memory is enforced on Linux only) |
+| `EMBEDDING_PROVIDER` | API, worker | `bge-m3` (default) or `fake` (tests only; refused in production) |
+| `EMBEDDING_CACHE_DIR` | API, worker on the host | Where the model is stored, relative to `apps/api`; Compose uses the `models` volume |
+| `EMBEDDING_THREADS`, `EMBEDDING_BATCH_SIZE` | API, worker | Optional ONNX Runtime threads per process and chunks per batch (defaults: runtime's choice, 8) |
 | `API_INTERNAL_URL` | Web | Where the Next.js server forwards `/api/*` |
 
 ## Admin commands
@@ -144,6 +159,8 @@ knowvault create-invite [--days N]   # single-use registration invite
 knowvault reset-password EMAIL       # prompts for a new password, signs the user out everywhere
 knowvault export-openapi             # prints the OpenAPI schema
 knowvault worker                     # runs the document worker (the `worker` service in Compose)
+knowvault download-model             # downloads the embedding model now instead of on first use
+knowvault reindex [--all]            # queues documents embedded by another model (or not at all)
 ```
 
 Run them with `docker compose exec api …` or, locally, `cd apps/api && uv run …` with the
@@ -167,6 +184,10 @@ environment loaded.
 - Health: `GET /healthz` (process up), `GET /readyz` (database reachable)
 - Library: `/api/v1/collections`, `/api/v1/documents` (upload, list, detail, `/file`,
   `/chunks`, `/reprocess`), `/api/v1/notes`
+- Search: `POST /api/v1/retrieval/search` with `{"query": "...", "top_k": 8}` and optional
+  `collection_id` / `document_ids`. It searches the signed-in user's ready documents and returns
+  chunks ordered by cosine similarity, each with its document, page range or heading trail, and
+  score. The user always comes from the session; a `user_id` in the body is rejected.
 - Interactive docs (development only): http://localhost:8000/api/docs
 - Errors use [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details with a stable `code`.
 
@@ -178,12 +199,13 @@ apps/
     src/knowvault/
       core/            config, database, errors, logging, middleware, rate limiting, job queue,
                        storage port, health
-      adapters/        port implementations (filesystem storage)
+      adapters/        port implementations (filesystem storage, bge-m3 and fake embeddings)
       modules/
         identity/      users, sessions, invites, auth endpoints
         library/       collections, documents, notes, uploads; `processing.py` for ingestion
-        ingestion/     domain (normalise, chunk) → application (pipeline) →
+        ingestion/     domain (normalise, chunk) → application (pipeline, embedding) →
                        infrastructure (parsers, parser process, chunks) → api
+        retrieval/     domain → application (search) → infrastructure (pgvector) → api
       main.py          API composition root
       worker.py        worker composition root
       cli.py           admin commands

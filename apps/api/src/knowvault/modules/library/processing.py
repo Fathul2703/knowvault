@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from knowvault.core import jobs
 from knowvault.core.errors import NotFoundError
 from knowvault.modules.library.models import (
     KIND_NOTE,
@@ -110,12 +111,22 @@ async def lock_current_version(
 
 
 async def mark_ready(
-    session: AsyncSession, document_id: uuid.UUID, *, page_count: int | None
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    *,
+    page_count: int | None,
+    embedding_model: str,
 ) -> None:
     await session.execute(
         update(Document)
         .where(Document.id == document_id)
-        .values(status=STATUS_READY, page_count=page_count, error_code=None, error_detail=None)
+        .values(
+            status=STATUS_READY,
+            page_count=page_count,
+            embedding_model=embedding_model,
+            error_code=None,
+            error_detail=None,
+        )
     )
 
 
@@ -142,3 +153,33 @@ async def mark_pending(session: AsyncSession, document_id: uuid.UUID, content_ve
         .where(Document.id == document_id, Document.content_version == content_version)
         .values(status=STATUS_PENDING)
     )
+
+
+async def queue_stale_embeddings(
+    session: AsyncSession, *, embedding_model: str, max_attempts: int, include_all: bool = False
+) -> int:
+    """Queues ready documents whose chunks were embedded by another model (or not at all).
+
+    With `include_all`, every ready or failed document is queued. Returns how many were queued.
+    Commits.
+    """
+    query = select(Document).where(Document.status.in_((STATUS_READY, STATUS_FAILED)))
+    if not include_all:
+        query = query.where(
+            Document.status == STATUS_READY,
+            Document.embedding_model.is_distinct_from(embedding_model),
+        )
+    documents = (await session.scalars(query.with_for_update(skip_locked=True))).all()
+    for document in documents:
+        document.status = STATUS_PENDING
+        document.error_code = None
+        document.error_detail = None
+        await jobs.enqueue(
+            session,
+            type=PROCESS_DOCUMENT_JOB,
+            resource_id=document.id,
+            payload={"content_version": document.content_version},
+            max_attempts=max_attempts,
+        )
+    await session.commit()
+    return len(documents)

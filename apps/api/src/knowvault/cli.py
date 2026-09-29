@@ -43,6 +43,36 @@ def _prompt_new_password() -> str:
     return password
 
 
+async def _reindex(settings: Settings, *, include_all: bool) -> int:
+    from knowvault.adapters.embeddings import build_embedding_model
+    from knowvault.modules.library.processing import queue_stale_embeddings
+
+    database = Database(settings, use_null_pool=True)
+    try:
+        async with database.sessionmaker() as session:
+            return await queue_stale_embeddings(
+                session,
+                embedding_model=build_embedding_model(settings).model_id,
+                max_attempts=settings.job_max_attempts,
+                include_all=include_all,
+            )
+    finally:
+        await database.dispose()
+
+
+def _download_model(settings: Settings) -> str:
+    from knowvault.adapters.embeddings import BgeM3Embeddings
+
+    if settings.embedding_provider != "bge-m3":
+        return f"Nothing to download for EMBEDDING_PROVIDER={settings.embedding_provider}."
+    model = BgeM3Embeddings(
+        settings.embedding_cache_dir,
+        threads=settings.embedding_threads,
+        batch_size=settings.embedding_batch_size,
+    )
+    return f"{model.model_id} is ready in {model.download()}"
+
+
 def _export_openapi() -> str:
     # Imported lazily so admin commands do not load the whole web stack.
     from knowvault.main import create_app
@@ -64,6 +94,15 @@ def main(argv: list[str] | None = None) -> None:
 
     commands.add_parser("export-openapi", help="print the OpenAPI schema as JSON")
     commands.add_parser("worker", help="run the background worker that processes documents")
+    commands.add_parser(
+        "download-model", help="download the embedding model now instead of on first use"
+    )
+    reindex = commands.add_parser(
+        "reindex", help="queue documents whose embeddings are missing or from another model"
+    )
+    reindex.add_argument(
+        "--all", action="store_true", help="queue every processed document, not only stale ones"
+    )
 
     args = parser.parse_args(argv)
 
@@ -72,7 +111,12 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     settings = get_settings()
-    if args.command == "worker":
+    if args.command == "download-model":
+        print(_download_model(settings))
+    elif args.command == "reindex":
+        count = asyncio.run(_reindex(settings, include_all=args.all))
+        print(f"Queued {count} document(s). The worker will process them.")
+    elif args.command == "worker":
         from knowvault.worker import run
 
         asyncio.run(run(settings))
