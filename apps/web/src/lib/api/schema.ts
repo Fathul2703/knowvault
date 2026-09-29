@@ -319,10 +319,11 @@ export interface paths {
         put?: never;
         /**
          * Search
-         * @description Returns the chunks of the user's ready documents most similar to the query.
+         * @description Returns the chunks of the user's ready documents most relevant to the query.
          *
-         *     Results are ordered by cosine similarity and carry what a citation needs: document,
-         *     chunk position, page range (PDF) or heading trail.
+         *     By default, semantic (vector) and keyword (full-text) results are fused with Reciprocal
+         *     Rank Fusion. Each result carries what a citation needs: document, chunk position, page
+         *     range (PDF) or heading trail.
          */
         post: operations["retrieval_search"];
         delete?: never;
@@ -598,6 +599,11 @@ export interface components {
             password: string;
         };
         /**
+         * SearchMode
+         * @enum {string}
+         */
+        SearchMode: "hybrid" | "vector" | "fulltext";
+        /**
          * SearchRequest
          * @description The searching user always comes from the session, never from the request body.
          */
@@ -616,13 +622,19 @@ export interface components {
              * @default []
              */
             document_ids: string[];
+            /**
+             * @description hybrid: vector + full text fused with RRF (default); vector or fulltext: a single method, for debugging and evaluation
+             * @default hybrid
+             */
+            mode: components["schemas"]["SearchMode"];
         };
         /** SearchResponse */
         SearchResponse: {
             /** Query */
             query: string;
+            mode: components["schemas"]["SearchMode"];
             /** Embedding Model */
-            embedding_model: string;
+            embedding_model: string | null;
             /** Results */
             results: components["schemas"]["SearchResultOut"][];
         };
@@ -652,8 +664,26 @@ export interface components {
             page_end: number | null;
             /** Heading Path */
             heading_path: string[];
-            /** Score */
+            /**
+             * Score
+             * @description Ordering score of the mode: RRF score (hybrid), cosine similarity (vector) or ts_rank_cd (fulltext). Only comparable within one response.
+             */
             score: number;
+            /**
+             * Similarity
+             * @description Cosine similarity to the query; null in fulltext mode or when the chunk has no current embedding.
+             */
+            similarity: number | null;
+            /**
+             * Vector Rank
+             * @description Rank among vector candidates (1-based).
+             */
+            vector_rank: number | null;
+            /**
+             * Fulltext Rank
+             * @description Rank among full-text candidates (1-based).
+             */
+            fulltext_rank: number | null;
         };
         /** UserOut */
         UserOut: {

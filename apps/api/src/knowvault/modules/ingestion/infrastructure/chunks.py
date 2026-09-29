@@ -6,6 +6,7 @@ from datetime import datetime
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
+    Computed,
     DateTime,
     ForeignKey,
     Index,
@@ -18,12 +19,13 @@ from sqlalchemy import (
     select,
     text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, TSVECTOR, UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
 from knowvault.core.db import Base
 from knowvault.core.embeddings import EMBEDDING_DIMENSIONS
+from knowvault.core.text_search import FULLTEXT_CONFIG
 from knowvault.modules.ingestion.domain.model import ChunkDraft
 
 
@@ -39,6 +41,7 @@ class Chunk(Base):
             postgresql_with={"m": 16, "ef_construction": 64},
             postgresql_ops={"embedding": "vector_cosine_ops"},
         ),
+        Index("ix_chunks_content_tsv", "content_tsv", postgresql_using="gin"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -63,6 +66,10 @@ class Chunk(Base):
     page_end: Mapped[int | None] = mapped_column(Integer)
     heading_path: Mapped[list[str]] = mapped_column(
         ARRAY(Text), nullable=False, server_default=text("'{}'")
+    )
+    # Full-text search vector, maintained by PostgreSQL from `content`.
+    content_tsv: Mapped[str] = mapped_column(
+        TSVECTOR, Computed(f"to_tsvector('{FULLTEXT_CONFIG}'::regconfig, content)", persisted=True)
     )
     # Null until the chunk has been embedded (e.g. chunks created before Phase 3).
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
