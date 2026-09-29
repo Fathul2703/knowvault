@@ -1,31 +1,35 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 
-function cx(...classes: Array<string | false | null | undefined>): string {
+export function cx(...classes: Array<string | false | null | undefined>): string {
   return classes.filter(Boolean).join(" ");
 }
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "ghost";
-};
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 
-export function Button({ variant = "primary", className, type = "button", ...props }: ButtonProps) {
-  return (
-    <button
-      type={type}
-      className={cx(
-        "inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium",
-        "transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        variant === "primary" && "bg-brand-600 text-white hover:bg-brand-700",
-        variant === "secondary" &&
-          "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50",
-        variant === "ghost" && "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-        className,
-      )}
-      {...props}
-    />
+/** Button styles, also used for links that look like buttons. */
+export function buttonClass(variant: ButtonVariant = "primary", className?: string): string {
+  return cx(
+    "inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium",
+    "transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+    variant === "primary" && "bg-brand-600 text-white hover:bg-brand-700",
+    variant === "secondary" && "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50",
+    variant === "ghost" && "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+    variant === "danger" && "border border-red-200 bg-white text-red-700 hover:bg-red-50",
+    className,
   );
 }
+
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant };
+
+export function Button({ variant = "primary", className, type = "button", ...props }: ButtonProps) {
+  return <button type={type} className={buttonClass(variant, className)} {...props} />;
+}
+
+export const inputClass = cx(
+  "block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900",
+  "placeholder:text-slate-400 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20",
+);
 
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -43,11 +47,7 @@ export function Field({ label, hint, id, className, ...props }: FieldProps) {
       <input
         id={inputId}
         aria-describedby={hintId}
-        className={cx(
-          "block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900",
-          "placeholder:text-slate-400 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20",
-          className,
-        )}
+        className={cx(inputClass, className)}
         {...props}
       />
       {hint ? (

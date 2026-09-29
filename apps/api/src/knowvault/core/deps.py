@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 
 from knowvault.core.config import Settings
+from knowvault.core.storage import ObjectStorage
 
 
 def get_app_settings(request: Request) -> Settings:
@@ -13,3 +14,11 @@ def get_app_settings(request: Request) -> Settings:
 
 
 SettingsDep = Annotated[Settings, Depends(get_app_settings)]
+
+
+def get_storage(request: Request) -> ObjectStorage:
+    storage: ObjectStorage = request.app.state.storage
+    return storage
+
+
+StorageDep = Annotated[ObjectStorage, Depends(get_storage)]

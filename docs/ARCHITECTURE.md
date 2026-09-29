@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v0.3** — Phase 1 diimplementasikan; keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v0.4** — Phase 1–2 diimplementasikan; keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -15,6 +15,7 @@
 | v0.1 | Draft awal discovery & arsitektur. |
 | v0.2 | Hasil architecture review: penyederhanaan (tanpa MinIO, tanpa tabel embedding terpisah, tanpa soft delete, lapisan clean architecture hanya di modul yang punya logika, CI bertahap); perbaikan desain citation (snapshot, satu `[n]` = satu chunk, lokasi non-PDF); evidence gate tidak lagi bergantung pada threshold yang belum dikalibrasi; label eval berbasis teks bukti, bukan ID chunk; registrasi berbasis undangan; CSRF via verifikasi `Origin`; parser di subprocess dengan timeout; aturan koneksi DB saat streaming; rate limit berbasis Postgres. |
 | v0.3 | Penyesuaian saat implementasi Phase 1 (ADR 0001–0003): npm menggantikan pnpm; Caddy ditunda ke Phase 4 dan dev memakai rewrites Next.js; test memakai Postgres nyata via `TEST_DATABASE_URL` alih-alih Testcontainers; rate limit per IP ditunda ke Phase 4; kolom `users.is_admin` dan `invites.created_by` dihapus karena administrasi dilakukan lewat CLI. |
+| v0.4 | Penyesuaian saat implementasi Phase 2 (ADR 0004): tabel `jobs` generik (`type` + `resource_id`, tanpa FK ke `documents`) agar `core` tidak bergantung pada modul; ukuran chunk ditetapkan 1.800 target / 2.400 maksimum / 200 overlap karakter; parser `pypdf` + `python-docx` (D6); batas upload 25 MB, 500 halaman, 5 juta karakter hasil ekstraksi, note 200.000 karakter (D9); ingestion memakai antarmuka publik `library.processing`, bukan model ORM library; proxy Next.js dikonfigurasi agar tidak memotong upload (ADR 0003). |
 
 ---
 
@@ -351,8 +352,8 @@ Unique parsial `(owner_id, sha256) WHERE kind = 'file'` untuk deduplikasi upload
 
 Filter collection dilakukan dengan join ke `documents` (jumlah dokumen per pengguna kecil), sehingga memindahkan dokumen antar-collection tidak perlu memperbarui ribuan chunk.
 
-**`jobs`** — `id`, `type` (`process_document`), `document_id`, `payload` (jsonb, berisi `content_version` target), `status` (`queued` | `running` | `succeeded` | `failed` | `dead`), `attempts`, `max_attempts`, `run_after`, `locked_at`, `last_error`, `created_at`, `updated_at`.
-Unique parsial `(document_id) WHERE status = 'queued'` — edit note berulang **digabung** menjadi satu job, bukan puluhan job embedding.
+**`jobs`** — `id`, `type` (`process_document`), `resource_id` (untuk `process_document`: ID dokumen; sengaja tanpa FK agar antrean tetap generik di `core`), `payload` (jsonb, berisi `content_version` target), `status` (`queued` | `running` | `succeeded` | `failed` | `dead` | `cancelled`), `attempts`, `max_attempts`, `run_after`, `locked_at`, `last_error`, `created_at`, `updated_at`. Job untuk dokumen yang sudah dihapus diselesaikan tanpa kerja oleh worker.
+Unique parsial `(type, resource_id) WHERE status = 'queued'` — edit note berulang **digabung** menjadi satu job, bukan puluhan job embedding.
 
 **`conversations`** — `id`, `owner_id`, `title`, `scope` (jsonb: `{collection_ids, document_ids}`), `created_at`, `updated_at`.
 
@@ -489,7 +490,7 @@ sequenceDiagram
 | **1. Intake (API)** | Batas ukuran ditegakkan dengan **menghitung byte saat streaming** (bukan percaya `Content-Length`), juga di proxy. Tipe dideteksi dari *magic bytes*; allowlist PDF, DOCX, Markdown, plain text. SHA-256 untuk dedup. Nama file asli hanya metadata. | File di storage, dokumen `pending`, job di-enqueue dalam transaksi yang sama. Jika insert gagal, file dihapus. |
 | **2. Extract** | Parser per MIME type di belakang port `DocumentParser`, dijalankan di **child process** dengan timeout keras dan batas memori (parser Python yang CPU-bound tidak bisa dihentikan dari dalam event loop). PDF: teks per halaman (nomor halaman fisik, 1-based). DOCX: paragraf + heading; cek total ukuran setelah dekompresi sebelum parsing (DOCX adalah ZIP). MD/TXT: langsung, heading Markdown dipertahankan. Batas jumlah halaman dan ukuran teks hasil. | Daftar blok `{text, page, heading_path}`. |
 | **3. Normalize** | Unicode NFC, perbaikan whitespace, perbaikan hyphenation di akhir baris. Heuristik penghapusan header/footer berulang ditunda sampai eval menunjukkan kebutuhannya. Dokumen tanpa teks → `failed: no_extractable_text`. | Blok bersih. |
-| **4. Chunk** | *Structure-aware recursive chunking*: pecah menurut heading → paragraf → kalimat. Ukuran target berbasis karakter (±1.500–2.500 karakter, overlap ±10–15%), tidak menyeberang batas section bila memungkinkan. Setiap chunk menyimpan `page_start/end` (PDF), `heading_path`, offset karakter. Parameter di-tuning lewat eval. | Chunk di memori. |
+| **4. Chunk** | *Structure-aware recursive chunking*: pecah menurut heading → paragraf → kalimat. Ukuran berbasis karakter: target 1.800, maksimum 2.400, overlap hingga 200 karakter berupa kalimat/paragraf utuh, tidak menyeberang batas section bila memungkinkan. Setiap chunk menyimpan `page_start/end` (PDF), `heading_path`, offset karakter. Parameter di-tuning lewat eval. | Chunk di memori. |
 | **5. Embed** | Batch, retry dengan exponential backoff untuk error transien. Teks yang diembed = `judul dokumen + heading_path + isi chunk` (contextual header sederhana). | Vector di memori. |
 | **6. Commit** | **Satu transaksi**: pastikan `documents.content_version` masih sama dengan versi di job (jika berubah → hasil dibuang, job baru sudah menunggu), hapus chunk lama, insert chunk baru beserta embedding, set `status=ready`. | Search tidak pernah melihat dokumen dalam keadaan setengah jadi; pipeline **idempotent** dan aman di-retry. |
 
@@ -819,10 +820,10 @@ Kolom rekomendasi adalah saran dokumen ini; keputusan akhir ada di pemilik proje
 | D3 | **Model pengguna** | Satu user / multi-user | **Multi-user dengan isolasi owner**, registrasi via undangan. |
 | D4 | **Provider LLM** | Anthropic / OpenAI-compatible / lokal | Satu provider hosted (mis. `claude-opus-5`, dengan model murah untuk condensation) + **provider fake sebagai default dev/CI**. Adapter lokal opsional. |
 | D5 | **Model embedding & dimensi** | Hosted API vs lokal open-weight multilingual | Harus multilingual (ID + EN). Tentukan satu model dan dimensinya sebelum migrasi tabel `chunks` dibuat. |
-| D6 | **Library parser** | pypdf / pdfplumber / PyMuPDF / Docling / Unstructured | Mulai dengan library ringan berlisensi permisif (pypdf atau pdfplumber; python-docx). **PyMuPDF berlisensi AGPL.** Docling sebagai kandidat upgrade jika eval menunjukkan ekstraksi jadi bottleneck. |
+| D6 | **Library parser** | pypdf / pdfplumber / PyMuPDF / Docling / Unstructured | **Diputuskan (ADR 0004): pypdf + python-docx.** PyMuPDF (AGPL) dihindari. Docling sebagai kandidat upgrade jika eval menunjukkan ekstraksi jadi bottleneck. |
 | D7 | **Job queue** | Postgres custom / Procrastinate / Celery+Redis | **Postgres custom dengan fitur minimal** (satu tipe job, retry, visibility timeout, coalescing). |
 | D8 | **Auth** | Session cookie / JWT / auth provider eksternal | **Session cookie server-side** + verifikasi `Origin` (§11). |
-| D9 | **Tipe file & batas** | – | PDF, DOCX, MD, TXT; maks 25 MB & 500 halaman per file; kuota dokumen & token per user. |
+| D9 | **Tipe file & batas** | – | **Diputuskan (ADR 0004):** PDF, DOCX, MD, TXT; maks 25 MB, 500 halaman, 5 juta karakter hasil ekstraksi per file; note 200.000 karakter. Kuota dokumen & token per user menyusul di Phase 4. |
 | D10 | **File storage** | Filesystem / MinIO / S3 | **Filesystem volume** di balik port; S3 saat deployment membutuhkan. |
 | D11 | **Target deployment** | VPS + Compose / PaaS / tidak dideploy | **VPS kecil + Compose + Caddy**, atau video demo jika tidak ingin menanggung biaya. |
 | D12 | **Batas biaya** | – | Budget bulanan provider dan kuota token harian per user ditetapkan sebelum demo dibuka. |

@@ -2,6 +2,7 @@
 
 from enum import StrEnum
 from functools import lru_cache
+from pathlib import Path
 from typing import Self
 
 from pydantic import Field, PostgresDsn, model_validator
@@ -37,6 +38,25 @@ class Settings(BaseSettings):
     login_window_minutes: int = Field(default=15, ge=1)
 
     invite_ttl_days: int = Field(default=7, ge=1)
+
+    # --- Library & ingestion ---------------------------------------------------------------
+    # Directory for uploaded files, shared by the API and the worker.
+    storage_dir: Path = Path("data/uploads")
+    max_upload_mb: int = Field(default=25, ge=1)
+    max_note_chars: int = Field(default=200_000, ge=1)
+    max_pages: int = Field(default=500, ge=1)
+    max_extracted_chars: int = Field(default=5_000_000, ge=1)
+    parse_timeout_seconds: float = Field(default=60, gt=0)
+    parse_memory_mb: int = Field(default=1024, ge=64)
+
+    worker_poll_interval_seconds: float = Field(default=1.0, gt=0)
+    job_max_attempts: int = Field(default=3, ge=1)
+    # A running job whose worker has been silent this long is considered abandoned.
+    job_lock_timeout_seconds: int = Field(default=600, ge=30)
+
+    @property
+    def max_upload_bytes(self) -> int:
+        return self.max_upload_mb * 1024 * 1024
 
     @property
     def session_cookie_name(self) -> str:

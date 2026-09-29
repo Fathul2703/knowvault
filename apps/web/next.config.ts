@@ -13,6 +13,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Next.js buffers proxied request bodies and silently truncates them at 10 MB by default,
+    // which corrupts uploads. Keep this above the API's MAX_UPLOAD_MB (25 MB) plus multipart
+    // overhead, so oversized files still reach the API whole and get a clear 413.
+    proxyClientMaxBodySize: "32mb",
+  },
   // The default bottom-left position covers the sidebar's "Sign out" button.
   devIndicators: { position: "bottom-right" },
   async rewrites() {

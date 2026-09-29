@@ -18,6 +18,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 
+from knowvault.adapters.storage.filesystem import FilesystemStorage
 from knowvault.core.config import Environment, Settings
 from knowvault.core.db import Database
 from knowvault.main import create_app
@@ -26,7 +27,17 @@ from knowvault.modules.identity.service import IdentityService
 API_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEST_DATABASE_URL = "postgresql+asyncpg://knowvault:knowvault@localhost:5432/knowvault_test"
 TEST_ORIGIN = "http://testserver"
-TABLES = ("usage_counters", "sessions", "invites", "users")
+TABLES = (
+    "jobs",
+    "chunks",
+    "notes",
+    "documents",
+    "collections",
+    "usage_counters",
+    "sessions",
+    "invites",
+    "users",
+)
 
 
 async def _recreate_database(url: str) -> None:
@@ -57,13 +68,21 @@ def database_url() -> str:
 
 
 @pytest.fixture
-def settings(database_url: str) -> Settings:
+def settings(database_url: str, tmp_path: Path) -> Settings:
     return Settings(
         environment=Environment.TEST,
         database_url=database_url,
         app_origin=TEST_ORIGIN,
         log_level="WARNING",
+        storage_dir=tmp_path / "uploads",
+        max_upload_mb=1,
+        parse_timeout_seconds=30,
     )
+
+
+@pytest.fixture
+def storage(settings: Settings) -> FilesystemStorage:
+    return FilesystemStorage(settings.storage_dir)
 
 
 @pytest.fixture
@@ -76,8 +95,8 @@ async def database(settings: Settings) -> AsyncIterator[Database]:
 
 
 @pytest.fixture
-def app(settings: Settings, database: Database) -> FastAPI:
-    return create_app(settings, database)
+def app(settings: Settings, database: Database, storage: FilesystemStorage) -> FastAPI:
+    return create_app(settings, database, storage)
 
 
 @pytest.fixture

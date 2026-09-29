@@ -1,34 +1,61 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useId, useRef, type ChangeEvent } from "react";
 
-import { Badge, Button, Card } from "@/components/ui";
+import { Alert, Badge, Button, Card, buttonClass, inputClass } from "@/components/ui";
+import type { Collection, DocumentItem, DocumentKind } from "@/lib/api/client";
 
-import type { DocumentKind, DocumentStatus, LibraryItem } from "./types";
+import { ACCEPTED_UPLOAD_TYPES, STATUS_BADGE, formatDate, typeLabel } from "./format";
+import type { DocumentFilters } from "./hooks";
 
-type KindFilter = "all" | DocumentKind;
-
-const FILTERS: ReadonlyArray<{ value: KindFilter; label: string }> = [
-  { value: "all", label: "All" },
+const KIND_FILTERS: ReadonlyArray<{ value: DocumentKind | undefined; label: string }> = [
+  { value: undefined, label: "All" },
   { value: "file", label: "Files" },
   { value: "note", label: "Notes" },
 ];
 
-const STATUS_BADGE: Record<DocumentStatus, { label: string; tone: "neutral" | "info" | "success" | "danger" }> = {
-  pending: { label: "Queued", tone: "neutral" },
-  processing: { label: "Processing", tone: "info" },
-  ready: { label: "Ready", tone: "success" },
-  failed: { label: "Failed", tone: "danger" },
+export type LibraryViewProps = {
+  items: readonly DocumentItem[];
+  collections: readonly Collection[];
+  filters: DocumentFilters;
+  onFiltersChange: (filters: DocumentFilters) => void;
+  onUpload: (file: File) => void;
+  uploading?: boolean;
+  uploadError?: string | null;
+  loading?: boolean;
+  loadError?: string | null;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
 };
 
-const dateFormat = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
+export function LibraryView({
+  items,
+  collections,
+  filters,
+  onFiltersChange,
+  onUpload,
+  uploading = false,
+  uploadError,
+  loading = false,
+  loadError,
+  hasMore = false,
+  loadingMore = false,
+  onLoadMore,
+}: LibraryViewProps) {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const collectionFilterId = useId();
+  const collectionNames = new Map(collections.map((c) => [c.id, c.name]));
+  const filtered = filters.kind !== undefined || filters.collectionId !== undefined;
 
-export function LibraryView({ items }: { items: readonly LibraryItem[] }) {
-  const [filter, setFilter] = useState<KindFilter>("all");
-  const visible = useMemo(
-    () => (filter === "all" ? items : items.filter((item) => item.kind === filter)),
-    [items, filter],
-  );
+  function handleFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (file) {
+      onUpload(file);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -40,36 +67,70 @@ export function LibraryView({ items }: { items: readonly LibraryItem[] }) {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" disabled title="Available in Phase 2">
+          <Link href="/library/notes/new" className={buttonClass("secondary")}>
             New note
-          </Button>
-          <Button disabled title="Available in Phase 2">
-            Upload document
+          </Link>
+          <input
+            ref={fileInput}
+            type="file"
+            accept={ACCEPTED_UPLOAD_TYPES}
+            className="sr-only"
+            aria-label="Choose a file to upload"
+            onChange={handleFile}
+          />
+          <Button disabled={uploading} onClick={() => fileInput.current?.click()}>
+            {uploading ? "Uploading…" : "Upload document"}
           </Button>
         </div>
       </div>
 
-      <div role="tablist" aria-label="Filter by type" className="flex gap-1">
-        {FILTERS.map((option) => (
-          <button
-            key={option.value}
-            role="tab"
-            type="button"
-            aria-selected={filter === option.value}
-            onClick={() => setFilter(option.value)}
-            className={`rounded-md px-3 py-1.5 text-sm ${
-              filter === option.value
-                ? "bg-slate-900 text-white"
-                : "text-slate-600 hover:bg-slate-200/60"
-            }`}
+      {uploadError ? <Alert>{uploadError}</Alert> : null}
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" aria-label="Filter by type" className="flex gap-1">
+          {KIND_FILTERS.map((option) => (
+            <button
+              key={option.label}
+              role="tab"
+              type="button"
+              aria-selected={filters.kind === option.value}
+              onClick={() => onFiltersChange({ ...filters, kind: option.value })}
+              className={`rounded-md px-3 py-1.5 text-sm ${
+                filters.kind === option.value
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-600 hover:bg-slate-200/60"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <label htmlFor={collectionFilterId}>Collection</label>
+          <select
+            id={collectionFilterId}
+            className={`${inputClass} w-48`}
+            value={filters.collectionId ?? ""}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, collectionId: e.target.value || undefined })
+            }
           >
-            {option.label}
-          </button>
-        ))}
+            <option value="">All collections</option>
+            {collections.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {visible.length === 0 ? (
-        <EmptyLibrary filtered={items.length > 0} />
+      {loadError ? (
+        <Alert>{loadError}</Alert>
+      ) : loading ? (
+        <Card className="py-14 text-center text-sm text-slate-500">Loading…</Card>
+      ) : items.length === 0 ? (
+        <EmptyLibrary filtered={filtered} />
       ) : (
         <Card className="overflow-x-auto p-0">
           <table className="w-full text-left text-sm">
@@ -79,20 +140,31 @@ export function LibraryView({ items }: { items: readonly LibraryItem[] }) {
                 <th scope="col" className="px-5 py-3 font-medium">Type</th>
                 <th scope="col" className="px-5 py-3 font-medium">Collection</th>
                 <th scope="col" className="px-5 py-3 font-medium">Status</th>
-                <th scope="col" className="px-5 py-3 font-medium">Updated</th>
+                <th scope="col" className="px-5 py-3 font-medium">Added</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {visible.map((item) => (
+              {items.map((item) => (
                 <tr key={item.id}>
-                  <td className="px-5 py-3 font-medium text-slate-900">{item.title}</td>
-                  <td className="px-5 py-3 text-slate-600">{item.kind === "file" ? "File" : "Note"}</td>
-                  <td className="px-5 py-3 text-slate-600">{item.collection ?? "—"}</td>
                   <td className="px-5 py-3">
-                    <Badge tone={STATUS_BADGE[item.status].tone}>{STATUS_BADGE[item.status].label}</Badge>
+                    <Link
+                      href={`/library/${item.id}`}
+                      className="font-medium text-slate-900 hover:text-brand-700 hover:underline"
+                    >
+                      {item.title}
+                    </Link>
                   </td>
+                  <td className="whitespace-nowrap px-5 py-3 text-slate-600">{typeLabel(item)}</td>
                   <td className="px-5 py-3 text-slate-600">
-                    <time dateTime={item.updatedAt}>{dateFormat.format(new Date(item.updatedAt))}</time>
+                    {(item.collection_id && collectionNames.get(item.collection_id)) ?? "—"}
+                  </td>
+                  <td className="whitespace-nowrap px-5 py-3">
+                    <Badge tone={STATUS_BADGE[item.status].tone}>
+                      {STATUS_BADGE[item.status].label}
+                    </Badge>
+                  </td>
+                  <td className="whitespace-nowrap px-5 py-3 text-slate-600">
+                    <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
                   </td>
                 </tr>
               ))}
@@ -100,6 +172,14 @@ export function LibraryView({ items }: { items: readonly LibraryItem[] }) {
           </table>
         </Card>
       )}
+
+      {hasMore ? (
+        <div className="text-center">
+          <Button variant="secondary" disabled={loadingMore} onClick={onLoadMore}>
+            {loadingMore ? "Loading…" : "Load more"}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -108,12 +188,12 @@ function EmptyLibrary({ filtered }: { filtered: boolean }) {
   return (
     <Card className="py-14 text-center">
       <p className="font-medium text-slate-900">
-        {filtered ? "Nothing matches this filter" : "Your library is empty"}
+        {filtered ? "Nothing matches these filters" : "Your library is empty"}
       </p>
       <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
         {filtered
-          ? "Try another type."
-          : "Uploading documents and writing notes arrive in Phase 2. Everything you add will be searchable and citable."}
+          ? "Try another type or collection."
+          : "Upload a PDF, Word, Markdown or text file, or write a note. KnowVault extracts the text so it can be searched and cited."}
       </p>
     </Card>
   );
