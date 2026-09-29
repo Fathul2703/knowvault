@@ -2360,7 +2360,7 @@
           "retrieval"
         ],
         "summary": "Search",
-        "description": "Returns the chunks of the user's ready documents most similar to the query.\n\nResults are ordered by cosine similarity and carry what a citation needs: document,\nchunk position, page range (PDF) or heading trail.",
+        "description": "Returns the chunks of the user's ready documents most relevant to the query.\n\nBy default, semantic (vector) and keyword (full-text) results are fused with Reciprocal\nRank Fusion. Each result carries what a citation needs: document, chunk position, page\nrange (PDF) or heading trail.",
         "operationId": "retrieval_search",
         "requestBody": {
           "content": {
@@ -3163,6 +3163,15 @@
         ],
         "title": "RegisterRequest"
       },
+      "SearchMode": {
+        "type": "string",
+        "enum": [
+          "hybrid",
+          "vector",
+          "fulltext"
+        ],
+        "title": "SearchMode"
+      },
       "SearchRequest": {
         "properties": {
           "query": {
@@ -3199,6 +3208,11 @@
             "maxItems": 100,
             "title": "Document Ids",
             "default": []
+          },
+          "mode": {
+            "$ref": "#/components/schemas/SearchMode",
+            "description": "hybrid: vector + full text fused with RRF (default); vector or fulltext: a single method, for debugging and evaluation",
+            "default": "hybrid"
           }
         },
         "additionalProperties": false,
@@ -3215,8 +3229,18 @@
             "type": "string",
             "title": "Query"
           },
+          "mode": {
+            "$ref": "#/components/schemas/SearchMode"
+          },
           "embedding_model": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Embedding Model"
           },
           "results": {
@@ -3230,6 +3254,7 @@
         "type": "object",
         "required": [
           "query",
+          "mode",
           "embedding_model",
           "results"
         ],
@@ -3294,7 +3319,44 @@
           },
           "score": {
             "type": "number",
-            "title": "Score"
+            "title": "Score",
+            "description": "Ordering score of the mode: RRF score (hybrid), cosine similarity (vector) or ts_rank_cd (fulltext). Only comparable within one response."
+          },
+          "similarity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similarity",
+            "description": "Cosine similarity to the query; null in fulltext mode or when the chunk has no current embedding."
+          },
+          "vector_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vector Rank",
+            "description": "Rank among vector candidates (1-based)."
+          },
+          "fulltext_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulltext Rank",
+            "description": "Rank among full-text candidates (1-based)."
           }
         },
         "type": "object",
@@ -3308,7 +3370,10 @@
           "page_start",
           "page_end",
           "heading_path",
-          "score"
+          "score",
+          "similarity",
+          "vector_rank",
+          "fulltext_rank"
         ],
         "title": "SearchResultOut"
       },

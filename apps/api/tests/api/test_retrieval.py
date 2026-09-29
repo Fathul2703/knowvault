@@ -149,7 +149,7 @@ class TestSearch:
         body = (await ada.post(SEARCH, json={"query": "citations page numbers"})).json()
         assert library["chunking"] not in {r["document_id"] for r in body["results"]}
 
-    async def test_vectors_from_another_model_are_excluded(
+    async def test_vectors_from_another_model_are_not_compared(
         self, ada: AsyncClient, library: dict[str, str], database: Database
     ) -> None:
         async with database.sessionmaker() as session:
@@ -159,8 +159,17 @@ class TestSearch:
                 .values(embedding_model="some-older-model")
             )
             await session.commit()
-        body = (await ada.post(SEARCH, json={"query": "vector search cosine"})).json()
-        assert library["pdf"] not in {r["document_id"] for r in body["results"]}
+        vector = (
+            await ada.post(SEARCH, json={"query": "vector search cosine", "mode": "vector"})
+        ).json()
+        assert library["pdf"] not in {r["document_id"] for r in vector["results"]}
+        # Keyword search does not depend on embeddings, so hybrid still finds the document
+        # (e.g. while it waits to be re-embedded) — without a similarity or vector rank.
+        hybrid = (await ada.post(SEARCH, json={"query": "vector search cosine"})).json()
+        [stale] = [r for r in hybrid["results"] if r["document_id"] == library["pdf"]]
+        assert stale["similarity"] is None
+        assert stale["vector_rank"] is None
+        assert stale["fulltext_rank"] is not None
 
     async def test_empty_library_returns_no_results(self, ada: AsyncClient) -> None:
         body = (await ada.post(SEARCH, json={"query": "anything"})).json()

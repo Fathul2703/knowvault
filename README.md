@@ -3,11 +3,12 @@
 Personal knowledge management with AI answers that are grounded in your own documents and
 cite their sources.
 
-> **Status: Phase 3 — Retrieval (vector search).** Accounts, collections, notes and document
+> **Status: Phase 3 — Retrieval (hybrid search).** Accounts, collections, notes and document
 > upload work end to end: a background worker extracts the text of PDF, Word, Markdown and text
 > files, splits it into chunks that keep their page or section, and embeds each chunk with
-> BAAI/bge-m3 (multilingual, run locally). A search API returns the most similar chunks with
-> citation data. Hybrid search and a search page are next; cited Q&A arrives in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
+> BAAI/bge-m3 (multilingual, run locally). A search API combines semantic and keyword search
+> with Reciprocal Rank Fusion and returns chunks with citation data. A search page and a
+> retrieval evaluation are next; cited Q&A arrives in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
 
 ## Stack
 
@@ -17,7 +18,7 @@ cite their sources.
 | API | Python 3.13, FastAPI, SQLAlchemy 2 (async), Alembic |
 | Worker | Same codebase as the API; PostgreSQL job queue; `pypdf`, `python-docx` in a sandboxed child process |
 | Embeddings | BAAI/bge-m3 (int8 ONNX, 1024 dimensions) via fastembed / ONNX Runtime, on CPU |
-| Database | PostgreSQL 17 with pgvector 0.8 (HNSW index, cosine distance) |
+| Database | PostgreSQL 17 with pgvector 0.8 (HNSW index, cosine distance) and full-text search (GIN) |
 | Dev environment | Docker Compose |
 
 The browser only talks to the Next.js server, which forwards `/api/*` to FastAPI. Sessions are
@@ -185,9 +186,16 @@ environment loaded.
 - Library: `/api/v1/collections`, `/api/v1/documents` (upload, list, detail, `/file`,
   `/chunks`, `/reprocess`), `/api/v1/notes`
 - Search: `POST /api/v1/retrieval/search` with `{"query": "...", "top_k": 8}` and optional
-  `collection_id` / `document_ids`. It searches the signed-in user's ready documents and returns
-  chunks ordered by cosine similarity, each with its document, page range or heading trail, and
-  score. The user always comes from the session; a `user_id` in the body is rejected.
+  `collection_id`, `document_ids` and `mode`. It searches the signed-in user's ready documents.
+  - `hybrid` (default): semantic search (bge-m3, cosine) and keyword search (PostgreSQL
+    full text, `simple` configuration) fused with Reciprocal Rank Fusion. Good for both
+    paraphrased questions and exact terms such as names or error codes.
+  - `vector` or `fulltext`: one method only, for debugging and evaluation. Full-text queries
+    support `"quoted phrases"`, `-exclusions` and `OR`.
+
+  Each result has its document, page range or heading trail, `score` (meaning depends on the
+  mode), cosine `similarity`, and its rank in each method. The user always comes from the
+  session; a `user_id` in the body is rejected.
 - Interactive docs (development only): http://localhost:8000/api/docs
 - Errors use [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details with a stable `code`.
 
@@ -205,7 +213,8 @@ apps/
         library/       collections, documents, notes, uploads; `processing.py` for ingestion
         ingestion/     domain (normalise, chunk) → application (pipeline, embedding) →
                        infrastructure (parsers, parser process, chunks) → api
-        retrieval/     domain → application (search) → infrastructure (pgvector) → api
+        retrieval/     domain (RRF) → application (search) → infrastructure (pgvector,
+                       full-text) → api
       main.py          API composition root
       worker.py        worker composition root
       cli.py           admin commands
