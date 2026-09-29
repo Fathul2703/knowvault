@@ -37,7 +37,8 @@ jobs:
       TEST_DATABASE_URL: postgresql+asyncpg://knowvault:knowvault@localhost:5432/knowvault_test
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      # setup-uv publishes no floating major tags after v7, so pin the release commit.
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           working-directory: apps/api
           enable-cache: true
