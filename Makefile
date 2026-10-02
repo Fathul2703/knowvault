@@ -18,7 +18,7 @@ help: ## Show this help
 
 # --- Docker Compose -------------------------------------------------------------------
 
-.PHONY: up down logs invite-docker test-docker model-docker reindex-docker
+.PHONY: up down logs invite-docker test-docker model-docker reindex-docker eval-docker
 up: .env ## Start the full stack with Docker Compose
 	docker compose up --build
 
@@ -40,9 +40,14 @@ model-docker: ## Download the embedding model into the shared volume now
 reindex-docker: ## Queue documents that still need (re-)embedding
 	docker compose exec api knowvault reindex
 
+EVAL_ARGS = --corpus /eval/corpus --dataset /eval/datasets/retrieval.jsonl --output-dir /eval/reports
+
+eval-docker: ## Run the retrieval evaluation with the real model; report goes to eval/reports
+	docker compose run --rm -v ./eval:/eval api knowvault eval-retrieval $(EVAL_ARGS)
+
 # --- Local (no Docker for the apps; needs PostgreSQL) ---------------------------------
 
-.PHONY: install migrate invite api worker web model reindex
+.PHONY: install migrate invite api worker web model reindex eval
 install: .env ## Install API and web dependencies
 	cd $(API) && uv sync
 	cd $(WEB) && npm ci
@@ -64,6 +69,10 @@ model: ## Download the embedding model now instead of on first use
 
 reindex: ## Queue documents that still need (re-)embedding
 	$(LOAD_ENV) cd $(API) && uv run knowvault reindex
+
+eval: ## Run the retrieval evaluation on your machine; report goes to eval/reports
+	$(LOAD_ENV) cd $(API) && uv run knowvault eval-retrieval --corpus ../../eval/corpus \
+		--dataset ../../eval/datasets/retrieval.jsonl --output-dir ../../eval/reports
 
 web: ## Run the web app on http://localhost:3000
 	$(LOAD_ENV) cd $(WEB) && npm run dev

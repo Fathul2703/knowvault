@@ -8,7 +8,8 @@ cite their sources.
 > files, splits it into chunks that keep their page or section, and embeds each chunk with
 > BAAI/bge-m3 (multilingual, run locally). A search API combines semantic and keyword search
 > with Reciprocal Rank Fusion; the **Search** page shows the matching passages and links to
-> the exact chunk. A retrieval evaluation is next; cited Q&A arrives in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
+> the exact chunk. A retrieval evaluation measures search quality on a labelled corpus.
+> Cited Q&A arrives in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
 
 ## Stack
 
@@ -195,6 +196,15 @@ The **Search** page (`/search`) finds passages across your ready documents and n
 - The first search after the API starts loads the embedding model and can take up to about
   half a minute; the page says so while it waits.
 
+## Retrieval evaluation
+
+`make eval-docker` measures search quality: it processes a labelled corpus of 16 synthetic
+Indonesian and English documents in a disposable database and reports Success@k, MRR and latency
+for the hybrid, vector and full-text modes, per question category. Reports are committed to
+[`eval/reports/`](eval/reports/); see [`eval/README.md`](eval/README.md) for the method and its
+limits. The current baseline and what it revealed are summarised in
+[ADR 0007](docs/adr/0007-retrieval-evaluation.md).
+
 ## API
 
 - Health: `GET /healthz` (process up), `GET /readyz` (database reachable)
@@ -232,12 +242,14 @@ apps/
                        full-text) → api
       main.py          API composition root
       worker.py        worker composition root
+      evaluation/      retrieval evaluation runner, metrics and reports
       cli.py           admin commands
   web/                 Next.js app
     src/app/           routes: login, register, dashboard, library, library/[id], library/notes/…,
                        search
     src/features/      auth, dashboard, library, search
     src/lib/api/       typed API client and generated types
+eval/                  retrieval evaluation: corpus, labelled questions, reports
 docs/                  architecture and ADRs
 compose.yaml           development stack
 Makefile               developer commands (`make help`)

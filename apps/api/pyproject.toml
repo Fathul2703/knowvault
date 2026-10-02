@@ -70,7 +70,7 @@ forbidden_modules = ["knowvault.modules"]
 name = "Feature modules do not depend on application entry points"
 type = "forbidden"
 source_modules = ["knowvault.modules"]
-forbidden_modules = ["knowvault.main", "knowvault.cli"]
+forbidden_modules = ["knowvault.main", "knowvault.cli", "knowvault.evaluation"]
 
 [dependency-groups]
 dev = [
