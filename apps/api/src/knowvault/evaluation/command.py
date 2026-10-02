@@ -32,6 +32,8 @@ class EvalOptions:
     modes: tuple[SearchMode, ...]
     top_k: int
     keep_database: bool
+    # Short tag for the report name and title, e.g. "fulltext-or".
+    label: str | None = None
 
 
 def eval_database_url(settings: Settings) -> str:
@@ -101,7 +103,10 @@ async def run(settings: Settings, options: EvalOptions) -> Path:
             await _admin_execute(url, f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)')
 
     options.output_dir.mkdir(parents=True, exist_ok=True)
-    stem = f"{report.created_at:%Y-%m-%d}-retrieval"
+    report.config["label"] = options.label
+    stem = f"{report.created_at:%Y-%m-%d-%H%M}-retrieval"
+    if options.label:
+        stem += f"-{options.label}"
     (options.output_dir / f"{stem}.json").write_text(to_json(report), encoding="utf-8")
     markdown = options.output_dir / f"{stem}.md"
     markdown.write_text(to_markdown(report), encoding="utf-8")

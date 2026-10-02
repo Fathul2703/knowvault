@@ -44,7 +44,7 @@ repeatable evaluation labelled by evidence text rather than chunk ids, so that l
    joins words with AND and the `simple` configuration keeps every word, so "How long are
    support conversations kept?" requires "how", "long" and "are" in the chunk. Hybrid search
    therefore equals vector search for questions; it only helps keyword-style queries such as
-   `ERR_4711`. This is the next thing to fix, measured with this harness.
+   `ERR_4711`. Addressed in ADR 0008.
 2. **Vector search is strong on this corpus**, including all cross-lingual questions in the
    top 5. The synthetic corpus is probably easier than real data.
 3. **Similarity does not separate answerable from unanswerable questions**: relevant chunks

@@ -67,11 +67,13 @@ class TestModes:
     async def test_hybrid_is_the_default_and_reports_both_ranks(
         self, ada: AsyncClient, notes: dict[str, str]
     ) -> None:
-        body = (await ada.post(SEARCH, json={"query": "ERR_4711 timeout"})).json()
+        body = (await ada.post(SEARCH, json={"query": "ERR_4711 storage timeout"})).json()
         assert body["mode"] == "hybrid"
         assert body["embedding_model"] == "fake-bow"
         top = body["results"][0]
-        # Only the incident note contains every query word; it leads the fused list.
+        # Only the incident note contains every query word; it leads the fused list. The
+        # timeouts note shares one word of three, below the minimum match, so it is not a
+        # keyword candidate.
         assert top["document_id"] == notes["incident"]
         assert top["fulltext_rank"] == 1
         assert top["vector_rank"] is not None
@@ -90,7 +92,41 @@ class TestModes:
         assert hit["similarity"] is None
         assert hit["vector_rank"] is None
         assert hit["fulltext_rank"] == 1
-        assert 0 < hit["score"] < 1
+        # Score = distinct query words matched (1) + ts_rank_cd (< 1).
+        assert 1 < hit["score"] < 2
+
+    async def test_fulltext_ranks_chunks_with_more_query_words_first(
+        self, ada: AsyncClient, notes: dict[str, str]
+    ) -> None:
+        # The timeouts note repeats "timeout" four times; the incident note contains both
+        # words once. Containing more of the query's words wins.
+        body = (
+            await ada.post(SEARCH, json={"query": "ERR_4711 timeout", "mode": "fulltext"})
+        ).json()
+        assert ids(body) == [notes["incident"], notes["timeouts"]]
+
+    async def test_fulltext_matches_natural_questions(
+        self, ada: AsyncClient, notes: dict[str, str]
+    ) -> None:
+        body = (
+            await ada.post(
+                SEARCH,
+                json={"query": "What happened when the importer stopped?", "mode": "fulltext"},
+            )
+        ).json()
+        assert ids(body) == [notes["incident"]]
+
+    async def test_fulltext_ignores_a_single_incidental_shared_word(
+        self, ada: AsyncClient, notes: dict[str, str]
+    ) -> None:
+        # Shares only "rice" (one of four content words) with the recipes note.
+        body = (
+            await ada.post(
+                SEARCH,
+                json={"query": "irrigation schedule for rice paddies", "mode": "fulltext"},
+            )
+        ).json()
+        assert body["results"] == []
 
     async def test_vector_mode_has_no_fulltext_ranks(
         self, ada: AsyncClient, notes: dict[str, str]

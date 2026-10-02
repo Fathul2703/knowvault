@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import getpass
 import json
+import re
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -83,6 +84,12 @@ def _export_openapi() -> str:
     return json.dumps(create_app(settings).openapi(), indent=2) + "\n"
 
 
+def _report_label(value: str) -> str:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,39}", value):
+        raise argparse.ArgumentTypeError("use lowercase letters, digits and hyphens (max 40)")
+    return value
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="knowvault", description="KnowVault admin commands")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -121,6 +128,9 @@ def main(argv: list[str] | None = None) -> None:
     evaluation.add_argument(
         "--keep-database", action="store_true", help="keep the *_eval database for inspection"
     )
+    evaluation.add_argument(
+        "--label", type=_report_label, help="short tag added to the report name, e.g. fulltext-or"
+    )
 
     args = parser.parse_args(argv)
 
@@ -144,6 +154,7 @@ def main(argv: list[str] | None = None) -> None:
                     modes=tuple(SearchMode(mode) for mode in args.modes),
                     top_k=args.top_k,
                     keep_database=args.keep_database,
+                    label=args.label,
                 ),
             )
         )

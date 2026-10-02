@@ -666,7 +666,7 @@ export interface components {
             heading_path: string[];
             /**
              * Score
-             * @description Ordering score of the mode: RRF score (hybrid), cosine similarity (vector) or ts_rank_cd (fulltext). Only comparable within one response.
+             * @description Ordering score of the mode: RRF score (hybrid), cosine similarity (vector) or, for full text, the number of distinct query words matched plus ts_rank_cd (below 1). Only comparable within one response.
              */
             score: number;
             /**
