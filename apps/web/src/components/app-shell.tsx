@@ -13,7 +13,7 @@ type NavItem = { href: string; label: string; availableIn?: string };
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/library", label: "Library" },
-  { href: "/search", label: "Search", availableIn: "Phase 3" },
+  { href: "/search", label: "Search" },
   { href: "/chat", label: "Ask", availableIn: "Phase 4" },
 ];
 
@@ -76,13 +76,19 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:hidden">
-          <span className="font-semibold">KnowVault</span>
-          <nav aria-label="Mobile" className="flex gap-1">
+        <header className="space-y-2 border-b border-slate-200 bg-white px-4 py-3 md:hidden">
+          <span className="block font-semibold">KnowVault</span>
+          {/* Its own row, scrollable as a last resort, so no item is ever cut off. */}
+          <nav aria-label="Mobile" className="-mx-2 flex items-center gap-0.5 overflow-x-auto">
             {NAV_ITEMS.filter((item) => !item.availableIn).map((item) => (
               <NavLink key={item.href} item={item} active={pathname.startsWith(item.href)} />
             ))}
-            <Button variant="ghost" disabled={logout.isPending} onClick={() => signOut("/login")}>
+            <Button
+              variant="ghost"
+              className="ml-auto whitespace-nowrap px-2"
+              disabled={logout.isPending}
+              onClick={() => signOut("/login")}
+            >
               Sign out
             </Button>
           </nav>
@@ -94,7 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 function NavLink({ item, active }: { item: NavItem; active: boolean }) {
-  const base = "flex items-center justify-between rounded-md px-2.5 py-2 text-sm";
+  const base = "flex items-center justify-between whitespace-nowrap rounded-md px-2.5 py-2 text-sm";
   if (item.availableIn) {
     return (
       <span className={`${base} cursor-not-allowed text-slate-400`} aria-disabled="true">

@@ -12,6 +12,9 @@ export type Collection = components["schemas"]["CollectionOut"];
 export type Note = components["schemas"]["NoteOut"];
 export type Chunk = components["schemas"]["ChunkOut"];
 export type ChunkPage = components["schemas"]["ChunkPage"];
+export type SearchMode = components["schemas"]["SearchMode"];
+export type SearchResult = components["schemas"]["SearchResultOut"];
+export type SearchResponse = components["schemas"]["SearchResponse"];
 
 /** Typed client for the KnowVault API. Requests go to the same origin and carry the session cookie. */
 export const api = createClient<paths>({

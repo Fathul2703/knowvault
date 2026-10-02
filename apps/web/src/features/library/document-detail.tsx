@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { Alert, Badge, Button, Card, buttonClass, inputClass } from "@/components/ui";
 import { errorMessage, type Chunk, type DocumentItem } from "@/lib/api/client";
@@ -23,6 +23,12 @@ import {
   useReprocessDocument,
   useUpdateDocument,
 } from "./hooks";
+
+/** `#chunk-12` in the URL points at the chunk with ordinal 12 (links from search results). */
+export function chunkOrdinalFromHash(hash: string): number | null {
+  const match = /^#chunk-(\d+)$/.exec(hash);
+  return match ? Number(match[1]) : null;
+}
 
 export function DocumentDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -45,6 +51,33 @@ export function DocumentDetail({ id }: { id: string }) {
     }
     previousStatus.current = status;
   }, [document.data?.status, refetch]);
+
+  // Scroll to the chunk named in the URL hash, loading further pages of chunks until it
+  // is there (chunks are fetched 50 at a time).
+  const [targetOrdinal, setTargetOrdinal] = useState<number | null>(null);
+  useEffect(() => {
+    const read = () => setTargetOrdinal(chunkOrdinalFromHash(window.location.hash));
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+  }, []);
+  const loadedChunks = chunks.data?.pages.flatMap((page) => page.items) ?? [];
+  const targetLoaded =
+    targetOrdinal !== null && loadedChunks.some((chunk) => chunk.ordinal === targetOrdinal);
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = chunks;
+  const chunksLoaded = Boolean(chunks.data);
+  useEffect(() => {
+    if (targetOrdinal === null || !chunksLoaded) {
+      return;
+    }
+    if (targetLoaded) {
+      window.document
+        .getElementById(`chunk-${targetOrdinal}`)
+        ?.scrollIntoView({ block: "center", behavior: "smooth" });
+    } else if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [targetOrdinal, targetLoaded, chunksLoaded, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (document.isError) {
     return (
@@ -125,8 +158,12 @@ export function DocumentDetail({ id }: { id: string }) {
           />
           {ready ? (
             <>
-              {chunks.data?.pages.flatMap((page) => page.items).map((chunk) => (
-                <ChunkCard key={chunk.id} chunk={chunk} />
+              {loadedChunks.map((chunk) => (
+                <ChunkCard
+                  key={chunk.id}
+                  chunk={chunk}
+                  highlighted={chunk.ordinal === targetOrdinal}
+                />
               ))}
               {chunks.hasNextPage ? (
                 <Button
@@ -216,16 +253,22 @@ function ProcessingState({
   return null;
 }
 
-function ChunkCard({ chunk }: { chunk: Chunk }) {
+function ChunkCard({ chunk, highlighted }: { chunk: Chunk; highlighted: boolean }) {
   const location = chunkLocation(chunk);
   return (
-    <Card className="space-y-2 p-4">
-      <p className="flex items-center gap-2 text-xs text-slate-500">
-        <span className="font-medium text-slate-700">#{chunk.ordinal + 1}</span>
-        {location ? <span>{location}</span> : null}
-        <span className="ml-auto">{chunk.char_count.toLocaleString("en")} characters</span>
-      </p>
-      <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{chunk.content}</p>
-    </Card>
+    <div
+      id={`chunk-${chunk.ordinal}`}
+      aria-current={highlighted ? "location" : undefined}
+      className={`scroll-mt-24 rounded-lg ${highlighted ? "ring-2 ring-amber-400" : ""}`}
+    >
+      <Card className="space-y-2 p-4">
+        <p className="flex items-center gap-2 text-xs text-slate-500">
+          <span className="font-medium text-slate-700">#{chunk.ordinal + 1}</span>
+          {location ? <span>{location}</span> : null}
+          <span className="ml-auto">{chunk.char_count.toLocaleString("en")} characters</span>
+        </p>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{chunk.content}</p>
+      </Card>
+    </div>
   );
 }
