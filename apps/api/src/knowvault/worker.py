@@ -13,6 +13,7 @@ from knowvault.core.config import Settings
 from knowvault.core.db import Database
 from knowvault.core.embeddings import EmbeddingModel
 from knowvault.core.logging import configure_logging
+from knowvault.core.storage import ObjectStorage
 from knowvault.modules.ingestion.application.pipeline import IngestionPipeline
 from knowvault.modules.ingestion.infrastructure.chunks import SqlChunkWriter
 from knowvault.modules.ingestion.infrastructure.subprocess_parser import (
@@ -24,11 +25,14 @@ logger = logging.getLogger("knowvault.worker")
 
 
 def build_pipeline(
-    settings: Settings, database: Database, embeddings: EmbeddingModel | None = None
+    settings: Settings,
+    database: Database,
+    embeddings: EmbeddingModel | None = None,
+    storage: ObjectStorage | None = None,
 ) -> IngestionPipeline:
     return IngestionPipeline(
         sessions=database.sessionmaker,
-        storage=FilesystemStorage(settings.storage_dir),
+        storage=storage or FilesystemStorage(settings.storage_dir),
         parser=SubprocessDocumentParser(
             max_pages=settings.max_pages,
             max_chars=settings.max_extracted_chars,

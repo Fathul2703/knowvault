@@ -6,6 +6,7 @@ import getpass
 import json
 import sys
 from datetime import timedelta
+from pathlib import Path
 
 from knowvault.core.config import Settings, get_settings
 from knowvault.core.db import Database
@@ -103,6 +104,23 @@ def main(argv: list[str] | None = None) -> None:
     reindex.add_argument(
         "--all", action="store_true", help="queue every processed document, not only stale ones"
     )
+    evaluation = commands.add_parser(
+        "eval-retrieval",
+        help="measure retrieval quality on a labelled corpus (uses a disposable *_eval database)",
+    )
+    evaluation.add_argument("--corpus", type=Path, required=True, help="directory of .md files")
+    evaluation.add_argument("--dataset", type=Path, required=True, help="questions (.jsonl)")
+    evaluation.add_argument("--output-dir", type=Path, required=True, help="where reports go")
+    evaluation.add_argument(
+        "--modes",
+        nargs="+",
+        default=["hybrid", "vector", "fulltext"],
+        choices=["hybrid", "vector", "fulltext"],
+    )
+    evaluation.add_argument("--top-k", type=int, default=10)
+    evaluation.add_argument(
+        "--keep-database", action="store_true", help="keep the *_eval database for inspection"
+    )
 
     args = parser.parse_args(argv)
 
@@ -111,7 +129,26 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     settings = get_settings()
-    if args.command == "download-model":
+    if args.command == "eval-retrieval":
+        from knowvault.evaluation.command import EvalOptions
+        from knowvault.evaluation.command import run as run_eval
+        from knowvault.modules.retrieval.domain.model import SearchMode
+
+        report = asyncio.run(
+            run_eval(
+                settings,
+                EvalOptions(
+                    corpus_dir=args.corpus,
+                    dataset=args.dataset,
+                    output_dir=args.output_dir,
+                    modes=tuple(SearchMode(mode) for mode in args.modes),
+                    top_k=args.top_k,
+                    keep_database=args.keep_database,
+                ),
+            )
+        )
+        print(f"Report written to {report}")
+    elif args.command == "download-model":
         print(_download_model(settings))
     elif args.command == "reindex":
         count = asyncio.run(_reindex(settings, include_all=args.all))

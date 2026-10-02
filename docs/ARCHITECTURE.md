@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v0.7** — Phase 1–2 serta hybrid search dan halaman pencarian Phase 3 diimplementasikan; keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v0.8** — Phase 1–3 diimplementasikan (termasuk eval harness retrieval); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -19,6 +19,7 @@
 | v0.5 | Phase 3 bagian vector search (ADR 0005): D5 diputuskan — BAAI/bge-m3 varian int8 ONNX (revisi terkunci), 1024 dimensi, dijalankan lokal via fastembed; kolom `chunks.embedding vector(1024)` dengan indeks HNSW cosine dan `documents.embedding_model`; endpoint `POST /api/v1/retrieval/search` (user selalu dari sesi, bukan dari body). Full-text search, hybrid RRF, UI pencarian, dan eval harness Phase 3 belum dikerjakan. |
 | v0.6 | Hybrid search (ADR 0006): `chunks.content_tsv` generated column `to_tsvector('simple', content)` + GIN; `websearch_to_tsquery` + `ts_rank_cd`; RRF k=60 atas top-30 kandidat vector dan full-text; endpoint menerima `mode` (`hybrid` default, `vector`, `fulltext`) dan setiap hasil membawa `similarity`, `vector_rank`, `fulltext_rank`. UI pencarian dan eval harness belum dikerjakan. |
 | v0.7 | Halaman pencarian web (`/search`): mode Best match/Meaning/Exact words, filter collection, state di URL, cuplikan dengan highlight (teks, bukan HTML), tautan ke chunk `#chunk-<n>` yang dimuat dan disorot di halaman dokumen. Tanpa perubahan API. Eval harness Phase 3 belum dikerjakan. |
+| v0.8 | Eval harness retrieval (ADR 0007): korpus sintetis 16 dokumen ID/EN + 62 pertanyaan berlabel teks bukti, `knowvault eval-retrieval` lewat jalur produksi di database `*_eval`, laporan di `eval/reports/`. Baseline: vector/hybrid Success@5 100%, full-text 0% untuk pertanyaan alami (AND semua kata) sehingga hybrid = vector; similarity tidak memisahkan pertanyaan yang bisa/tidak bisa dijawab. |
 
 ---
 
