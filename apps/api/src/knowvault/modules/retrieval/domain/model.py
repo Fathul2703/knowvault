@@ -44,15 +44,16 @@ class Candidate:
     """A chunk found by one retrieval method, with that method's score."""
 
     chunk: ChunkRecord
-    # Cosine similarity for vector search, ts_rank_cd for full-text search.
+    # Cosine similarity for vector search; for full-text search, distinct query words matched
+    # plus ts_rank_cd (or ts_rank_cd alone for web-search syntax).
     value: float
 
 
 @dataclass(frozen=True)
 class SearchHit:
     chunk: ChunkRecord
-    # Ordering score of the mode: RRF score (hybrid), cosine similarity (vector) or
-    # ts_rank_cd (fulltext).
+    # Ordering score of the mode: RRF score (hybrid), cosine similarity (vector) or the
+    # full-text value of the candidate (fulltext).
     score: float
     # Cosine similarity to the query, when the query was embedded and the chunk has a vector
     # from the current model.

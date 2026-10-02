@@ -202,8 +202,9 @@ The **Search** page (`/search`) finds passages across your ready documents and n
 Indonesian and English documents in a disposable database and reports Success@k, MRR and latency
 for the hybrid, vector and full-text modes, per question category. Reports are committed to
 [`eval/reports/`](eval/reports/); see [`eval/README.md`](eval/README.md) for the method and its
-limits. The current baseline and what it revealed are summarised in
-[ADR 0007](docs/adr/0007-retrieval-evaluation.md).
+limits. The baseline and what it revealed are summarised in
+[ADR 0007](docs/adr/0007-retrieval-evaluation.md); the full-text changes it led to, with the
+measured variants, in [ADR 0008](docs/adr/0008-fulltext-natural-questions.md).
 
 ## API
 
@@ -215,8 +216,10 @@ limits. The current baseline and what it revealed are summarised in
   - `hybrid` (default): semantic search (bge-m3, cosine) and keyword search (PostgreSQL
     full text, `simple` configuration) fused with Reciprocal Rank Fusion. Good for both
     paraphrased questions and exact terms such as names or error codes.
-  - `vector` or `fulltext`: one method only, for debugging and evaluation. Full-text queries
-    support `"quoted phrases"`, `-exclusions` and `OR`.
+  - `vector` or `fulltext`: one method only, for debugging and evaluation. In full text, a
+    natural question matches chunks that contain at least half of its words (common English
+    and Indonesian function words are ignored), ranked by how many they contain; queries with
+    `"quoted phrases"`, `-exclusions` or `OR` are matched strictly as written.
 
   Each result has its document, page range or heading trail, `score` (meaning depends on the
   mode), cosine `similarity`, and its rank in each method. The user always comes from the

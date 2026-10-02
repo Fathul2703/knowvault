@@ -210,7 +210,7 @@ function Results({
         <p className="font-medium text-slate-900">No passages found</p>
         <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
           {response.mode === "fulltext"
-            ? "No passage contains these words. Try “Best match” to search by meaning."
+            ? "No passage contains enough of these words. Try “Best match” to search by meaning."
             : "Try other words, another collection, or check that your documents are ready."}
         </p>
       </Card>

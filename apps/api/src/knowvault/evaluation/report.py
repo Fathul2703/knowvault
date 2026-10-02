@@ -29,7 +29,8 @@ def _stats(values: Sequence[float]) -> str:
 def to_markdown(report: EvalReport) -> str:
     config = report.config
     lines = [
-        f"# Retrieval evaluation — {report.created_at:%Y-%m-%d}",
+        f"# Retrieval evaluation — {report.created_at:%Y-%m-%d}"
+        + (f" ({config['label']})" if config.get("label") else ""),
         "",
         f"Generated {report.created_at:%Y-%m-%d %H:%M} UTC by `knowvault eval-retrieval`.",
         "",

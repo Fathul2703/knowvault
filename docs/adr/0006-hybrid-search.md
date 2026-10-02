@@ -1,6 +1,6 @@
 # ADR 0006: Hybrid search with Reciprocal Rank Fusion
 
-- Status: Accepted
+- Status: Accepted; query parsing and full-text ranking amended by ADR 0008
 - Date: 2026-09-30
 
 ## Context

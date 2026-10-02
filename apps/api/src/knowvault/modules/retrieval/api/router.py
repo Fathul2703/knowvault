@@ -46,7 +46,8 @@ class SearchResultOut(BaseModel):
     heading_path: list[str]
     score: float = Field(
         description="Ordering score of the mode: RRF score (hybrid), cosine similarity "
-        "(vector) or ts_rank_cd (fulltext). Only comparable within one response."
+        "(vector) or, for full text, the number of distinct query words matched plus "
+        "ts_rank_cd (below 1). Only comparable within one response."
     )
     similarity: float | None = Field(
         description="Cosine similarity to the query; null in fulltext mode or when the "

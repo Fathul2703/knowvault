@@ -9,13 +9,14 @@ import uuid
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Row, Select, Text, column, func, literal, select, table, text
+from sqlalchemy import Row, Select, Text, case, column, func, literal, select, table, text
 from sqlalchemy.dialects.postgresql import ARRAY, REGCONFIG, TSVECTOR, UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from knowvault.core.embeddings import EMBEDDING_DIMENSIONS
 from knowvault.core.text_search import FULLTEXT_CONFIG
 from knowvault.modules.retrieval.domain.model import Candidate, ChunkRecord, SearchScope
+from knowvault.modules.retrieval.domain.text_query import fulltext_query, minimum_match
 
 _chunks = table(
     "chunks",
@@ -121,14 +122,32 @@ class PostgresChunkIndex:
     async def fulltext_candidates(
         self, session: AsyncSession, *, query: str, scope: SearchScope, limit: int
     ) -> list[Candidate]:
-        # websearch_to_tsquery accepts free text ("quoted phrases", -exclusions, OR) and never
-        # raises a syntax error on user input.
-        tsquery = func.websearch_to_tsquery(literal(FULLTEXT_CONFIG, REGCONFIG), query)
+        parsed = fulltext_query(query)
+        if not parsed.expression:
+            return []
+        config = literal(FULLTEXT_CONFIG, REGCONFIG)
+        # websearch_to_tsquery never raises a syntax error on user input.
+        tsquery = func.websearch_to_tsquery(config, parsed.expression)
         rank = func.ts_rank_cd(_chunks.c.content_tsv, tsquery, _RANK_NORMALIZATION)
-        statement = _scoped(_select_record(rank.label("value")), scope).where(
+        # Number of distinct query words the chunk contains; ts_rank_cd (< 1) breaks ties, so
+        # the sum orders by coverage first.
+        coverage = sum(
+            (
+                case(
+                    (_chunks.c.content_tsv.op("@@")(func.websearch_to_tsquery(config, term)), 1),
+                    else_=0,
+                )
+                for term in parsed.terms
+            ),
+            literal(0),
+        )
+        value = coverage + rank
+        statement = _scoped(_select_record(value.label("value")), scope).where(
             _chunks.c.content_tsv.op("@@")(tsquery)
         )
-        rows = await session.execute(statement.order_by(rank.desc(), _chunks.c.id).limit(limit))
+        if parsed.terms:
+            statement = statement.where(coverage >= minimum_match(parsed.terms))
+        rows = await session.execute(statement.order_by(value.desc(), _chunks.c.id).limit(limit))
         return [_candidate(row) for row in rows]
 
     async def similarities(
