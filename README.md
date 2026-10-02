@@ -7,8 +7,8 @@ cite their sources.
 > upload work end to end: a background worker extracts the text of PDF, Word, Markdown and text
 > files, splits it into chunks that keep their page or section, and embeds each chunk with
 > BAAI/bge-m3 (multilingual, run locally). A search API combines semantic and keyword search
-> with Reciprocal Rank Fusion and returns chunks with citation data. A search page and a
-> retrieval evaluation are next; cited Q&A arrives in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
+> with Reciprocal Rank Fusion; the **Search** page shows the matching passages and links to
+> the exact chunk. A retrieval evaluation is next; cited Q&A arrives in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
 
 ## Stack
 
@@ -180,6 +180,21 @@ environment loaded.
   supported yet) and can be retried with **Try again**.
 - **Collections** group documents; deleting a collection keeps its documents.
 
+## Search
+
+The **Search** page (`/search`) finds passages across your ready documents and notes.
+
+- **Best match** (default) combines meaning and exact words; **Meaning** finds paraphrases,
+  also across Indonesian and English; **Exact words** matches names, codes and
+  `"quoted phrases"`, with `-word` to exclude and `OR` for alternatives.
+- Each result shows its document, page range or section, the passage with the query's words
+  highlighted, which method found it and how similar it is.
+- Clicking a result opens the document scrolled to that passage (`/library/<id>#chunk-<n>`).
+- The query, mode and collection live in the URL, so searches can be bookmarked and shared,
+  and back/forward work.
+- The first search after the API starts loads the embedding model and can take up to about
+  half a minute; the page says so while it waits.
+
 ## API
 
 - Health: `GET /healthz` (process up), `GET /readyz` (database reachable)
@@ -219,8 +234,9 @@ apps/
       worker.py        worker composition root
       cli.py           admin commands
   web/                 Next.js app
-    src/app/           routes: login, register, dashboard, library, library/[id], library/notes/…
-    src/features/      auth, dashboard, library
+    src/app/           routes: login, register, dashboard, library, library/[id], library/notes/…,
+                       search
+    src/features/      auth, dashboard, library, search
     src/lib/api/       typed API client and generated types
 docs/                  architecture and ADRs
 compose.yaml           development stack

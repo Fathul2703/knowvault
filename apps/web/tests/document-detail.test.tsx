@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DocumentDetail } from "@/features/library/document-detail";
+import { DocumentDetail, chunkOrdinalFromHash } from "@/features/library/document-detail";
 import { uploadDocument } from "@/features/library/hooks";
 import { ApiError, type DocumentItem } from "@/lib/api/client";
 
@@ -120,6 +120,49 @@ describe("DocumentDetail", () => {
     });
     renderDetail();
     expect(await screen.findByRole("alert")).toHaveTextContent("does not exist");
+  });
+});
+
+describe("links to a chunk", () => {
+  it("parses the chunk hash", () => {
+    expect(chunkOrdinalFromHash("#chunk-12")).toBe(12);
+    expect(chunkOrdinalFromHash("#chunk-x")).toBeNull();
+    expect(chunkOrdinalFromHash("")).toBeNull();
+  });
+
+  it("loads further pages until the linked chunk is there, then scrolls to it", async () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    window.location.hash = "#chunk-1";
+    const chunk = (ordinal: number) => ({
+      id: `k${ordinal}`,
+      ordinal,
+      content: `Passage ${ordinal}`,
+      char_count: 9,
+      page_start: null,
+      page_end: null,
+      heading_path: [],
+    });
+    fetchMock.mockImplementation(async (input) => {
+      const request = input as Request;
+      const url = new URL(request.url);
+      if (url.pathname === "/api/v1/documents/d1") {
+        return json(200, { ...baseDocument, status: "ready", error_code: null, error_detail: null });
+      }
+      if (url.pathname === "/api/v1/collections") {
+        return json(200, []);
+      }
+      // One chunk per page: the target (ordinal 1) is on the second page.
+      const offset = Number(url.searchParams.get("offset"));
+      return json(200, { total: 2, items: [chunk(offset)] });
+    });
+
+    renderDetail();
+
+    const target = await screen.findByText("Passage 1");
+    expect(target.closest("[id='chunk-1']")).toHaveAttribute("aria-current", "location");
+    await vi.waitFor(() => expect(scrollIntoView).toHaveBeenCalled());
+    window.location.hash = "";
   });
 });
 
