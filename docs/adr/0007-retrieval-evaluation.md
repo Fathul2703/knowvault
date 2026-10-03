@@ -60,3 +60,34 @@ repeatable evaluation labelled by evidence text rather than chunk ids, so that l
 - Retrieval changes can be judged by comparing reports; regressions show up per category.
 - The corpus is small (81 chunks); latency numbers do not predict large libraries.
 - Questions written by the corpus author make absolute scores optimistic.
+
+## Addendum: a harder dataset (2026-10-04)
+
+By the end of Phase 4, hybrid search ranked the answer first for 67 of 71 answerable questions,
+too close to the ceiling to show whether a reranker or chunking change helps (Phase 5). The
+dataset gained five documents and 27 questions modelled on what makes real libraries hard:
+
+- an archived version of the leave policy with different numbers (`version`);
+- neighbouring documents with different facts on the same topic (`distractor`);
+- two long documents in which the answer is one section among many (`long_document`);
+- three near-miss unanswerable questions.
+
+The dataset now has 28 documents (152 chunks) and 108 questions, 95 of them answerable
+([report](../../eval/reports/2026-10-03-2039-retrieval-hard-questions.md)):
+
+| Mode | Success@1 | Success@5 | MRR@10 |
+|---|---|---|---|
+| hybrid | 89.5% (was 94.4%) | 100% | 0.941 (was 0.972) |
+| vector | 85.3% | 100% | 0.918 |
+| full text | 48.4% | 49.5% | 0.489 |
+
+- **What the distractors do.** They mostly hurt questions that were easy before. The archived
+  policy outranks the current one for paternity leave and holiday work, the partner API's
+  limits outrank the public API's, and the postmortem outranks the runbook for retries. Ten
+  answerable questions now have their answer at rank 2–4, the room a reranker would have to
+  close.
+- **Every answer is still in the top 5.** What can be gained is order, which decides which
+  sources the model sees first and how many fit the context.
+- **The fake-model answer report** ([report](../../eval/reports/2026-10-03-2041-answers-hard-questions-fake-llm.md))
+  is the new floor for answers: refusal accuracy 83.3%, 10 of 13 unanswerable questions
+  answered anyway, the evidence cited in 67.8% of answers.

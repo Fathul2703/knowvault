@@ -294,7 +294,7 @@ The **Search** page (`/search`) finds passages across your ready documents and n
 
 ## Evaluation
 
-`make eval-docker` measures search quality: it processes a labelled corpus of 23 synthetic
+`make eval-docker` measures search quality: it processes a labelled corpus of 28 synthetic
 Indonesian and English documents in a disposable database and reports Success@k, MRR and latency
 for the hybrid, vector and full-text modes, per question category. Reports are committed to
 [`eval/reports/`](eval/reports/); see [`eval/README.md`](eval/README.md) for the method and its
