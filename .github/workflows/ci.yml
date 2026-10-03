@@ -75,3 +75,27 @@ jobs:
           npm run generate:api
           git diff --exit-code src/lib/api/schema.ts
       - run: npm run build
+
+  audit:
+    name: Dependency audit
+    # Runtime dependencies only: known vulnerabilities in what runs in production fail the
+    # build. Development tools are kept current by Dependabot.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          working-directory: apps/api
+      - name: Python packages (locked, without development tools)
+        working-directory: apps/api
+        run: |
+          uv export --locked --no-dev --no-emit-project --format requirements-txt \
+            --output-file "$RUNNER_TEMP/requirements.txt"
+          uvx pip-audit==2.10.1 --requirement "$RUNNER_TEMP/requirements.txt" \
+            --disable-pip --no-deps --progress-spinner off
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: npm packages (without development tools)
+        working-directory: apps/web
+        run: npm audit --omit=dev --audit-level=high

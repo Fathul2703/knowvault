@@ -1,14 +1,22 @@
 """HTTP endpoints for authentication."""
 
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Header, Request, Response, status
 
 from knowvault.core.config import Settings
-from knowvault.core.deps import SettingsDep
+from knowvault.core.deps import ClientAddressDep, SettingsDep, StorageDep
 from knowvault.core.errors import Problem
 from knowvault.modules.identity.dependencies import CurrentUser, IdentityServiceDep
-from knowvault.modules.identity.schemas import LoginRequest, RegisterRequest, UserOut
+from knowvault.modules.identity.schemas import (
+    AccountDeletion,
+    LoginRequest,
+    RegisterRequest,
+    UserOut,
+)
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -43,6 +51,7 @@ async def register(
     response: Response,
     service: IdentityServiceDep,
     settings: SettingsDep,
+    client_address: ClientAddressDep,
     user_agent: UserAgent = None,
 ) -> UserOut:
     """Creates an account from a single-use invite code and signs the user in."""
@@ -52,6 +61,7 @@ async def register(
         display_name=body.display_name,
         password=body.password,
         user_agent=user_agent,
+        client_address=client_address,
     )
     _set_session_cookie(response, settings, result.session_token)
     return UserOut.model_validate(result.user)
@@ -63,10 +73,16 @@ async def login(
     response: Response,
     service: IdentityServiceDep,
     settings: SettingsDep,
+    client_address: ClientAddressDep,
     user_agent: UserAgent = None,
 ) -> UserOut:
     """Signs the user in and sets the session cookie."""
-    result = await service.login(email=body.email, password=body.password, user_agent=user_agent)
+    result = await service.login(
+        email=body.email,
+        password=body.password,
+        user_agent=user_agent,
+        client_address=client_address,
+    )
     _set_session_cookie(response, settings, result.session_token)
     return UserOut.model_validate(result.user)
 
@@ -77,6 +93,10 @@ async def logout(request: Request, service: IdentityServiceDep, settings: Settin
     token = request.cookies.get(settings.session_cookie_name)
     if token:
         await service.logout(token)
+    return _signed_out(settings)
+
+
+def _signed_out(settings: Settings) -> Response:
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
     response.delete_cookie(
         settings.session_cookie_name,
@@ -92,3 +112,26 @@ async def logout(request: Request, service: IdentityServiceDep, settings: Settin
 async def me(user: CurrentUser) -> UserOut:
     """Returns the signed-in user."""
     return UserOut.model_validate(user)
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT, responses=_ERRORS)
+async def delete_account(
+    body: AccountDeletion,
+    user: CurrentUser,
+    service: IdentityServiceDep,
+    settings: SettingsDep,
+    storage: StorageDep,
+) -> Response:
+    """Deletes the account and all its data: documents and their files, notes, collections,
+    conversations and sessions. Requires the current password. Cannot be undone."""
+    keys = await service.delete_account(user, password=body.password)
+    failed = 0
+    for key in keys:
+        try:
+            await storage.delete(key)
+        except OSError:
+            failed += 1
+    if failed:
+        # The database is the source of truth; orphaned files are only wasted space.
+        logger.warning("account_files_not_deleted", extra={"count": failed})
+    return _signed_out(settings)

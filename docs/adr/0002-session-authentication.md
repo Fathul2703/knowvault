@@ -1,6 +1,6 @@
 # ADR 0002: Server-side sessions, invite-only registration and origin checks
 
-- Status: Accepted
+- Status: Accepted; per-address limits added in ADR 0011
 - Date: 2026-09-29
 
 ## Context

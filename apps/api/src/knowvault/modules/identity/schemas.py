@@ -29,6 +29,12 @@ class LoginRequest(BaseModel):
     password: Annotated[str, Field(min_length=1, max_length=PASSWORD_MAX_LENGTH)]
 
 
+class AccountDeletion(BaseModel):
+    """Deleting an account requires the current password."""
+
+    password: Annotated[str, Field(min_length=1, max_length=PASSWORD_MAX_LENGTH)]
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -9,7 +9,13 @@ import { errorMessage } from "@/lib/api/client";
 
 import { useLogin } from "./hooks";
 
-export function LoginForm({ nextPath }: { nextPath: string }) {
+export function LoginForm({
+  nextPath,
+  accountDeleted = false,
+}: {
+  nextPath: string;
+  accountDeleted?: boolean;
+}) {
   const router = useRouter();
   const login = useLogin();
 
@@ -25,6 +31,11 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
   return (
     <Card>
       <h1 className="mb-5 text-lg font-semibold">Sign in</h1>
+      {accountDeleted ? (
+        <p role="status" className="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-700">
+          Your account and all its data were deleted.
+        </p>
+      ) : null}
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Email" name="email" type="email" autoComplete="email" required />
         <Field

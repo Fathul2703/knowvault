@@ -12,7 +12,7 @@ from sqlalchemy import and_, column, delete, exists, func, or_, select, table, u
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from knowvault.core import rate_limit
-from knowvault.core.errors import AppError, NotFoundError
+from knowvault.core.errors import AppError, NotFoundError, RateLimitedError
 from knowvault.modules.assistant.application.errors import (
     AnswerInProgressError,
     TokenQuotaExceededError,
@@ -31,6 +31,8 @@ from knowvault.modules.retrieval.domain.model import SearchScope
 
 TOKENS_BUCKET = "tokens_daily"
 TOKENS_WINDOW = timedelta(days=1)
+QUESTIONS_BUCKET = "chat_questions"
+QUESTIONS_WINDOW = timedelta(minutes=1)
 # An answer still `streaming` after this long belongs to a process that died; it no longer
 # blocks new questions.
 STALE_STREAM_AFTER = timedelta(minutes=5)
@@ -111,11 +113,13 @@ class PostgresConversationStore:
         history_turns: int,
         history_chars: int,
         daily_token_limit: int,
+        questions_per_minute: int,
     ) -> None:
         self._sessionmaker = sessionmaker
         self._history_turns = history_turns
         self._history_chars = history_chars
         self._daily_token_limit = daily_token_limit
+        self._questions_per_minute = questions_per_minute
 
     # --- Conversations ---------------------------------------------------------------------
 
@@ -286,6 +290,19 @@ class PostgresConversationStore:
                     "Another answer is still being written. Try again when it has finished."
                 )
 
+            recent_questions = await rate_limit.current_count(
+                session,
+                subject=str(owner_id),
+                bucket=QUESTIONS_BUCKET,
+                window=QUESTIONS_WINDOW,
+                now=now,
+            )
+            if recent_questions >= self._questions_per_minute:
+                raise RateLimitedError(
+                    "Too many questions in the last minute. Wait a moment and try again.",
+                    retry_after_seconds=rate_limit.seconds_until_reset(now, QUESTIONS_WINDOW),
+                )
+
             used = await rate_limit.current_count(
                 session, subject=str(owner_id), bucket=TOKENS_BUCKET, window=TOKENS_WINDOW, now=now
             )
@@ -307,6 +324,14 @@ class PostgresConversationStore:
                 recent[::-1], turns=self._history_turns, max_chars=self._history_chars
             )
 
+            # Counted in this transaction, so refused questions are not counted.
+            await rate_limit.increment(
+                session,
+                subject=str(owner_id),
+                bucket=QUESTIONS_BUCKET,
+                window=QUESTIONS_WINDOW,
+                now=now,
+            )
             asked = Message(
                 conversation_id=conversation_id,
                 role="user",

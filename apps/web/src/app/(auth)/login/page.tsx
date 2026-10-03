@@ -8,8 +8,13 @@ export const metadata: Metadata = { title: "Sign in" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[] }>;
+  searchParams: Promise<{ next?: string | string[]; deleted?: string | string[] }>;
 }) {
-  const { next } = await searchParams;
-  return <LoginForm nextPath={safeNextPath(typeof next === "string" ? next : undefined)} />;
+  const { next, deleted } = await searchParams;
+  return (
+    <LoginForm
+      nextPath={safeNextPath(typeof next === "string" ? next : undefined)}
+      accountDeleted={deleted === "1"}
+    />
+  );
 }
