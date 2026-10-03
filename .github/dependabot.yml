@@ -5,8 +5,11 @@ updates:
     schedule:
       interval: weekly
     groups:
+      # Minor and patch updates together; each major update gets its own pull request, so one
+      # breaking upgrade cannot hold back the others (or a security fix).
       python:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: npm
     directory: /apps/web
@@ -15,6 +18,11 @@ updates:
     groups:
       npm:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # Node.js type definitions follow the Node.js major the app runs on (22, see package.json).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
