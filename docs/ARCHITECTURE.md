@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v1.0** — Phase 1–3 diimplementasikan (termasuk eval harness retrieval, perbaikan full-text, dan pertanyaan eval identifier); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.1** — Phase 1–3 diimplementasikan; Phase 4 berjalan (backend assistant: ADR 0009); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -22,6 +22,7 @@
 | v0.8 | Eval harness retrieval (ADR 0007): korpus sintetis 16 dokumen ID/EN + 62 pertanyaan berlabel teks bukti, `knowvault eval-retrieval` lewat jalur produksi di database `*_eval`, laporan di `eval/reports/`. Baseline: vector/hybrid Success@5 100%, full-text 0% untuk pertanyaan alami (AND semua kata) sehingga hybrid = vector; similarity tidak memisahkan pertanyaan yang bisa/tidak bisa dijawab. |
 | v0.9 | Full-text untuk pertanyaan alami (ADR 0008): stop word ID/EN dibuang, kata digabung OR, minimal separuh kata harus cocok, peringkat berdasarkan jumlah kata yang cocok lalu `ts_rank_cd`; sintaks web-search tetap apa adanya. Full-text Success@1 0% → 50%; hybrid tetap 92,6% (varian tanpa minimum match menurunkan hybrid ke 63%, terukur di `eval/reports/`). |
 | v1.0 | Dataset eval ditambah 5 dokumen dan 13 pertanyaan identifier yang mirip satu sama lain (`ERR_4713`/`ERR_4171`/`ERR_7411`, `SKU-A1270`/`SKU-A1207`, nomor versi, kode status); total 21 dokumen, 75 pertanyaan (addendum ADR 0008). Hybrid kini terukur lebih baik dari vector: Success@1 94,0% vs 89,6%, MRR@10 identifier 1,000 vs 0,917. Tanpa perubahan kode. |
+| v1.1 | Phase 4 bagian backend assistant (ADR 0009): D4 diputuskan — Anthropic `claude-sonnet-5-5` untuk jawaban dan `claude-haiku-4-5-20251001` untuk query condensation, provider fake sebagai default; port `ChatModel`; tabel `conversations`, `messages` (+ `seq`, `error_code`), `message_citations` (menyimpan semua sumber dengan flag `cited`), `retrieval_traces`; endpoint conversations + SSE; evidence gate (tanpa kandidat → refused tanpa LLM; `NO_ANSWER` ditahan di awal stream); satu stream per user dan kuota token harian. UI chat, answer eval, dan hardening belum dikerjakan. |
 
 ---
 
@@ -363,9 +364,9 @@ Unique parsial `(type, resource_id) WHERE status = 'queued'` — edit note berul
 
 **`conversations`** — `id`, `owner_id`, `title`, `scope` (jsonb: `{collection_ids, document_ids}`), `created_at`, `updated_at`.
 
-**`messages`** — `id`, `conversation_id`, `role` (`user` | `assistant`), `content`, `status` (`streaming` | `complete` | `refused` | `error`), `model_id`, `prompt_tokens`, `completion_tokens`, `latency_ms`, `created_at`.
+**`messages`** — `id`, `seq` (identity, urutan pesan; pertanyaan dan jawaban dibuat dalam satu transaksi sehingga `created_at` sama), `conversation_id`, `role` (`user` | `assistant`), `content`, `status` (`streaming` | `complete` | `refused` | `error`), `model_id`, `prompt_tokens`, `completion_tokens`, `latency_ms`, `error_code`, `created_at`.
 
-**`message_citations`** — `message_id`, `ordinal` (nomor `[n]`),
+**`message_citations`** — `message_id`, `ordinal` (nomor `[n]`), `cited` (apakah jawaban mengutipnya; **semua** sumber yang diberikan ke model disimpan agar daftar sumber setelah reload sama dengan saat streaming — ADR 0009),
 `chunk_id` (nullable, `ON DELETE SET NULL`), `document_id` (nullable, `ON DELETE SET NULL`),
 **snapshot**: `document_title`, `quoted_text` (isi chunk saat dikutip), `page_start`, `page_end`, `heading_path`.
 Citation lama tetap dapat ditampilkan walau dokumen sudah diubah atau dihapus; UI menandai "sumber telah berubah/dihapus" jika `chunk_id` kosong.
@@ -440,7 +441,7 @@ yang dipakai **perlu diverifikasi, jangan diasumsikan**.
 | `GET/PUT` | `/api/v1/notes/{id}` | Baca / ubah note → re-index (digabung jika beruntun). |
 | `POST` | `/api/v1/retrieval/search` | Hybrid search (ADR 0005, 0006). Body: `query`, `top_k`, `collection_id`, `document_ids`, `mode` (`hybrid` default, `vector`, `fulltext` untuk debugging & eval); user dari sesi. |
 | `GET/POST` | `/api/v1/conversations` | List / create dengan `scope`. |
-| `GET/DELETE` | `/api/v1/conversations/{id}` | Detail + messages + citations / hapus. |
+| `GET/PATCH/DELETE` | `/api/v1/conversations/{id}` | Detail + messages + citations / ganti judul / hapus. |
 | `POST` | `/api/v1/conversations/{id}/messages` | Kirim pertanyaan → **SSE stream**. |
 | `GET` | `/healthz`, `/readyz` | Liveness / readiness (DB, storage). |
 
@@ -449,15 +450,17 @@ Isi sumber untuk panel citation diambil dari snapshot `message_citations` yang d
 ### 8.3 Kontrak SSE chat
 
 ```
-event: message.created   data: {"message_id": "...", "conversation_id": "..."}
-event: sources           data: {"sources": [{"ordinal": 1, "document_id": "...", "title": "...", "page_start": 3, "page_end": 3, "heading_path": ["..."]}]}
+event: message.created   data: {"conversation_id": "...", "user_message_id": "...", "message_id": "..."}
+event: sources           data: {"sources": [{"ordinal": 1, "chunk_id": "...", "document_id": "...", "title": "...", "page_start": 3, "page_end": 3, "heading_path": ["..."], "quoted_text": "..."}]}
 event: token             data: {"text": "..."}
-event: done              data: {"status": "complete" | "refused", "citations": [1, 3], "invalid_citations": [], "usage": {...}}
-event: error             data: {"code": "...", "detail": "..."}
+event: done              data: {"message_id": "...", "status": "complete" | "refused", "citations": [1, 3], "invalid_citations": [], "usage": {"input_tokens": 0, "output_tokens": 0}}
+event: error             data: {"message_id": "...", "code": "...", "detail": "..."}
 ```
 
-- Sumber dikirim **sebelum** token pertama. Karena daftar sumber sudah diketahui, frontend hanya merender `[n]` sebagai link jika `n` ada di daftar sumber; nomor lain dirender sebagai teks biasa.
-- Jika klien terputus, generasi dihentikan dan message disimpan dengan status `error`.
+- Sumber dikirim **sebelum** token pertama. Karena daftar sumber sudah diketahui, frontend hanya merender `[n]` sebagai link jika `n` ada di `citations` pada event `done`; nomor lain dirender sebagai teks biasa.
+- Jika `status` = `refused`, frontend menampilkan teks penolakan standar (juga dikirim sebagai token) menggantikan teks apa pun yang sudah di-stream.
+- Error sebelum stream dimulai (conversation tidak ada, jawaban lain masih berjalan, kuota habis) dikembalikan sebagai Problem Details biasa (404, 409, 429), bukan event.
+- Jika klien terputus, generasi dihentikan dan message disimpan dengan status `error` (`client_disconnected`) beserta teks yang sudah ditulis.
 - Satu stream aktif per pengguna (batas konkurensi) untuk mengendalikan biaya.
 
 ---
@@ -824,7 +827,7 @@ Kolom rekomendasi adalah saran dokumen ini; keputusan akhir ada di pemilik proje
 | D1 | **Bahasa dokumentasi & kode** | Indonesia / Inggris | Kode, commit, README, dan ADR dalam **Inggris** untuk jangkauan portfolio internasional; dokumen ini diterjemahkan saat Phase 1. |
 | D2 | **Nama produk & lisensi** | "KnowVault" tetap / ganti; MIT / Apache-2.0 | Cek ketersediaan nama; **MIT atau Apache-2.0**. Lisensi memengaruhi D6. |
 | D3 | **Model pengguna** | Satu user / multi-user | **Multi-user dengan isolasi owner**, registrasi via undangan. |
-| D4 | **Provider LLM** | Anthropic / OpenAI-compatible / lokal | Satu provider hosted (mis. `claude-opus-5`, dengan model murah untuk condensation) + **provider fake sebagai default dev/CI**. Adapter lokal opsional. |
+| D4 | **Provider LLM** | Anthropic / OpenAI-compatible / lokal | **Diputuskan (ADR 0009): Anthropic — `claude-sonnet-5-5` untuk jawaban, `claude-haiku-4-5-20251001` untuk query condensation — + provider fake sebagai default dev/CI.** Adapter lokal opsional. |
 | D5 | **Model embedding & dimensi** | Hosted API vs lokal open-weight multilingual | **Diputuskan (ADR 0005): BAAI/bge-m3, int8 ONNX, 1024 dimensi, lokal via fastembed.** |
 | D6 | **Library parser** | pypdf / pdfplumber / PyMuPDF / Docling / Unstructured | **Diputuskan (ADR 0004): pypdf + python-docx.** PyMuPDF (AGPL) dihindari. Docling sebagai kandidat upgrade jika eval menunjukkan ekstraksi jadi bottleneck. |
 | D7 | **Job queue** | Postgres custom / Procrastinate / Celery+Redis | **Postgres custom dengan fitur minimal** (satu tipe job, retry, visibility timeout, coalescing). |

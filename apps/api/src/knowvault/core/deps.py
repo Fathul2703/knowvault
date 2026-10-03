@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
+from knowvault.core.chat import ChatModels
 from knowvault.core.config import Settings
 from knowvault.core.embeddings import EmbeddingModel
 from knowvault.core.storage import ObjectStorage
@@ -31,3 +32,11 @@ def get_embeddings(request: Request) -> EmbeddingModel:
 
 
 EmbeddingsDep = Annotated[EmbeddingModel, Depends(get_embeddings)]
+
+
+def get_chat_models(request: Request) -> ChatModels:
+    models: ChatModels = request.app.state.chat_models
+    return models
+
+
+ChatModelsDep = Annotated[ChatModels, Depends(get_chat_models)]

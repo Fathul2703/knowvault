@@ -3,13 +3,15 @@
 Personal knowledge management with AI answers that are grounded in your own documents and
 cite their sources.
 
-> **Status: Phase 3 — Retrieval (hybrid search).** Accounts, collections, notes and document
+> **Status: Phase 4 — Grounded Q&A, in progress.** Accounts, collections, notes and document
 > upload work end to end: a background worker extracts the text of PDF, Word, Markdown and text
 > files, splits it into chunks that keep their page or section, and embeds each chunk with
 > BAAI/bge-m3 (multilingual, run locally). A search API combines semantic and keyword search
 > with Reciprocal Rank Fusion; the **Search** page shows the matching passages and links to
 > the exact chunk. A retrieval evaluation measures search quality on a labelled corpus.
-> Cited Q&A arrives in Phase 4. See the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
+> The assistant API answers questions from your documents as a stream, cites passages as
+> `[n]` and refuses when the documents do not contain the answer; the chat page follows. See
+> the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
 
 ## Stack
 
@@ -152,6 +154,11 @@ Secrets are never committed.
 | `EMBEDDING_PROVIDER` | API, worker | `bge-m3` (default) or `fake` (tests only; refused in production) |
 | `EMBEDDING_CACHE_DIR` | API, worker on the host | Where the model is stored, relative to `apps/api`; Compose uses the `models` volume |
 | `EMBEDDING_THREADS`, `EMBEDDING_BATCH_SIZE` | API, worker | Optional ONNX Runtime threads per process and chunks per batch (defaults: runtime's choice, 8) |
+| `LLM_PROVIDER` | API | `fake` (default: quotes your documents without a language model, no key needed; refused in production) or `anthropic` |
+| `ANTHROPIC_API_KEY` | API | Required when `LLM_PROVIDER=anthropic` |
+| `LLM_MODEL`, `LLM_FAST_MODEL` | API | Answer model (default `claude-sonnet-5-5`) and the cheaper model that rewrites follow-up questions for search (default `claude-haiku-4-5-20251001`) |
+| `CHAT_DAILY_TOKEN_LIMIT` | API | Tokens (input + output) each user may spend on answers per UTC day (default 200,000) |
+| `CHAT_MAX_SOURCES`, `CHAT_CONTEXT_CHARS`, `CHAT_MAX_OUTPUT_TOKENS`, `CHAT_HISTORY_TURNS` | API | Optional answer limits (defaults 8 sources, 24,000 characters of sources, 1024 output tokens, 4 earlier turns) |
 | `API_INTERNAL_URL` | Web | Where the Next.js server forwards `/api/*` |
 
 ## Admin commands
@@ -225,6 +232,19 @@ measured variants and the identifier questions that show hybrid search beating v
   Each result has its document, page range or heading trail, `score` (meaning depends on the
   mode), cosine `similarity`, and its rank in each method. The user always comes from the
   session; a `user_id` in the body is rejected.
+- Conversations: `/api/v1/conversations` (list, create with an optional `scope` of
+  `collection_id` and `document_ids`, detail with messages and sources, rename, delete).
+  `POST /api/v1/conversations/{id}/messages` with `{"content": "..."}` streams the answer as
+  Server-Sent Events: `message.created`, `sources` (before any text), `token`…, then `done`
+  (status `complete` or `refused`, valid and invalid citation numbers, token usage) or `error`.
+  Answers use only the conversation's documents; when they do not answer the question the
+  status is `refused` instead of a guess. Each answer keeps a snapshot of its sources, so it
+  stays readable after a document changes or is deleted. One answer streams per user at a
+  time (409 otherwise), and a daily token quota applies (429). Details:
+  [ADR 0009](docs/adr/0009-grounded-answers.md).
+
+  With `LLM_PROVIDER=anthropic`, the selected passages of your documents (not whole files)
+  are sent to Anthropic to write the answer.
 - Interactive docs (development only): http://localhost:8000/api/docs
 - Errors use [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details with a stable `code`.
 
@@ -235,8 +255,9 @@ apps/
   api/                 FastAPI app, Alembic migrations, tests
     src/knowvault/
       core/            config, database, errors, logging, middleware, rate limiting, job queue,
-                       storage port, health
-      adapters/        port implementations (filesystem storage, bge-m3 and fake embeddings)
+                       storage, embedding and chat model ports, health
+      adapters/        port implementations (filesystem storage, bge-m3 and fake embeddings,
+                       Claude and fake chat models)
       modules/
         identity/      users, sessions, invites, auth endpoints
         library/       collections, documents, notes, uploads; `processing.py` for ingestion
@@ -244,6 +265,8 @@ apps/
                        infrastructure (parsers, parser process, chunks) → api
         retrieval/     domain (RRF) → application (search) → infrastructure (pgvector,
                        full-text) → api
+        assistant/     domain (sources, citations, NO_ANSWER) → application (prompts,
+                       answer stream) → infrastructure (conversations, search) → api (SSE)
       main.py          API composition root
       worker.py        worker composition root
       evaluation/      retrieval evaluation runner, metrics and reports

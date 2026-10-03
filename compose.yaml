@@ -13,6 +13,12 @@ x-api-environment: &api-environment
   # bge-m3 (int8, ~570 MB) is downloaded on first use into a volume shared by api and worker.
   EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-bge-m3}
   EMBEDDING_CACHE_DIR: /data/models
+  # Answers: "fake" works offline without a key; "anthropic" needs ANTHROPIC_API_KEY.
+  LLM_PROVIDER: ${LLM_PROVIDER:-fake}
+  LLM_MODEL: ${LLM_MODEL:-claude-sonnet-5-5}
+  LLM_FAST_MODEL: ${LLM_FAST_MODEL:-claude-haiku-4-5-20251001}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  CHAT_DAILY_TOKEN_LIMIT: ${CHAT_DAILY_TOKEN_LIMIT:-200000}
 
 services:
   db:

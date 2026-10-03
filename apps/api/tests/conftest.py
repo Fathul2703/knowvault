@@ -28,6 +28,10 @@ API_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEST_DATABASE_URL = "postgresql+asyncpg://knowvault:knowvault@localhost:5432/knowvault_test"
 TEST_ORIGIN = "http://testserver"
 TABLES = (
+    "retrieval_traces",
+    "message_citations",
+    "messages",
+    "conversations",
     "jobs",
     "chunks",
     "notes",
