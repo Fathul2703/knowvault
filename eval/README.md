@@ -18,8 +18,8 @@ every result). Commit the report together with the change it measures.
 
 | Path | What |
 |---|---|
-| `corpus/` | 16 short Markdown documents, 8 in English and 8 in Indonesian |
-| `datasets/retrieval.jsonl` | 62 questions: 54 answerable, 8 that the corpus cannot answer |
+| `corpus/` | 21 short Markdown documents, 10 in English and 11 in Indonesian |
+| `datasets/retrieval.jsonl` | 75 questions: 67 answerable, 8 that the corpus cannot answer |
 | `reports/` | One Markdown and one JSON report per run |
 
 Each question line has an `id`, the `question`, its `language`, a `category`
@@ -35,7 +35,9 @@ The documents describe a fictional company and fictional research. They were wri
 repository (and are covered by its licence) so that evidence passages can be committed without
 copying third-party text. Topics deliberately overlap — similar error codes, two documents
 about backups, two recipes, two research summaries — so that wrong documents compete with the
-right one.
+right one. Identifiers also come in near-duplicates that differ only in the order of their
+characters (`ERR_4713` / `ERR_4171` / `ERR_7411`, `SKU-A1270` / `SKU-A1207`, version `2.4.1` /
+`2.3.12`), which embeddings tend to confuse and exact-word search does not.
 
 Because the same author wrote documents and questions, questions can be closer to the wording of
 their documents than real queries would be. Use the numbers to compare runs with each other,

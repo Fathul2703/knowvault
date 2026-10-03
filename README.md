@@ -198,13 +198,14 @@ The **Search** page (`/search`) finds passages across your ready documents and n
 
 ## Retrieval evaluation
 
-`make eval-docker` measures search quality: it processes a labelled corpus of 16 synthetic
+`make eval-docker` measures search quality: it processes a labelled corpus of 21 synthetic
 Indonesian and English documents in a disposable database and reports Success@k, MRR and latency
 for the hybrid, vector and full-text modes, per question category. Reports are committed to
 [`eval/reports/`](eval/reports/); see [`eval/README.md`](eval/README.md) for the method and its
 limits. The baseline and what it revealed are summarised in
 [ADR 0007](docs/adr/0007-retrieval-evaluation.md); the full-text changes it led to, with the
-measured variants, in [ADR 0008](docs/adr/0008-fulltext-natural-questions.md).
+measured variants and the identifier questions that show hybrid search beating vector search, in
+[ADR 0008](docs/adr/0008-fulltext-natural-questions.md).
 
 ## API
 

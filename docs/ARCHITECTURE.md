@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v0.9** — Phase 1–3 diimplementasikan (termasuk eval harness retrieval dan perbaikan full-text); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.0** — Phase 1–3 diimplementasikan (termasuk eval harness retrieval, perbaikan full-text, dan pertanyaan eval identifier); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -21,6 +21,7 @@
 | v0.7 | Halaman pencarian web (`/search`): mode Best match/Meaning/Exact words, filter collection, state di URL, cuplikan dengan highlight (teks, bukan HTML), tautan ke chunk `#chunk-<n>` yang dimuat dan disorot di halaman dokumen. Tanpa perubahan API. Eval harness Phase 3 belum dikerjakan. |
 | v0.8 | Eval harness retrieval (ADR 0007): korpus sintetis 16 dokumen ID/EN + 62 pertanyaan berlabel teks bukti, `knowvault eval-retrieval` lewat jalur produksi di database `*_eval`, laporan di `eval/reports/`. Baseline: vector/hybrid Success@5 100%, full-text 0% untuk pertanyaan alami (AND semua kata) sehingga hybrid = vector; similarity tidak memisahkan pertanyaan yang bisa/tidak bisa dijawab. |
 | v0.9 | Full-text untuk pertanyaan alami (ADR 0008): stop word ID/EN dibuang, kata digabung OR, minimal separuh kata harus cocok, peringkat berdasarkan jumlah kata yang cocok lalu `ts_rank_cd`; sintaks web-search tetap apa adanya. Full-text Success@1 0% → 50%; hybrid tetap 92,6% (varian tanpa minimum match menurunkan hybrid ke 63%, terukur di `eval/reports/`). |
+| v1.0 | Dataset eval ditambah 5 dokumen dan 13 pertanyaan identifier yang mirip satu sama lain (`ERR_4713`/`ERR_4171`/`ERR_7411`, `SKU-A1270`/`SKU-A1207`, nomor versi, kode status); total 21 dokumen, 75 pertanyaan (addendum ADR 0008). Hybrid kini terukur lebih baik dari vector: Success@1 94,0% vs 89,6%, MRR@10 identifier 1,000 vs 0,917. Tanpa perubahan kode. |
 
 ---
 

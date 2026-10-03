@@ -56,3 +56,28 @@ Variant C:
   further on a 54-question synthetic dataset to avoid overfitting it.
 - Without stemming, a question word must appear in the same form ("mean" does not match
   "means").
+
+## Addendum: identifier questions (2026-10-02)
+
+The dataset gained five documents with near-duplicate identifiers (`ERR_4713` / `ERR_4171` /
+`ERR_7411`, `SKU-A1270` / `SKU-A1207`, versions `3.2.4` / `2.4.1` / `2.3.12`, shipment codes
+`T10`–`T40`) and 13 questions that name them, bringing identifier questions to 21 of 67
+answerable ones. With the decision above unchanged
+([report](../../eval/reports/2026-10-02-1851-retrieval-identifiers.md)):
+
+| Mode | Success@1 | Success@5 | MRR@10 | Identifier MRR@10 |
+|---|---|---|---|---|
+| hybrid | 94.0% | 100% | 0.970 | 1.000 |
+| vector | 89.6% | 100% | 0.944 | 0.917 |
+| full text | 50.7% | 53.7% | 0.522 | 0.762 |
+
+- Hybrid search now measurably beats vector search, and the difference comes from identifiers:
+  vector search ranked a chunk about a different code first for `ERR_4713` and `ERR_7411`
+  (the answer was second) and the general release notes above the mobile ones for version
+  `2.4.1` (fourth). Hybrid ranks the answer first for every identifier question.
+- One question is worse in hybrid than in vector search: an Indonesian paraphrase about working
+  on a public holiday (rank 2 instead of 1). Incidental words it shares with the help-desk
+  document ("masuk", "kerja", "tanggal") make it the only full-text result; since it is also
+  among the 30 vector candidates, RRF ranks it above the leave policy, which only the vector
+  list contains.
+  This is the cost described under "Options measured" and is accepted.
