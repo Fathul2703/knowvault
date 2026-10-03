@@ -43,8 +43,8 @@ _SSE_DESCRIPTION = """\
 A stream of Server-Sent Events:
 
 - `message.created`: `{conversation_id, user_message_id, message_id}`
-- `sources`: `{sources: [{ordinal, chunk_id, document_id, title, page_start, page_end,
-  heading_path, quoted_text}]}`, sent before the first token
+- `sources`: `{sources: [{ordinal, chunk_id, chunk_ordinal, document_id, title, page_start,
+  page_end, heading_path, quoted_text}]}`, sent before the first token
 - `token`: `{text}`, repeated
 - `done`: `{message_id, status, citations, invalid_citations, usage}`; when `status` is
   `refused`, show the standard refusal text (also sent as tokens) instead of anything streamed
@@ -112,17 +112,18 @@ def _message_out(item: MessageWithCitations) -> MessageOut:
         created_at=message.created_at,
         citations=[
             CitationOut(
-                ordinal=c.ordinal,
-                cited=c.cited,
-                chunk_id=c.chunk_id,
-                document_id=c.document_id,
-                document_title=c.document_title,
-                quoted_text=c.quoted_text,
-                page_start=c.page_start,
-                page_end=c.page_end,
-                heading_path=list(c.heading_path),
+                ordinal=view.citation.ordinal,
+                cited=view.citation.cited,
+                chunk_id=view.citation.chunk_id,
+                chunk_ordinal=view.chunk_ordinal,
+                document_id=view.citation.document_id,
+                document_title=view.citation.document_title,
+                quoted_text=view.citation.quoted_text,
+                page_start=view.citation.page_start,
+                page_end=view.citation.page_end,
+                heading_path=list(view.citation.heading_path),
             )
-            for c in item.citations
+            for view in item.citations
         ],
     )
 

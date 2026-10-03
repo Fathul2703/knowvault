@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v1.1** — Phase 1–3 diimplementasikan; Phase 4 berjalan (backend assistant: ADR 0009); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.2** — Phase 1–3 diimplementasikan; Phase 4 berjalan (backend assistant: ADR 0009; UI chat); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -23,6 +23,7 @@
 | v0.9 | Full-text untuk pertanyaan alami (ADR 0008): stop word ID/EN dibuang, kata digabung OR, minimal separuh kata harus cocok, peringkat berdasarkan jumlah kata yang cocok lalu `ts_rank_cd`; sintaks web-search tetap apa adanya. Full-text Success@1 0% → 50%; hybrid tetap 92,6% (varian tanpa minimum match menurunkan hybrid ke 63%, terukur di `eval/reports/`). |
 | v1.0 | Dataset eval ditambah 5 dokumen dan 13 pertanyaan identifier yang mirip satu sama lain (`ERR_4713`/`ERR_4171`/`ERR_7411`, `SKU-A1270`/`SKU-A1207`, nomor versi, kode status); total 21 dokumen, 75 pertanyaan (addendum ADR 0008). Hybrid kini terukur lebih baik dari vector: Success@1 94,0% vs 89,6%, MRR@10 identifier 1,000 vs 0,917. Tanpa perubahan kode. |
 | v1.1 | Phase 4 bagian backend assistant (ADR 0009): D4 diputuskan — Anthropic `claude-sonnet-5-5` untuk jawaban dan `claude-haiku-4-5-20251001` untuk query condensation, provider fake sebagai default; port `ChatModel`; tabel `conversations`, `messages` (+ `seq`, `error_code`), `message_citations` (menyimpan semua sumber dengan flag `cited`), `retrieval_traces`; endpoint conversations + SSE; evidence gate (tanpa kandidat → refused tanpa LLM; `NO_ANSWER` ditahan di awal stream); satu stream per user dan kuota token harian. UI chat, answer eval, dan hardening belum dikerjakan. |
+| v1.2 | Phase 4 bagian UI chat: halaman `/chat` dan `/chat/[id]` (percakapan baru dibuat bersama pertanyaan pertama; URL diganti tanpa reload agar stream tetap berjalan), stream dibaca dengan `fetch` + `ReadableStream`, Markdown jawaban dirender tanpa HTML mentah (`react-markdown`), `[n]` hanya menjadi tautan untuk sumber yang ada, panel sumber dengan snapshot dan tautan ke chunk (`chunk_ordinal` ditambahkan ke citation dan event `sources`), label "unverified" untuk jawaban tanpa citation. Answer eval dan hardening belum dikerjakan. |
 
 ---
 
@@ -451,7 +452,7 @@ Isi sumber untuk panel citation diambil dari snapshot `message_citations` yang d
 
 ```
 event: message.created   data: {"conversation_id": "...", "user_message_id": "...", "message_id": "..."}
-event: sources           data: {"sources": [{"ordinal": 1, "chunk_id": "...", "document_id": "...", "title": "...", "page_start": 3, "page_end": 3, "heading_path": ["..."], "quoted_text": "..."}]}
+event: sources           data: {"sources": [{"ordinal": 1, "chunk_id": "...", "chunk_ordinal": 0, "document_id": "...", "title": "...", "page_start": 3, "page_end": 3, "heading_path": ["..."], "quoted_text": "..."}]}
 event: token             data: {"text": "..."}
 event: done              data: {"message_id": "...", "status": "complete" | "refused", "citations": [1, 3], "invalid_citations": [], "usage": {"input_tokens": 0, "output_tokens": 0}}
 event: error             data: {"message_id": "...", "code": "...", "detail": "..."}

@@ -54,6 +54,10 @@ class CitationOut(BaseModel):
     chunk_id: uuid.UUID | None = Field(
         description="Null when the document was changed or deleted after the answer."
     )
+    chunk_ordinal: int | None = Field(
+        description="Position of the chunk in its document (the n of #chunk-n on the document "
+        "page); null when the chunk no longer exists."
+    )
     document_id: uuid.UUID | None = Field(description="Null when the document was deleted.")
     document_title: str
     quoted_text: str = Field(description="The source text as it was when the answer was written.")

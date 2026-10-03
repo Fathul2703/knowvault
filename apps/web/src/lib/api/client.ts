@@ -15,6 +15,13 @@ export type ChunkPage = components["schemas"]["ChunkPage"];
 export type SearchMode = components["schemas"]["SearchMode"];
 export type SearchResult = components["schemas"]["SearchResultOut"];
 export type SearchResponse = components["schemas"]["SearchResponse"];
+export type Conversation = components["schemas"]["ConversationOut"];
+export type ConversationPage = components["schemas"]["ConversationPage"];
+export type ConversationDetail = components["schemas"]["ConversationDetailOut"];
+export type ConversationScope = components["schemas"]["ConversationScope"];
+export type Message = components["schemas"]["MessageOut"];
+export type MessageStatus = components["schemas"]["MessageStatus"];
+export type Citation = components["schemas"]["CitationOut"];
 
 /** Typed client for the KnowVault API. Requests go to the same origin and carry the session cookie. */
 export const api = createClient<paths>({
@@ -37,7 +44,7 @@ export class ApiError extends Error {
   }
 }
 
-function isProblem(value: unknown): value is Problem {
+export function isProblem(value: unknown): value is Problem {
   return (
     typeof value === "object" &&
     value !== null &&

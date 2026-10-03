@@ -195,6 +195,7 @@ class TestAnswers:
         assert cited[0]["document_title"] == "Leave policy"
         assert cited[0]["heading_path"] == ["Annual leave"]
         assert "twelve days" in cited[0]["quoted_text"]
+        assert cited[0]["chunk_ordinal"] == leave["chunk_ordinal"] == 0
         assert len(answer["citations"]) == len(sources)
 
     async def test_question_outside_the_documents_is_refused(
@@ -262,6 +263,7 @@ class TestAnswers:
         answer = (await ada.get(f"{CONVERSATIONS}/{conversation}")).json()["messages"][1]
         [cited] = [c for c in answer["citations"] if c["cited"]]
         assert cited["chunk_id"] is None
+        assert cited["chunk_ordinal"] is None
         assert cited["document_id"] is None
         assert cited["document_title"] == "Leave policy"
         assert "twelve days" in cited["quoted_text"]

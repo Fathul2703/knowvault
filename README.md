@@ -9,9 +9,10 @@ cite their sources.
 > BAAI/bge-m3 (multilingual, run locally). A search API combines semantic and keyword search
 > with Reciprocal Rank Fusion; the **Search** page shows the matching passages and links to
 > the exact chunk. A retrieval evaluation measures search quality on a labelled corpus.
-> The assistant API answers questions from your documents as a stream, cites passages as
-> `[n]` and refuses when the documents do not contain the answer; the chat page follows. See
-> the [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
+> The **Ask** page answers questions from your documents as they are written, cites passages
+> as `[n]` (select one to read the passage or open it in its document) and says so when the
+> documents do not contain the answer. See the
+> [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
 
 ## Stack
 
@@ -203,6 +204,22 @@ The **Search** page (`/search`) finds passages across your ready documents and n
 - The first search after the API starts loads the embedding model and can take up to about
   half a minute; the page says so while it waits.
 
+## Ask
+
+- **Conversations:** `/chat` starts one; choose whether answers may use all documents or one
+  collection. Earlier conversations are listed on the left (under "Conversations" on phones).
+- **Answers** stream in as they are written and use only your ready documents. `[n]` marks the
+  source of a statement: select it to show the quoted passage, or open the passage in its
+  document. Each answer also lists the other passages it was given.
+- **Not in your documents:** when the documents do not answer the question, the answer says
+  so instead of guessing. An answer without any citation is marked *unverified*.
+- **Sources are snapshots:** an answer keeps the text it quoted, and marks sources whose
+  document was changed or deleted since.
+- Follow-up questions can refer to earlier answers. Leaving the page while an answer is being
+  written stops it.
+- Without an API key (`LLM_PROVIDER=fake`), answers quote the most relevant sentence of your
+  documents instead of being written by a language model; see [Configuration](#configuration).
+
 ## Retrieval evaluation
 
 `make eval-docker` measures search quality: it processes a labelled corpus of 21 synthetic
@@ -273,8 +290,8 @@ apps/
       cli.py           admin commands
   web/                 Next.js app
     src/app/           routes: login, register, dashboard, library, library/[id], library/notes/…,
-                       search
-    src/features/      auth, dashboard, library, search
+                       search, chat, chat/[id]
+    src/features/      auth, dashboard, library, search, chat
     src/lib/api/       typed API client and generated types
 eval/                  retrieval evaluation: corpus, labelled questions, reports
 docs/                  architecture and ADRs

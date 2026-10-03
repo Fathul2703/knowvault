@@ -14,3 +14,45 @@
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
 }
+
+/* Markdown of answers (no typography plugin: only the elements answers use). */
+.answer > * + * {
+  @apply mt-3;
+}
+.answer ul {
+  @apply list-disc space-y-1 pl-5;
+}
+.answer ol {
+  @apply list-decimal space-y-1 pl-5;
+}
+.answer strong {
+  @apply font-semibold text-slate-900;
+}
+.answer a {
+  @apply text-brand-700 underline;
+}
+.answer code {
+  @apply rounded bg-slate-100 px-1 py-0.5 text-[0.85em];
+}
+.answer pre {
+  @apply overflow-x-auto rounded-md bg-slate-100 p-3;
+}
+.answer pre code {
+  @apply bg-transparent p-0;
+}
+.answer blockquote {
+  @apply border-l-2 border-slate-300 pl-3 text-slate-600;
+}
+.answer table {
+  @apply block overflow-x-auto text-left;
+}
+.answer th,
+.answer td {
+  @apply border border-slate-200 px-2 py-1;
+}
+.answer h1,
+.answer h2,
+.answer h3,
+.answer h4 {
+  @apply font-semibold text-slate-900;
+}

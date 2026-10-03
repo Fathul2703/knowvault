@@ -2972,7 +2972,7 @@
         },
         "responses": {
           "200": {
-            "description": "A stream of Server-Sent Events:\n\n- `message.created`: `{conversation_id, user_message_id, message_id}`\n- `sources`: `{sources: [{ordinal, chunk_id, document_id, title, page_start, page_end,\n  heading_path, quoted_text}]}`, sent before the first token\n- `token`: `{text}`, repeated\n- `done`: `{message_id, status, citations, invalid_citations, usage}`; when `status` is\n  `refused`, show the standard refusal text (also sent as tokens) instead of anything streamed\n- `error`: `{message_id, code, detail}`, instead of `done`\n\nRender `[n]` as a link only when `n` is in `citations`.\n",
+            "description": "A stream of Server-Sent Events:\n\n- `message.created`: `{conversation_id, user_message_id, message_id}`\n- `sources`: `{sources: [{ordinal, chunk_id, chunk_ordinal, document_id, title, page_start,\n  page_end, heading_path, quoted_text}]}`, sent before the first token\n- `token`: `{text}`, repeated\n- `done`: `{message_id, status, citations, invalid_citations, usage}`; when `status` is\n  `refused`, show the standard refusal text (also sent as tokens) instead of anything streamed\n- `error`: `{message_id, code, detail}`, instead of `done`\n\nRender `[n]` as a link only when `n` is in `citations`.\n",
             "content": {
               "text/event-stream": {
                 "schema": {
@@ -3210,6 +3210,18 @@
             "title": "Chunk Id",
             "description": "Null when the document was changed or deleted after the answer."
           },
+          "chunk_ordinal": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chunk Ordinal",
+            "description": "Position of the chunk in its document (the n of #chunk-n on the document page); null when the chunk no longer exists."
+          },
           "document_id": {
             "anyOf": [
               {
@@ -3267,6 +3279,7 @@
           "ordinal",
           "cited",
           "chunk_id",
+          "chunk_ordinal",
           "document_id",
           "document_title",
           "quoted_text",
