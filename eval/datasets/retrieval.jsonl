@@ -52,6 +52,19 @@
 {"id": "en-helpdesk-2", "question": "How fast must high-priority support tickets be answered?", "language": "en", "category": "cross_lingual", "document": "helpdesk-tiket.md", "evidence": ["harus dijawab dalam satu jam kerja"]}
 {"id": "id-hidroponik-1", "question": "Berapa ppm nutrisi yang dianjurkan untuk selada?", "language": "id", "category": "lexical", "document": "hidroponik.md", "evidence": ["antara 560 dan 840 ppm"]}
 {"id": "en-hidroponik-2", "question": "When can hydroponic lettuce be harvested?", "language": "en", "category": "cross_lingual", "document": "hidroponik.md", "evidence": ["tiga puluh lima hari setelah pindah tanam"]}
+{"id": "en-billing-1", "question": "What does ERR_4713 mean?", "language": "en", "category": "identifier", "document": "billing-error-codes.md", "evidence": ["the card was declined by the issuing bank"]}
+{"id": "en-billing-2", "question": "What is error ERR_4171?", "language": "en", "category": "identifier", "document": "billing-error-codes.md", "evidence": ["the currency of the invoice does not match"]}
+{"id": "en-billing-3", "question": "What causes ERR_7411?", "language": "en", "category": "identifier", "document": "billing-error-codes.md", "evidence": ["the tax rate for the customer's region is missing"]}
+{"id": "en-mobile-1", "question": "What changed in version 2.4.1?", "language": "en", "category": "identifier", "document": "mobile-release-notes.md", "evidence": ["receipts can be captured offline"]}
+{"id": "en-mobile-2", "question": "What did 2.3.12 add?", "language": "en", "category": "identifier", "document": "mobile-release-notes.md", "evidence": ["added fingerprint login"]}
+{"id": "id-mobile-3", "question": "Apakah versi 3.2.4 wajib dipasang?", "language": "id", "category": "identifier", "document": "mobile-release-notes.md", "evidence": ["Version 3.2.4 is required for all users"]}
+{"id": "id-kirim-1", "question": "Status T30 artinya apa?", "language": "id", "category": "identifier", "document": "status-pengiriman.md", "evidence": ["paket dalam perjalanan menuju kota tujuan"]}
+{"id": "en-kirim-2", "question": "What does shipment status T40 mean?", "language": "en", "category": "identifier", "document": "status-pengiriman.md", "evidence": ["paket sudah diterima oleh pelanggan"]}
+{"id": "id-kirim-3", "question": "Apa yang terjadi bila paket berstatus T30 lebih dari lima hari?", "language": "id", "category": "identifier", "document": "status-pengiriman.md", "evidence": ["sistem membuat tiket otomatis untuk tim logistik"]}
+{"id": "id-sku-1", "question": "Di rak mana SKU-A1270 disimpan?", "language": "id", "category": "identifier", "document": "kode-barang-elektronik.md", "evidence": ["disimpan di rak C3"]}
+{"id": "id-sku-2", "question": "Berapa stok minimum SKU-A1270?", "language": "id", "category": "identifier", "document": "kode-barang-elektronik.md", "evidence": ["Stok minimum adalah dua puluh unit"]}
+{"id": "id-sku-3", "question": "SKU-A1207 itu barang apa?", "language": "id", "category": "identifier", "document": "kode-barang-alat-tulis.md", "evidence": ["kertas HVS ukuran A4 80 gram"]}
+{"id": "en-sku-4", "question": "Where is item SKU-A1207 stored?", "language": "en", "category": "identifier", "document": "kode-barang-alat-tulis.md", "evidence": ["disimpan di rak F1"]}
 {"id": "en-none-1", "question": "What is the company's policy on bringing pets to the office?", "language": "en", "category": "unanswerable", "document": null, "evidence": []}
 {"id": "id-none-2", "question": "Berapa gaji minimum untuk posisi engineer junior?", "language": "id", "category": "unanswerable", "document": null, "evidence": []}
 {"id": "en-none-3", "question": "How do I configure single sign-on with SAML?", "language": "en", "category": "unanswerable", "document": null, "evidence": []}
