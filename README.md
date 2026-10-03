@@ -3,7 +3,7 @@
 Personal knowledge management with AI answers that are grounded in your own documents and
 cite their sources.
 
-> **Status: Phase 4 — Grounded Q&A, in progress.** Accounts, collections, notes and document
+> **Status: v0.1.0 — MVP** ([changelog](CHANGELOG.md)). Accounts, collections, notes and document
 > upload work end to end: a background worker extracts the text of PDF, Word, Markdown and text
 > files, splits it into chunks that keep their page or section, and embeds each chunk with
 > BAAI/bge-m3 (multilingual, run locally). A search API combines semantic and keyword search
@@ -11,7 +11,8 @@ cite their sources.
 > the exact chunk. A retrieval evaluation measures search quality on a labelled corpus.
 > The **Ask** page answers questions from your documents as they are written, cites passages
 > as `[n]` (select one to read the passage or open it in its document) and says so when the
-> documents do not contain the answer. See the
+> documents do not contain the answer. Answer quality has not been measured with Claude yet
+> (see [Known limitations](#known-limitations)). See the
 > [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
 
 ## Stack

@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v1.5** — Phase 1–4 diimplementasikan (ADR 0009–0012); rilis `v0.1.0` menunggu eval jawaban dengan Claude; keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.6** — Phase 1–4 diimplementasikan (ADR 0009–0012); dirilis sebagai `v0.1.0` dengan keterbatasan yang dicatat di §20; keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -27,6 +27,7 @@
 | v1.3 | Phase 4 bagian answer eval (ADR 0010): `knowvault eval-answers` menjawab semua pertanyaan dataset lewat `AnswerService` di database `*_eval`; metrik refusal accuracy, citation tidak valid, citation ke sumber berisi bukti, bukti tersedia di sumber, kebocoran prompt injection (canary), latensi, token; lembar review manual 30 jawaban + `knowvault eval-review`. Korpus jadi 23 dokumen (2 berisi upaya prompt injection) dan 81 pertanyaan. Baseline model fake tercatat sebagai batas bawah; run dengan Claude menunggu API key. |
 | v1.4 | Phase 4 bagian hardening (ADR 0011): batas per user (pertanyaan/menit, pencarian/menit, upload & simpan note/jam, maksimal dokumen); batas per alamat klien (login gagal lintas email, registrasi) dengan `X-Forwarded-For` hanya dari `TRUSTED_PROXIES`; CSP berbasis nonce untuk halaman web (semua halaman dirender per request) dan header ketat untuk respons API; hapus akun total (`DELETE /api/v1/auth/me` + halaman Account); job CI audit dependensi runtime (`pip-audit`, `npm audit --omit=dev`). Caddy, image produksi, dan E2E menyusul bersama rilis. |
 | v1.5 | Phase 4 bagian produksi & E2E (ADR 0012): image produksi (multi-stage, non-root; Next.js standalone), `compose.prod.yaml` dengan Caddy (TLS otomatis, HSTS, `/api/*` langsung ke FastAPI tanpa buffering, IP tetap sebagai satu-satunya `TRUSTED_PROXIES`), container API/worker read-only tanpa capability; `compose.e2e.yaml` + Playwright untuk alur kritis di CI. E2E menemukan bug hapus akun (cascade ganda ke `message_citations`) yang sudah diperbaiki. Prosedur backup di README. |
+| v1.6 | Rilis `v0.1.0` (MVP, lihat `CHANGELOG.md`) dengan catatan status §20: eval jawaban dengan Claude dan review manual, demo/video, screenshot README, serta pengukuran coverage belum dilakukan dan dicatat sebagai keterbatasan rilis. |
 
 ---
 
@@ -850,6 +851,13 @@ Kolom rekomendasi adalah saran dokumen ini; keputusan akhir ada di pemilik proje
 ## 20. Definition of Done — MVP
 
 MVP (`v0.1.0`) dinyatakan selesai jika **semua** kriteria berikut terpenuhi.
+
+> **Status saat rilis `v0.1.0` (2026-10-04):** dirilis sebelum semua kriteria terpenuhi, atas
+> keputusan pemilik proyek. Belum terpenuhi: laporan eval jawaban dengan model sungguhan
+> (Claude) beserta review manual ±30 jawaban (harness dan lembar review sudah ada, ADR 0010),
+> demo publik atau video demo, screenshot/GIF di README, dan pengukuran coverage logika inti.
+> Kriteria lain diimplementasikan dan diuji (lihat `CHANGELOG.md`); kotak centang di bawah
+> belum diperbarui satu per satu.
 
 ### Fungsional
 - [ ] Pengguna dapat register dengan kode undangan, login, logout; sesi dapat di-revoke. Admin dapat membuat undangan dan reset password via CLI.
