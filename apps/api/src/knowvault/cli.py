@@ -132,10 +132,40 @@ def main(argv: list[str] | None = None) -> None:
         "--label", type=_report_label, help="short tag added to the report name, e.g. fulltext-or"
     )
 
+    answers = commands.add_parser(
+        "eval-answers",
+        help="measure answers (refusals, citations, prompt injection) on a labelled corpus; "
+        "uses LLM_PROVIDER and a disposable *_eval database",
+    )
+    answers.add_argument("--corpus", type=Path, required=True, help="directory of .md files")
+    answers.add_argument("--dataset", type=Path, required=True, help="questions (.jsonl)")
+    answers.add_argument("--output-dir", type=Path, required=True, help="where reports go")
+    answers.add_argument(
+        "--review-dir", type=Path, help="write a manual review sheet of sampled answers here"
+    )
+    answers.add_argument("--review-size", type=int, default=30, help="answers to sample")
+    answers.add_argument("--limit", type=int, help="only the first N questions")
+    answers.add_argument(
+        "--keep-database", action="store_true", help="keep the *_eval database for inspection"
+    )
+    answers.add_argument(
+        "--label", type=_report_label, help="short tag added to the report name, e.g. sonnet"
+    )
+
+    review = commands.add_parser(
+        "eval-review", help="print the totals of a filled-in answer review sheet"
+    )
+    review.add_argument("sheet", type=Path, help="review sheet (.md)")
+
     args = parser.parse_args(argv)
 
     if args.command == "export-openapi":
         sys.stdout.write(_export_openapi())
+        return
+    if args.command == "eval-review":
+        from knowvault.evaluation.review import format_tally, tally_review
+
+        print(format_tally(tally_review(args.sheet.read_text(encoding="utf-8"))))
         return
 
     settings = get_settings()
@@ -155,6 +185,25 @@ def main(argv: list[str] | None = None) -> None:
                     top_k=args.top_k,
                     keep_database=args.keep_database,
                     label=args.label,
+                ),
+            )
+        )
+        print(f"Report written to {report}")
+    elif args.command == "eval-answers":
+        from knowvault.evaluation.command import AnswerEvalOptions, run_answers
+
+        report = asyncio.run(
+            run_answers(
+                settings,
+                AnswerEvalOptions(
+                    corpus_dir=args.corpus,
+                    dataset=args.dataset,
+                    output_dir=args.output_dir,
+                    review_dir=args.review_dir,
+                    review_size=args.review_size,
+                    keep_database=args.keep_database,
+                    label=args.label,
+                    limit=args.limit,
                 ),
             )
         )

@@ -220,9 +220,9 @@ The **Search** page (`/search`) finds passages across your ready documents and n
 - Without an API key (`LLM_PROVIDER=fake`), answers quote the most relevant sentence of your
   documents instead of being written by a language model; see [Configuration](#configuration).
 
-## Retrieval evaluation
+## Evaluation
 
-`make eval-docker` measures search quality: it processes a labelled corpus of 21 synthetic
+`make eval-docker` measures search quality: it processes a labelled corpus of 23 synthetic
 Indonesian and English documents in a disposable database and reports Success@k, MRR and latency
 for the hybrid, vector and full-text modes, per question category. Reports are committed to
 [`eval/reports/`](eval/reports/); see [`eval/README.md`](eval/README.md) for the method and its
@@ -230,6 +230,15 @@ limits. The baseline and what it revealed are summarised in
 [ADR 0007](docs/adr/0007-retrieval-evaluation.md); the full-text changes it led to, with the
 measured variants and the identifier questions that show hybrid search beating vector search, in
 [ADR 0008](docs/adr/0008-fulltext-natural-questions.md).
+
+`make eval-answers-docker` measures answers on the same corpus through the production answer
+path: refusal accuracy (answer what the documents answer, refuse the rest), citation numbers
+that point at no source, whether citations point at the passage holding the evidence, and
+whether instructions planted in two documents leak into answers. It also writes a sheet of 30
+sampled answers for a manual check that each citation supports its sentence
+(`knowvault eval-review` totals it). With the default fake model the run only checks the
+pipeline; the committed fake-model report is the floor a language model has to beat. See
+[ADR 0010](docs/adr/0010-answer-evaluation.md).
 
 ## API
 

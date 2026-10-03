@@ -18,7 +18,8 @@ help: ## Show this help
 
 # --- Docker Compose -------------------------------------------------------------------
 
-.PHONY: up down logs invite-docker test-docker model-docker reindex-docker eval-docker
+.PHONY: up down logs invite-docker test-docker model-docker reindex-docker eval-docker \
+	eval-answers-docker
 up: .env ## Start the full stack with Docker Compose
 	docker compose up --build
 
@@ -45,9 +46,14 @@ EVAL_ARGS = --corpus /eval/corpus --dataset /eval/datasets/retrieval.jsonl --out
 eval-docker: ## Run the retrieval evaluation with the real model; report goes to eval/reports
 	docker compose run --rm -v ./eval:/eval api knowvault eval-retrieval $(EVAL_ARGS)
 
+ANSWER_EVAL_ARGS = $(EVAL_ARGS) --review-dir /eval/reviews
+
+eval-answers-docker: ## Run the answer evaluation with LLM_PROVIDER from .env; reports in eval/
+	docker compose run --rm -v ./eval:/eval api knowvault eval-answers $(ANSWER_EVAL_ARGS)
+
 # --- Local (no Docker for the apps; needs PostgreSQL) ---------------------------------
 
-.PHONY: install migrate invite api worker web model reindex eval
+.PHONY: install migrate invite api worker web model reindex eval eval-answers
 install: .env ## Install API and web dependencies
 	cd $(API) && uv sync
 	cd $(WEB) && npm ci
@@ -73,6 +79,11 @@ reindex: ## Queue documents that still need (re-)embedding
 eval: ## Run the retrieval evaluation on your machine; report goes to eval/reports
 	$(LOAD_ENV) cd $(API) && uv run knowvault eval-retrieval --corpus ../../eval/corpus \
 		--dataset ../../eval/datasets/retrieval.jsonl --output-dir ../../eval/reports
+
+eval-answers: ## Run the answer evaluation on your machine (LLM_PROVIDER from .env)
+	$(LOAD_ENV) cd $(API) && uv run knowvault eval-answers --corpus ../../eval/corpus \
+		--dataset ../../eval/datasets/retrieval.jsonl --output-dir ../../eval/reports \
+		--review-dir ../../eval/reviews
 
 web: ## Run the web app on http://localhost:3000
 	$(LOAD_ENV) cd $(WEB) && npm run dev

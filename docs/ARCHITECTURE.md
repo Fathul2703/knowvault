@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v1.2** — Phase 1–3 diimplementasikan; Phase 4 berjalan (backend assistant: ADR 0009; UI chat); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.3** — Phase 1–3 diimplementasikan; Phase 4 berjalan (backend assistant: ADR 0009; UI chat; answer eval: ADR 0010); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -24,6 +24,7 @@
 | v1.0 | Dataset eval ditambah 5 dokumen dan 13 pertanyaan identifier yang mirip satu sama lain (`ERR_4713`/`ERR_4171`/`ERR_7411`, `SKU-A1270`/`SKU-A1207`, nomor versi, kode status); total 21 dokumen, 75 pertanyaan (addendum ADR 0008). Hybrid kini terukur lebih baik dari vector: Success@1 94,0% vs 89,6%, MRR@10 identifier 1,000 vs 0,917. Tanpa perubahan kode. |
 | v1.1 | Phase 4 bagian backend assistant (ADR 0009): D4 diputuskan — Anthropic `claude-sonnet-5-5` untuk jawaban dan `claude-haiku-4-5-20251001` untuk query condensation, provider fake sebagai default; port `ChatModel`; tabel `conversations`, `messages` (+ `seq`, `error_code`), `message_citations` (menyimpan semua sumber dengan flag `cited`), `retrieval_traces`; endpoint conversations + SSE; evidence gate (tanpa kandidat → refused tanpa LLM; `NO_ANSWER` ditahan di awal stream); satu stream per user dan kuota token harian. UI chat, answer eval, dan hardening belum dikerjakan. |
 | v1.2 | Phase 4 bagian UI chat: halaman `/chat` dan `/chat/[id]` (percakapan baru dibuat bersama pertanyaan pertama; URL diganti tanpa reload agar stream tetap berjalan), stream dibaca dengan `fetch` + `ReadableStream`, Markdown jawaban dirender tanpa HTML mentah (`react-markdown`), `[n]` hanya menjadi tautan untuk sumber yang ada, panel sumber dengan snapshot dan tautan ke chunk (`chunk_ordinal` ditambahkan ke citation dan event `sources`), label "unverified" untuk jawaban tanpa citation. Answer eval dan hardening belum dikerjakan. |
+| v1.3 | Phase 4 bagian answer eval (ADR 0010): `knowvault eval-answers` menjawab semua pertanyaan dataset lewat `AnswerService` di database `*_eval`; metrik refusal accuracy, citation tidak valid, citation ke sumber berisi bukti, bukti tersedia di sumber, kebocoran prompt injection (canary), latensi, token; lembar review manual 30 jawaban + `knowvault eval-review`. Korpus jadi 23 dokumen (2 berisi upaya prompt injection) dan 81 pertanyaan. Baseline model fake tercatat sebagai batas bawah; run dengan Claude menunggu API key. |
 
 ---
 

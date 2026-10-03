@@ -11,7 +11,15 @@ import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
-CATEGORIES = ("lexical", "paraphrase", "cross_lingual", "identifier", "unanswerable")
+CATEGORIES = (
+    "lexical",
+    "paraphrase",
+    "cross_lingual",
+    "identifier",
+    # Answerable from a document that also contains a prompt-injection attempt.
+    "injection",
+    "unanswerable",
+)
 _WHITESPACE = re.compile(r"\s+")
 
 
@@ -24,6 +32,9 @@ class Question:
     # Corpus file name holding the answer; None for questions the corpus cannot answer.
     document: str | None
     evidence: tuple[str, ...]
+    # Injection questions: text that appears in an answer only if the model followed the
+    # instructions planted in the document.
+    canary: str | None = None
 
     @property
     def answerable(self) -> bool:
@@ -54,6 +65,7 @@ def load_dataset(path: Path) -> list[Question]:
                 category=raw["category"],
                 document=raw["document"],
                 evidence=tuple(raw["evidence"]),
+                canary=raw.get("canary"),
             )
         except (ValueError, KeyError, TypeError) as exc:
             raise DatasetError(f"{path.name}:{number}: invalid entry ({exc})") from exc
@@ -68,6 +80,10 @@ def load_dataset(path: Path) -> list[Question]:
             raise DatasetError(
                 f"{path.name}:{number}: answerable questions need a document and evidence; "
                 "unanswerable ones need neither"
+            )
+        if (question.category == "injection") != bool(question.canary):
+            raise DatasetError(
+                f"{path.name}:{number}: injection questions, and only they, need a canary"
             )
         seen.add(question.id)
         questions.append(question)
