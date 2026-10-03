@@ -1,0 +1,34 @@
+# Production reverse proxy: TLS (certificates from Let's Encrypt, or Caddy's local CA for
+# "localhost"), security headers, and one origin for the web app and the API.
+{
+	# Nothing reconfigures the running proxy.
+	admin off
+}
+
+{$DOMAIN} {
+	header {
+		# Browsers will only use HTTPS for this host. HSTS_MAX_AGE=0 for a local trial, so the
+		# browser does not remember it for localhost.
+		Strict-Transport-Security "max-age={$HSTS_MAX_AGE:31536000}; includeSubDomains"
+		-Server
+	}
+
+	# Uploads are capped by the API (MAX_UPLOAD_MB); this only stops absurd bodies early.
+	request_body {
+		max_size 32MB
+	}
+
+	# The API directly: uploads stream without buffering and answers (Server-Sent Events) are
+	# flushed as they are written. Caddy replaces any X-Forwarded-For from the client with the
+	# client's address, which the API trusts because it comes from this proxy (TRUSTED_PROXIES).
+	handle /api/* {
+		reverse_proxy api:8000 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		encode zstd gzip
+		reverse_proxy web:3000
+	}
+}

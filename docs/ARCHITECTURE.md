@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v1.4** — Phase 1–3 diimplementasikan; Phase 4 berjalan (backend assistant: ADR 0009; UI chat; answer eval: ADR 0010; hardening: ADR 0011); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.5** — Phase 1–4 diimplementasikan (ADR 0009–0012); rilis `v0.1.0` menunggu eval jawaban dengan Claude; keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -26,6 +26,7 @@
 | v1.2 | Phase 4 bagian UI chat: halaman `/chat` dan `/chat/[id]` (percakapan baru dibuat bersama pertanyaan pertama; URL diganti tanpa reload agar stream tetap berjalan), stream dibaca dengan `fetch` + `ReadableStream`, Markdown jawaban dirender tanpa HTML mentah (`react-markdown`), `[n]` hanya menjadi tautan untuk sumber yang ada, panel sumber dengan snapshot dan tautan ke chunk (`chunk_ordinal` ditambahkan ke citation dan event `sources`), label "unverified" untuk jawaban tanpa citation. Answer eval dan hardening belum dikerjakan. |
 | v1.3 | Phase 4 bagian answer eval (ADR 0010): `knowvault eval-answers` menjawab semua pertanyaan dataset lewat `AnswerService` di database `*_eval`; metrik refusal accuracy, citation tidak valid, citation ke sumber berisi bukti, bukti tersedia di sumber, kebocoran prompt injection (canary), latensi, token; lembar review manual 30 jawaban + `knowvault eval-review`. Korpus jadi 23 dokumen (2 berisi upaya prompt injection) dan 81 pertanyaan. Baseline model fake tercatat sebagai batas bawah; run dengan Claude menunggu API key. |
 | v1.4 | Phase 4 bagian hardening (ADR 0011): batas per user (pertanyaan/menit, pencarian/menit, upload & simpan note/jam, maksimal dokumen); batas per alamat klien (login gagal lintas email, registrasi) dengan `X-Forwarded-For` hanya dari `TRUSTED_PROXIES`; CSP berbasis nonce untuk halaman web (semua halaman dirender per request) dan header ketat untuk respons API; hapus akun total (`DELETE /api/v1/auth/me` + halaman Account); job CI audit dependensi runtime (`pip-audit`, `npm audit --omit=dev`). Caddy, image produksi, dan E2E menyusul bersama rilis. |
+| v1.5 | Phase 4 bagian produksi & E2E (ADR 0012): image produksi (multi-stage, non-root; Next.js standalone), `compose.prod.yaml` dengan Caddy (TLS otomatis, HSTS, `/api/*` langsung ke FastAPI tanpa buffering, IP tetap sebagai satu-satunya `TRUSTED_PROXIES`), container API/worker read-only tanpa capability; `compose.e2e.yaml` + Playwright untuk alur kritis di CI. E2E menemukan bug hapus akun (cascade ganda ke `message_citations`) yang sudah diperbaiki. Prosedur backup di README. |
 
 ---
 

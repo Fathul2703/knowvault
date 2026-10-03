@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "generate:api": "openapi-typescript ../api/openapi.json -o src/lib/api/schema.ts"
+    "generate:api": "openapi-typescript ../api/openapi.json -o src/lib/api/schema.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.0",
@@ -22,6 +23,7 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",

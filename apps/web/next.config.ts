@@ -13,6 +13,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // A self-contained server for the production image (apps/web/Dockerfile).
+  output: "standalone",
   experimental: {
     // Next.js buffers proxied request bodies and silently truncates them at 10 MB by default,
     // which corrupts uploads. Keep this above the API's MAX_UPLOAD_MB (25 MB) plus multipart

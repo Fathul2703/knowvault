@@ -19,7 +19,7 @@ help: ## Show this help
 # --- Docker Compose -------------------------------------------------------------------
 
 .PHONY: up down logs invite-docker test-docker model-docker reindex-docker eval-docker \
-	eval-answers-docker
+	eval-answers-docker e2e
 up: .env ## Start the full stack with Docker Compose
 	docker compose up --build
 
@@ -50,6 +50,11 @@ ANSWER_EVAL_ARGS = $(EVAL_ARGS) --review-dir /eval/reviews
 
 eval-answers-docker: ## Run the answer evaluation with LLM_PROVIDER from .env; reports in eval/
 	docker compose run --rm -v ./eval:/eval api knowvault eval-answers $(ANSWER_EVAL_ARGS)
+
+e2e: ## Browser end-to-end tests against a throwaway stack (compose.e2e.yaml, port 3100)
+	docker compose -f compose.e2e.yaml up -d --build --wait
+	cd $(WEB) && npx playwright install chromium && npm run e2e; \
+		status=$$?; cd $(CURDIR) && docker compose -f compose.e2e.yaml down; exit $$status
 
 # --- Local (no Docker for the apps; needs PostgreSQL) ---------------------------------
 
