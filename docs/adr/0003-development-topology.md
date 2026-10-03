@@ -1,6 +1,6 @@
 # ADR 0003: Development topology and test database
 
-- Status: Accepted
+- Status: Accepted; production topology in ADR 0012
 - Date: 2026-09-29
 
 ## Context

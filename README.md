@@ -23,9 +23,11 @@ cite their sources.
 | Worker | Same codebase as the API; PostgreSQL job queue; `pypdf`, `python-docx` in a sandboxed child process |
 | Embeddings | BAAI/bge-m3 (int8 ONNX, 1024 dimensions) via fastembed / ONNX Runtime, on CPU |
 | Database | PostgreSQL 17 with pgvector 0.8 (HNSW index, cosine distance) and full-text search (GIN) |
-| Dev environment | Docker Compose |
+| Answers | Claude (Anthropic API) — `claude-sonnet-5-5`, `claude-haiku-4-5` for follow-up rewriting; an offline fake by default |
+| Environments | Docker Compose for development, end-to-end tests and production (Caddy for TLS) |
 
-The browser only talks to the Next.js server, which forwards `/api/*` to FastAPI. Sessions are
+In development the browser only talks to the Next.js server, which forwards `/api/*` to
+FastAPI; in production Caddy sends `/api/*` straight to FastAPI and everything else to Next.js. Sessions are
 server-side, stored as hashed tokens in PostgreSQL. Uploads are stored on disk and queued; the
 worker processes them and the web app polls until they are ready. More in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the [ADRs](docs/adr/).
@@ -122,7 +124,14 @@ variables from `.env` yourself.
 make check      # lint + type checks + all tests (what CI runs)
 make test-api   # API tests; needs TEST_DATABASE_URL
 make test-web   # web tests
+make e2e        # browser tests (Playwright) against a throwaway Docker stack
 ```
+
+`make e2e` starts `compose.e2e.yaml` — the production images with the fake embedding and chat
+models and a database in memory, on http://localhost:3100 — and walks through the critical path:
+register with an invite, write a note and wait until it is processed, search, ask, open the
+cited passage and its chunk, get a refusal for an unrelated question, and delete the account.
+CI runs it on every pull request.
 
 API tests run against a real PostgreSQL database **with the pgvector extension** (the Compose
 database has it; a plain Homebrew PostgreSQL does not). The database named in
@@ -139,6 +148,37 @@ After changing API endpoints or schemas, run `make openapi` to regenerate
 CI also audits the locked runtime dependencies (`pip-audit`, `npm audit --omit=dev`);
 Dependabot keeps all dependencies, including development tools, up to date.
 
+## Production
+
+`compose.prod.yaml` runs the production images behind Caddy, which obtains a TLS certificate
+for your domain, sets HSTS and is the only service with public ports. The database, API, worker
+and web app are reachable only on an internal network; the API and worker run as an
+unprivileged user on read-only file systems.
+
+```bash
+cp .env.prod.example .env.prod      # domain, database password, ANTHROPIC_API_KEY
+docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
+docker compose -f compose.prod.yaml --env-file .env.prod run --rm api knowvault download-model
+docker compose -f compose.prod.yaml --env-file .env.prod exec api knowvault create-invite
+```
+
+Ports 80 and 443 must reach the host and the domain's DNS must point to it. The production
+configuration refuses to start with the fake models or without HTTPS cookies. To try the stack
+on your own machine, use `DOMAIN=localhost` (Caddy's local certificate authority) and
+`HSTS_MAX_AGE=0`, so your browser does not remember HTTPS for `localhost`.
+
+**Backups.** The database and the uploaded files belong together; back up both:
+
+```bash
+docker compose -f compose.prod.yaml --env-file .env.prod exec -T db \
+  sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > knowvault.dump
+docker run --rm -v knowvault-prod_uploads:/data:ro -v "$PWD":/backup alpine \
+  tar czf /backup/uploads.tar.gz -C /data .
+```
+
+Restore with `pg_restore --clean` into the `db` service and by extracting the archive into the
+`uploads` volume, with the API and worker stopped. The model volume can be downloaded again.
+
 ## Security
 
 - **Sessions:** server-side, in an HttpOnly, SameSite cookie. Registration needs an invite.
@@ -152,6 +192,17 @@ Dependabot keeps all dependencies, including development tools, up to date.
   prompts; the answer evaluation checks that planted instructions do not leak.
 - **Your data:** Account → Delete account removes the account with every document, file,
   note, collection and conversation.
+- **Production:** TLS and HSTS at Caddy, the only public service; non-root, read-only API and
+  worker containers; `X-Forwarded-For` trusted from Caddy only
+  ([ADR 0012](docs/adr/0012-production-and-e2e.md)).
+
+## Known limitations
+
+- Answers are measured with an extractive fake model only; a measured run with Claude and its
+  manual review are still to be done (ADR 0010).
+- Scanned PDFs without a text layer are not supported (no OCR).
+- Answers cite whole chunks; a citation shows the passage, not the exact sentence.
+- One machine: files are stored on a volume, and the worker processes one document at a time.
 
 ## Configuration
 
@@ -317,16 +368,21 @@ apps/
                        answer stream) → infrastructure (conversations, search) → api (SSE)
       main.py          API composition root
       worker.py        worker composition root
-      evaluation/      retrieval evaluation runner, metrics and reports
+      evaluation/      retrieval and answer evaluations, metrics, reports, review sheets
       cli.py           admin commands
   web/                 Next.js app
     src/app/           routes: login, register, dashboard, library, library/[id], library/notes/…,
                        search, chat, chat/[id], account
     src/features/      auth, account, dashboard, library, search, chat
     src/lib/api/       typed API client and generated types
-eval/                  retrieval evaluation: corpus, labelled questions, reports
+    src/proxy.ts       login redirect and Content Security Policy for every page
+    tests/             unit and component tests (Vitest); tests/e2e: Playwright
+eval/                  evaluations: corpus, labelled questions, reports, review sheets
+infra/caddy/           production reverse proxy
 docs/                  architecture and ADRs
 compose.yaml           development stack
+compose.e2e.yaml       end-to-end test stack (production images, fake models)
+compose.prod.yaml      production stack (Caddy, TLS)
 Makefile               developer commands (`make help`)
 ```
 

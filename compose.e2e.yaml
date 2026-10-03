@@ -1,0 +1,90 @@
+# End-to-end test stack: production images with the fake embedding and chat models, so it needs
+# no model download and no API key. Used by `make e2e` and CI.
+name: knowvault-e2e
+
+x-api-environment: &api-environment
+  # The fake models are refused in production; everything else is as in production.
+  ENVIRONMENT: development
+  LOG_LEVEL: WARNING
+  DATABASE_URL: postgresql+asyncpg://knowvault:e2e-only@db:5432/knowvault
+  APP_ORIGIN: http://localhost:3100
+  STORAGE_DIR: /data/uploads
+  EMBEDDING_PROVIDER: fake
+  LLM_PROVIDER: fake
+  HOME: /tmp
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: knowvault
+      POSTGRES_PASSWORD: e2e-only
+      POSTGRES_DB: knowvault
+    # Throwaway data: nothing outlives the stack.
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U knowvault -d knowvault"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build:
+      context: ./apps/api
+      target: prod
+    image: knowvault-api:e2e
+    command: ["alembic", "upgrade", "head"]
+    environment: *api-environment
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    image: knowvault-api:e2e
+    pull_policy: never
+    environment: *api-environment
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/readyz', timeout=3)"
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  worker:
+    image: knowvault-api:e2e
+    pull_policy: never
+    command: ["knowvault", "worker"]
+    environment: *api-environment
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - uploads:/data/uploads
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ./apps/web
+      target: prod
+    ports:
+      - "127.0.0.1:3100:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  uploads:

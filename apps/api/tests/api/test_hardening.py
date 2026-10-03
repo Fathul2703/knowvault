@@ -11,11 +11,24 @@ from sqlalchemy import func, select
 from knowvault.core.config import Settings
 from knowvault.core.db import Database
 from knowvault.core.middleware import API_CONTENT_SECURITY_POLICY
+from knowvault.modules.assistant.infrastructure.models import Message
 from knowvault.modules.identity.models import User
 from knowvault.modules.library.models import Document
+from knowvault.worker import build_pipeline, run_once
 from tests.conftest import RegisterFn
 
 PASSWORD = "correct horse battery"
+
+
+@pytest.fixture
+def run_worker(settings: Settings, database: Database) -> Callable[[], Awaitable[None]]:
+    pipeline = build_pipeline(settings, database)
+
+    async def _run() -> None:
+        while await run_once(database, pipeline, settings):
+            pass
+
+    return _run
 
 
 def limit(app: FastAPI, settings: Settings, **changes: object) -> None:
@@ -164,13 +177,22 @@ class TestAccountDeletion:
         make_invite: Callable[[], Awaitable[str]],
         database: Database,
         settings: Settings,
+        run_worker: Callable[[], Awaitable[None]],
     ) -> None:
         upload = await ada.post(
             "/api/v1/documents", files={"file": ("a.txt", b"hello world", "text/plain")}
         )
         assert upload.status_code == 202
-        assert await note(ada) == 201
-        await ada.post("/api/v1/conversations", json={})
+        assert await note(ada, "Leave", "Employees get twelve days of annual leave.") == 201
+        await run_worker()
+        # An answer citing the user's own chunk: deleting the account must remove the citation
+        # once, not also try to clear its chunk reference (both paths cascade from the user).
+        conversation = (await ada.post("/api/v1/conversations", json={})).json()["id"]
+        answer = await ada.post(
+            f"/api/v1/conversations/{conversation}/messages",
+            json={"content": "How many days of annual leave do employees get?"},
+        )
+        assert '"status":"complete"' in answer.text
         stored = [path for path in Path(settings.storage_dir).rglob("*") if path.is_file()]
         assert stored
 
@@ -199,5 +221,6 @@ class TestAccountDeletion:
             async with database.sessionmaker() as session:
                 assert await session.scalar(select(func.count()).select_from(User)) == 1
                 assert await session.scalar(select(func.count()).select_from(Document)) == 1
+                assert await session.scalar(select(func.count()).select_from(Message)) == 0
             # Other users keep everything.
             assert len((await bob.get("/api/v1/documents")).json()["items"]) == 1

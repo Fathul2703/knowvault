@@ -8,6 +8,7 @@
 .env
 .env.*
 !.env.example
+!.env.prod.example
 
 # Python
 __pycache__/
@@ -31,3 +32,7 @@ next-env.d.ts
 # Local data (uploaded files when running outside Docker)
 /data/
 /apps/api/data/
+
+# Playwright
+/apps/web/playwright-report/
+/apps/web/test-results/

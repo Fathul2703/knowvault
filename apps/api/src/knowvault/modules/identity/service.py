@@ -28,6 +28,7 @@ REGISTER_IP_BUCKET = "register_ip"
 REGISTER_IP_WINDOW = timedelta(hours=1)
 # Only the columns account deletion needs; identity does not depend on the library module.
 _documents = table("documents", column("owner_id"), column("storage_key"))
+_conversations = table("conversations", column("owner_id"))
 _usage_counters = table("usage_counters", column("subject"))
 # Avoid a database write on every request just to track activity.
 LAST_SEEN_RESOLUTION = timedelta(minutes=5)
@@ -212,6 +213,10 @@ class IdentityService:
         await self._db.execute(
             delete(_usage_counters).where(_usage_counters.c.subject.in_([str(user_id), subject]))
         )
+        # Conversations first. Deleting the user alone would reach each citation twice in one
+        # statement: deleted through conversations → messages, and set to NULL through
+        # documents → chunks; PostgreSQL then rejects the update of a row whose message is gone.
+        await self._db.execute(delete(_conversations).where(_conversations.c.owner_id == user_id))
         await self._db.execute(delete(User).where(User.id == user_id))
         await self._db.commit()
         logger.info("account_deleted", extra={"user_id": str(user_id)})
