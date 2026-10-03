@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.14",
+    "anthropic>=1.11.0",
     "argon2-cffi>=23.1",
     "asyncpg>=0.30",
     "email-validator>=2.2",
@@ -119,3 +120,22 @@ name = "Library and ingestion do not depend on retrieval"
 type = "forbidden"
 source_modules = ["knowvault.modules.library", "knowvault.modules.ingestion"]
 forbidden_modules = ["knowvault.modules.retrieval"]
+
+[[tool.importlinter.contracts]]
+name = "Assistant layers: api -> infrastructure -> application -> domain"
+type = "layers"
+containers = ["knowvault.modules.assistant"]
+layers = ["api", "infrastructure", "application", "domain"]
+
+[[tool.importlinter.contracts]]
+name = "Assistant domain is pure (no framework, database or other modules)"
+type = "forbidden"
+source_modules = ["knowvault.modules.assistant.domain"]
+forbidden_modules = ["sqlalchemy", "fastapi", "pydantic", "knowvault.core", "knowvault.modules.identity", "knowvault.modules.library", "knowvault.modules.ingestion", "knowvault.modules.retrieval"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Other modules do not depend on the assistant"
+type = "forbidden"
+source_modules = ["knowvault.modules.identity", "knowvault.modules.library", "knowvault.modules.ingestion", "knowvault.modules.retrieval"]
+forbidden_modules = ["knowvault.modules.assistant"]

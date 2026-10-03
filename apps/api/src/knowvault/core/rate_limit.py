@@ -62,16 +62,19 @@ async def increment(
     subject: str,
     bucket: str,
     window: timedelta,
+    amount: int = 1,
     now: datetime | None = None,
 ) -> int:
-    """Atomically increments the counter for the current window and returns the new value."""
+    """Atomically adds `amount` to the counter for the current window; returns the new value."""
     now = now or datetime.now(UTC)
     statement = (
         insert(UsageCounter)
-        .values(subject=subject, bucket=bucket, window_start=window_start_for(now, window), count=1)
+        .values(
+            subject=subject, bucket=bucket, window_start=window_start_for(now, window), count=amount
+        )
         .on_conflict_do_update(
             index_elements=[UsageCounter.subject, UsageCounter.bucket, UsageCounter.window_start],
-            set_={"count": UsageCounter.count + 1},
+            set_={"count": UsageCounter.count + amount},
         )
         .returning(UsageCounter.count)
     )

@@ -5,7 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal, Self
 
-from pydantic import Field, PostgresDsn, model_validator
+from pydantic import Field, PostgresDsn, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -58,6 +58,26 @@ class Settings(BaseSettings):
     embedding_threads: int | None = Field(default=None, ge=1)
     embedding_batch_size: int = Field(default=8, ge=1)
 
+    # --- Chat (grounded answers) -------------------------------------------------------------
+    # "anthropic": Claude through the Anthropic API (needs ANTHROPIC_API_KEY); "fake": an
+    # offline, extractive stand-in so the stack runs without a key (development and tests).
+    llm_provider: Literal["anthropic", "fake"] = "fake"
+    # Writes answers.
+    llm_model: str = "claude-sonnet-5-5"
+    # Cheaper model that rewrites follow-up questions into standalone search queries.
+    llm_fast_model: str = "claude-haiku-4-5-20251001"
+    anthropic_api_key: SecretStr | None = None
+    llm_timeout_seconds: float = Field(default=60, gt=0)
+    chat_max_output_tokens: int = Field(default=1024, ge=64)
+    # Sources given to the model per answer, and the characters they may take in total.
+    chat_max_sources: int = Field(default=8, ge=1, le=20)
+    chat_context_chars: int = Field(default=24_000, ge=1000)
+    # Earlier questions and answers sent with a new question.
+    chat_history_turns: int = Field(default=4, ge=0)
+    chat_history_chars: int = Field(default=6000, ge=0)
+    # Tokens (input + output) one user may spend per UTC day.
+    chat_daily_token_limit: int = Field(default=200_000, ge=1)
+
     worker_poll_interval_seconds: float = Field(default=1.0, gt=0)
     job_max_attempts: int = Field(default=3, ge=1)
     # A running job whose worker has been silent this long is considered abandoned.
@@ -88,6 +108,10 @@ class Settings(BaseSettings):
                 raise ValueError("APP_ORIGIN must use https in production")
             if self.embedding_provider == "fake":
                 raise ValueError("EMBEDDING_PROVIDER=fake is for tests only")
+            if self.llm_provider == "fake":
+                raise ValueError("LLM_PROVIDER=fake is for development and tests only")
+        if self.llm_provider == "anthropic" and not self.anthropic_api_key:
+            raise ValueError("ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic")
         return self
 
 
