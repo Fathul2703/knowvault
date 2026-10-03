@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v1.6** — Phase 1–4 diimplementasikan (ADR 0009–0012); dirilis sebagai `v0.1.0` dengan keterbatasan yang dicatat di §20; keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.7** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -28,6 +28,7 @@
 | v1.4 | Phase 4 bagian hardening (ADR 0011): batas per user (pertanyaan/menit, pencarian/menit, upload & simpan note/jam, maksimal dokumen); batas per alamat klien (login gagal lintas email, registrasi) dengan `X-Forwarded-For` hanya dari `TRUSTED_PROXIES`; CSP berbasis nonce untuk halaman web (semua halaman dirender per request) dan header ketat untuk respons API; hapus akun total (`DELETE /api/v1/auth/me` + halaman Account); job CI audit dependensi runtime (`pip-audit`, `npm audit --omit=dev`). Caddy, image produksi, dan E2E menyusul bersama rilis. |
 | v1.5 | Phase 4 bagian produksi & E2E (ADR 0012): image produksi (multi-stage, non-root; Next.js standalone), `compose.prod.yaml` dengan Caddy (TLS otomatis, HSTS, `/api/*` langsung ke FastAPI tanpa buffering, IP tetap sebagai satu-satunya `TRUSTED_PROXIES`), container API/worker read-only tanpa capability; `compose.e2e.yaml` + Playwright untuk alur kritis di CI. E2E menemukan bug hapus akun (cascade ganda ke `message_citations`) yang sudah diperbaiki. Prosedur backup di README. |
 | v1.6 | Rilis `v0.1.0` (MVP, lihat `CHANGELOG.md`) dengan catatan status §20: eval jawaban dengan Claude dan review manual, demo/video, screenshot README, serta pengukuran coverage belum dilakukan dan dicatat sebagai keterbatasan rilis. |
+| v1.7 | Phase 5 dimulai dengan dataset eval yang lebih sulit (addendum ADR 0007): dokumen versi lama, dokumen tetangga pengecoh, dua dokumen panjang, dan pertanyaan nyaris-terjawab; 28 dokumen, 108 pertanyaan. Baseline baru hybrid Success@1 89,5% / MRR 0,941 sebagai pembanding reranker dan perubahan retrieval berikutnya. |
 
 ---
 

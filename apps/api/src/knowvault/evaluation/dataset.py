@@ -18,6 +18,12 @@ CATEGORIES = (
     "identifier",
     # Answerable from a document that also contains a prompt-injection attempt.
     "injection",
+    # About an archived version of a document that has a current version with other numbers.
+    "version",
+    # About a document whose neighbour covers the same topic with other facts.
+    "distractor",
+    # The answer is one section of a long document.
+    "long_document",
     "unanswerable",
 )
 _WHITESPACE = re.compile(r"\s+")

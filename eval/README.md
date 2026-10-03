@@ -26,14 +26,14 @@ every result). Commit the report together with the change it measures.
 
 | Path | What |
 |---|---|
-| `corpus/` | 23 short Markdown documents, 11 in English and 12 in Indonesian |
-| `datasets/retrieval.jsonl` | 81 questions: 71 answerable, 10 that the corpus cannot answer |
+| `corpus/` | 28 Markdown documents, 14 in English and 14 in Indonesian, two of them long |
+| `datasets/retrieval.jsonl` | 108 questions: 95 answerable, 13 that the corpus cannot answer |
 | `reports/` | One Markdown and one JSON report per run of either evaluation |
 | `reviews/` | Manual review sheets of answer evaluation runs, once filled in |
 
 Each question line has an `id`, the `question`, its `language`, a `category`
-(`lexical`, `paraphrase`, `cross_lingual`, `identifier`, `injection`, `unanswerable`), the
-corpus file
+(`lexical`, `paraphrase`, `cross_lingual`, `identifier`, `injection`, `version`, `distractor`,
+`long_document`, `unanswerable`), the corpus file
 (`document`) that answers it and one or more short `evidence` passages copied from that file.
 A retrieved chunk is relevant when it comes from that file and contains an evidence passage
 (case and whitespace are ignored). Labels do not refer to chunk ids, so they survive changes to
@@ -52,6 +52,18 @@ characters (`ERR_4713` / `ERR_4171` / `ERR_7411`, `SKU-A1270` / `SKU-A1207`, ver
 Because the same author wrote documents and questions, questions can be closer to the wording of
 their documents than real queries would be. Use the numbers to compare runs with each other,
 not as a claim about quality on real data.
+
+Some documents are there to make retrieval harder, as real libraries do:
+
+- `version`: an archived version of the leave policy (`kebijakan-cuti-2022.md`) with other
+  numbers than the current one. Questions about the current rules must not be answered from it.
+- `distractor`: neighbours on the same topic with other facts — the partner API's limits next to
+  the public API's, and a postmortem of an ERR_4711 outage next to the runbook.
+- `long_document`: an employee handbook and a warehouse manual of several thousand words, where
+  the answer is one section among many and is often asked with other words or in the other
+  language.
+- Unanswerable questions include near misses, such as the limit of a plan that does not exist or
+  an outage in a month without a postmortem.
 
 Two documents (`vendor-onboarding.md`, `pengumuman-kantin.md`) contain a prompt-injection
 attempt among ordinary content. Their questions have the category `injection` and a `canary`:
