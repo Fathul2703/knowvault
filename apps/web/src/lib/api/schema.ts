@@ -461,6 +461,11 @@ export interface components {
              */
             chunk_id: string | null;
             /**
+             * Chunk Ordinal
+             * @description Position of the chunk in its document (the n of #chunk-n on the document page); null when the chunk no longer exists.
+             */
+            chunk_ordinal: number | null;
+            /**
              * Document Id
              * @description Null when the document was deleted.
              */
@@ -3367,8 +3372,8 @@ export interface operations {
              * @description A stream of Server-Sent Events:
              *
              *     - `message.created`: `{conversation_id, user_message_id, message_id}`
-             *     - `sources`: `{sources: [{ordinal, chunk_id, document_id, title, page_start, page_end,
-             *       heading_path, quoted_text}]}`, sent before the first token
+             *     - `sources`: `{sources: [{ordinal, chunk_id, chunk_ordinal, document_id, title, page_start,
+             *       page_end, heading_path, quoted_text}]}`, sent before the first token
              *     - `token`: `{text}`, repeated
              *     - `done`: `{message_id, status, citations, invalid_citations, usage}`; when `status` is
              *       `refused`, show the standard refusal text (also sent as tokens) instead of anything streamed

@@ -37,14 +37,21 @@ STALE_STREAM_AFTER = timedelta(minutes=5)
 _TITLE_CHARS = 80
 # Messages read to build the history; more than enough for the configured turns.
 _HISTORY_MESSAGES = 40
-# Only the key is needed: checks that cited chunks still exist.
-_chunks = table("chunks", column("id"))
+# The columns the assistant reads from chunks: whether they still exist, and their position.
+_chunks = table("chunks", column("id"), column("ordinal"))
+
+
+@dataclass(frozen=True)
+class CitationView:
+    citation: MessageCitation
+    # Position of the cited chunk in its document, while the chunk exists.
+    chunk_ordinal: int | None
 
 
 @dataclass(frozen=True)
 class MessageWithCitations:
     message: Message
-    citations: list[MessageCitation]
+    citations: list[CitationView]
 
 
 @dataclass(frozen=True)
@@ -201,15 +208,18 @@ class PostgresConversationStore:
                     .order_by(Message.seq)
                 )
             )
-            citations = await session.scalars(
-                select(MessageCitation)
+            citations = await session.execute(
+                select(MessageCitation, _chunks.c.ordinal)
                 .join(Message, Message.id == MessageCitation.message_id)
+                .outerjoin(_chunks, _chunks.c.id == MessageCitation.chunk_id)
                 .where(Message.conversation_id == conversation_id)
                 .order_by(MessageCitation.message_id, MessageCitation.ordinal)
             )
-            by_message: dict[uuid.UUID, list[MessageCitation]] = {}
-            for citation in citations:
-                by_message.setdefault(citation.message_id, []).append(citation)
+            by_message: dict[uuid.UUID, list[CitationView]] = {}
+            for citation, chunk_ordinal in citations:
+                by_message.setdefault(citation.message_id, []).append(
+                    CitationView(citation, chunk_ordinal)
+                )
         return ConversationDetail(
             conversation,
             [MessageWithCitations(m, by_message.get(m.id, [])) for m in messages],

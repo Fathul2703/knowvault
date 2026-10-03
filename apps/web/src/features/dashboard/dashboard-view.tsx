@@ -9,7 +9,7 @@ const ROADMAP = [
   { title: "Sign in securely", detail: "Invite-based accounts with server-side sessions.", phase: "Phase 1", done: true },
   { title: "Build your library", detail: "Upload PDFs, Word files and Markdown, or write notes.", phase: "Phase 2", done: true },
   { title: "Search by meaning", detail: "Hybrid semantic and keyword search across everything.", phase: "Phase 3", done: true },
-  { title: "Ask with citations", detail: "Answers grounded in your documents, with sources.", phase: "Phase 4", done: false },
+  { title: "Ask with citations", detail: "Answers grounded in your documents, with sources.", phase: "Phase 4", done: true },
 ] as const;
 
 const memberSince = new Intl.DateTimeFormat("en", { dateStyle: "long" });
@@ -47,18 +47,33 @@ export function DashboardView() {
           </ol>
         </Card>
 
-        <Card>
-          <h2 className="font-medium">Library</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Your documents and notes live in the library.
-          </p>
-          <Link
-            href="/library"
-            className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline"
-          >
-            Open library →
-          </Link>
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <h2 className="font-medium">Library</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Your documents and notes live in the library.
+            </p>
+            <Link
+              href="/library"
+              className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline"
+            >
+              Open library →
+            </Link>
+          </Card>
+
+          <Card>
+            <h2 className="font-medium">Ask</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Ask questions and get answers that cite your documents.
+            </p>
+            <Link
+              href="/chat"
+              className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline"
+            >
+              Start a conversation →
+            </Link>
+          </Card>
+        </div>
       </div>
     </div>
   );

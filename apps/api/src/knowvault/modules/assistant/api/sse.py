@@ -41,6 +41,7 @@ def encode(event: AnswerEvent) -> bytes:
                         {
                             "ordinal": s.ordinal,
                             "chunk_id": str(s.passage.chunk_id),
+                            "chunk_ordinal": s.passage.ordinal,
                             "document_id": str(s.passage.document_id),
                             "title": s.passage.document_title,
                             "page_start": s.passage.page_start,

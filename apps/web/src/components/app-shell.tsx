@@ -14,7 +14,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/library", label: "Library" },
   { href: "/search", label: "Search" },
-  { href: "/chat", label: "Ask", availableIn: "Phase 4" },
+  { href: "/chat", label: "Ask" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
