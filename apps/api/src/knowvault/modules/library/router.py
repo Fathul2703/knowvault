@@ -2,6 +2,7 @@
 
 import uuid
 from collections.abc import AsyncIterator
+from datetime import timedelta
 from typing import Annotated
 from urllib.parse import quote
 
@@ -12,7 +13,7 @@ from knowvault.core.db import SessionDep
 from knowvault.core.deps import SettingsDep, StorageDep
 from knowvault.core.errors import NotFoundError, Problem
 from knowvault.core.storage import StoredObjectNotFoundError
-from knowvault.modules.identity.dependencies import CurrentUser
+from knowvault.modules.identity.dependencies import CurrentUser, user_rate_limit
 from knowvault.modules.library.models import Document, Note
 from knowvault.modules.library.schemas import (
     CollectionCreate,
@@ -34,9 +35,19 @@ UPLOAD_PATH = "/api/v1/documents"
 
 router = APIRouter(prefix="/api/v1")
 
+# Uploads, note saves and reprocessing all queue parsing and embedding work.
+_DOCUMENT_WRITES = [
+    user_rate_limit(
+        "document_writes",
+        lambda settings: settings.document_writes_per_hour,
+        timedelta(hours=1),
+        "Too many uploads or note saves in the last hour. Try again later.",
+    )
+]
+
 _ERRORS: dict[int | str, dict[str, object]] = {
     code: {"model": Problem, "content": {"application/problem+json": {}}}
-    for code in (400, 401, 403, 404, 409, 413, 415, 422)
+    for code in (400, 401, 403, 404, 409, 413, 415, 422, 429)
 }
 
 
@@ -163,6 +174,7 @@ async def list_documents(
     status_code=status.HTTP_202_ACCEPTED,
     responses=_ERRORS,
     tags=["documents"],
+    dependencies=_DOCUMENT_WRITES,
 )
 async def upload_document(
     user: CurrentUser,
@@ -222,6 +234,7 @@ async def delete_document(document_id: uuid.UUID, user: CurrentUser, library: Li
     status_code=status.HTTP_202_ACCEPTED,
     responses=_ERRORS,
     tags=["documents"],
+    dependencies=_DOCUMENT_WRITES,
 )
 async def reprocess_document(
     document_id: uuid.UUID, user: CurrentUser, library: Library
@@ -282,6 +295,7 @@ async def download_document(
     status_code=status.HTTP_201_CREATED,
     responses=_ERRORS,
     tags=["notes"],
+    dependencies=_DOCUMENT_WRITES,
 )
 async def create_note(body: NoteCreate, user: CurrentUser, library: Library) -> NoteOut:
     document, note = await library.create_note(
@@ -295,7 +309,13 @@ async def get_note(document_id: uuid.UUID, user: CurrentUser, library: Library) 
     return _note_out(*await library.get_note(user.id, document_id))
 
 
-@router.put("/notes/{document_id}", response_model=NoteOut, responses=_ERRORS, tags=["notes"])
+@router.put(
+    "/notes/{document_id}",
+    response_model=NoteOut,
+    responses=_ERRORS,
+    tags=["notes"],
+    dependencies=_DOCUMENT_WRITES,
+)
 async def update_note(
     document_id: uuid.UUID, body: NoteUpdate, user: CurrentUser, library: Library
 ) -> NoteOut:

@@ -62,6 +62,7 @@ def get_store(
         history_turns=settings.chat_history_turns,
         history_chars=settings.chat_history_chars,
         daily_token_limit=settings.chat_daily_token_limit,
+        questions_per_minute=settings.chat_questions_per_minute,
     )
 
 

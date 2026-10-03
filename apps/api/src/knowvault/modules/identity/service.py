@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select, update
+from sqlalchemy import column, delete, select, table, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,6 +23,12 @@ from knowvault.modules.identity.models import Invite, User, UserSession
 logger = logging.getLogger(__name__)
 
 LOGIN_FAILURE_BUCKET = "login_failure"
+LOGIN_IP_FAILURE_BUCKET = "login_failure_ip"
+REGISTER_IP_BUCKET = "register_ip"
+REGISTER_IP_WINDOW = timedelta(hours=1)
+# Only the columns account deletion needs; identity does not depend on the library module.
+_documents = table("documents", column("owner_id"), column("storage_key"))
+_usage_counters = table("usage_counters", column("subject"))
 # Avoid a database write on every request just to track activity.
 LAST_SEEN_RESOLUTION = timedelta(minutes=5)
 
@@ -31,6 +37,12 @@ class InvalidCredentialsError(AppError):
     status_code = 401
     code = "invalid_credentials"
     title = "Invalid email or password"
+
+
+class InvalidPasswordError(AppError):
+    status_code = 403
+    code = "invalid_password"
+    title = "The password is not correct"
 
 
 class InvalidInviteError(AppError):
@@ -83,8 +95,23 @@ class IdentityService:
         display_name: str,
         password: str,
         user_agent: str | None,
+        client_address: str | None = None,
     ) -> LoginResult:
         now = _now()
+        if client_address is not None:
+            # Every attempt counts, so invite codes cannot be guessed from one address.
+            attempts = await rate_limit.increment(
+                self._db,
+                subject=f"ip:{client_address}",
+                bucket=REGISTER_IP_BUCKET,
+                window=REGISTER_IP_WINDOW,
+            )
+            await self._db.commit()
+            if attempts > self._settings.register_ip_max_attempts:
+                raise RateLimitedError(
+                    "Too many registration attempts. Try again later.",
+                    retry_after_seconds=rate_limit.seconds_until_reset(now, REGISTER_IP_WINDOW),
+                )
         invite = await self._db.scalar(
             select(Invite).where(Invite.code_hash == hash_token(invite_code)).with_for_update()
         )
@@ -106,24 +133,41 @@ class IdentityService:
         logger.info("user_registered", extra={"user_id": str(user.id)})
         return LoginResult(user=user, session_token=token)
 
-    async def login(self, *, email: str, password: str, user_agent: str | None) -> LoginResult:
+    async def login(
+        self,
+        *,
+        email: str,
+        password: str,
+        user_agent: str | None,
+        client_address: str | None = None,
+    ) -> LoginResult:
         window = timedelta(minutes=self._settings.login_window_minutes)
-        subject = f"email:{email}"
-        failures = await rate_limit.current_count(
-            self._db, subject=subject, bucket=LOGIN_FAILURE_BUCKET, window=window
-        )
-        if failures >= self._settings.login_max_attempts:
-            raise RateLimitedError(
-                "Too many failed login attempts. Try again later.",
-                retry_after_seconds=rate_limit.seconds_until_reset(_now(), window),
+        # Failures are limited per email (guessing one password) and per client address
+        # (trying many accounts).
+        limits = [(f"email:{email}", LOGIN_FAILURE_BUCKET, self._settings.login_max_attempts)]
+        if client_address is not None:
+            limits.append(
+                (
+                    f"ip:{client_address}",
+                    LOGIN_IP_FAILURE_BUCKET,
+                    self._settings.login_ip_max_attempts,
+                )
             )
+        for subject, bucket, limit in limits:
+            failures = await rate_limit.current_count(
+                self._db, subject=subject, bucket=bucket, window=window
+            )
+            if failures >= limit:
+                raise RateLimitedError(
+                    "Too many failed login attempts. Try again later.",
+                    retry_after_seconds=rate_limit.seconds_until_reset(_now(), window),
+                )
 
         user = await self._db.scalar(select(User).where(User.email == email))
         password_ok = verify_password(user.password_hash if user else None, password)
         if user is None or not password_ok or not user.is_active:
-            await rate_limit.increment(
-                self._db, subject=subject, bucket=LOGIN_FAILURE_BUCKET, window=window
-            )
+            for subject, bucket, _ in limits:
+                await rate_limit.increment(self._db, subject=subject, bucket=bucket, window=window)
             await self._db.commit()
             raise InvalidCredentialsError
 
@@ -132,6 +176,46 @@ class IdentityService:
         token = self._add_session(user, user_agent, _now())
         await self._db.commit()
         return LoginResult(user=user, session_token=token)
+
+    async def delete_account(self, user: User, *, password: str) -> list[str]:
+        """Deletes the user and everything they own; returns the storage keys of their files.
+
+        Documents, chunks, notes, collections, conversations and sessions go with the user
+        (ON DELETE CASCADE). Files are removed by the caller after the commit. Wrong passwords
+        count as failed logins, so this cannot be used to guess the password.
+        """
+        window = timedelta(minutes=self._settings.login_window_minutes)
+        subject = f"email:{user.email}"
+        failures = await rate_limit.current_count(
+            self._db, subject=subject, bucket=LOGIN_FAILURE_BUCKET, window=window
+        )
+        if failures >= self._settings.login_max_attempts:
+            raise RateLimitedError(
+                "Too many failed attempts. Try again later.",
+                retry_after_seconds=rate_limit.seconds_until_reset(_now(), window),
+            )
+        if not verify_password(user.password_hash, password):
+            await rate_limit.increment(
+                self._db, subject=subject, bucket=LOGIN_FAILURE_BUCKET, window=window
+            )
+            await self._db.commit()
+            raise InvalidPasswordError
+
+        user_id = user.id
+        keys: list[str] = list(
+            await self._db.scalars(
+                select(_documents.c.storage_key).where(
+                    _documents.c.owner_id == user_id, _documents.c.storage_key.is_not(None)
+                )
+            )
+        )
+        await self._db.execute(
+            delete(_usage_counters).where(_usage_counters.c.subject.in_([str(user_id), subject]))
+        )
+        await self._db.execute(delete(User).where(User.id == user_id))
+        await self._db.commit()
+        logger.info("account_deleted", extra={"user_id": str(user_id)})
+        return keys
 
     # --- Sessions ------------------------------------------------------------------------
 

@@ -37,6 +37,10 @@ def seconds_until_reset(now: datetime, window: timedelta) -> int:
     return max(1, int((reset_at - now).total_seconds()))
 
 
+def seconds_until_reset_now(window: timedelta) -> int:
+    return seconds_until_reset(datetime.now(UTC), window)
+
+
 async def current_count(
     session: AsyncSession,
     *,

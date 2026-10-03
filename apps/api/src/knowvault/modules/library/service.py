@@ -62,6 +62,11 @@ class PayloadTooLargeError(AppError):
     title = "Payload too large"
 
 
+class DocumentQuotaExceededError(ConflictError):
+    code = "document_quota_exceeded"
+    title = "Document limit reached"
+
+
 class DocumentBusyError(ConflictError):
     code = "document_busy"
     title = "The document is already being processed"
@@ -232,6 +237,7 @@ class LibraryService:
         title: str | None,
         collection_id: uuid.UUID | None,
     ) -> Document:
+        await self._check_document_quota(owner_id)
         if collection_id is not None:
             await self._owned_collection(owner_id, collection_id)
         filename = clean_filename(upload.filename)
@@ -318,6 +324,16 @@ class LibraryService:
         await self._db.refresh(document)
         return document
 
+    async def _check_document_quota(self, owner_id: uuid.UUID) -> None:
+        count = await self._db.scalar(
+            select(func.count()).select_from(Document).where(Document.owner_id == owner_id)
+        )
+        if (count or 0) >= self._settings.max_documents_per_user:
+            raise DocumentQuotaExceededError(
+                f"Accounts are limited to {self._settings.max_documents_per_user:,} documents "
+                "and notes. Delete some to add more."
+            )
+
     async def delete_document(self, owner_id: uuid.UUID, document_id: uuid.UUID) -> None:
         """Deletes the document with its chunks, then its stored file."""
         document = await self._owned_document(owner_id, document_id)
@@ -364,6 +380,7 @@ class LibraryService:
         collection_id: uuid.UUID | None,
     ) -> tuple[Document, Note]:
         self._check_note_length(body_md)
+        await self._check_document_quota(owner_id)
         if collection_id is not None:
             await self._owned_collection(owner_id, collection_id)
         document = Document(

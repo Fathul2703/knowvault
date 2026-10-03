@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import type { ReactNode } from "react";
 
 import { Providers } from "./providers";
@@ -10,7 +11,10 @@ export const metadata: Metadata = {
   description: "Personal knowledge management with grounded, cited AI answers.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Every page is rendered per request, so its scripts carry that request's CSP nonce
+  // (src/proxy.ts). Prerendered pages would have no nonce and be blocked.
+  await connection();
   return (
     <html lang="en">
       <body>

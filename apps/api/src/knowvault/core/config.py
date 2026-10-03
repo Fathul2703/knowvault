@@ -1,5 +1,6 @@
 """Application settings, loaded from environment variables."""
 
+import ipaddress
 from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
@@ -36,6 +37,13 @@ class Settings(BaseSettings):
 
     login_max_attempts: int = Field(default=5, ge=1)
     login_window_minutes: int = Field(default=15, ge=1)
+    # Failed logins from one client address within the login window, across all emails.
+    login_ip_max_attempts: int = Field(default=50, ge=1)
+    # Registration attempts from one client address per hour (protects invite codes).
+    register_ip_max_attempts: int = Field(default=10, ge=1)
+    # Comma-separated addresses or networks of reverse proxies whose X-Forwarded-For header is
+    # trusted, e.g. "172.16.0.0/12". Empty: the client is the peer of the connection.
+    trusted_proxies: str = ""
 
     invite_ttl_days: int = Field(default=7, ge=1)
 
@@ -78,10 +86,25 @@ class Settings(BaseSettings):
     # Tokens (input + output) one user may spend per UTC day.
     chat_daily_token_limit: int = Field(default=200_000, ge=1)
 
+    # --- Per-user limits on expensive endpoints ---------------------------------------------
+    chat_questions_per_minute: int = Field(default=10, ge=1)
+    searches_per_minute: int = Field(default=60, ge=1)
+    # Uploads and note saves; each one is parsed and embedded by the worker.
+    document_writes_per_hour: int = Field(default=120, ge=1)
+    max_documents_per_user: int = Field(default=2000, ge=1)
+
     worker_poll_interval_seconds: float = Field(default=1.0, gt=0)
     job_max_attempts: int = Field(default=3, ge=1)
     # A running job whose worker has been silent this long is considered abandoned.
     job_lock_timeout_seconds: int = Field(default=600, ge=30)
+
+    @property
+    def trusted_proxy_networks(self) -> tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...]:
+        return tuple(
+            ipaddress.ip_network(part.strip(), strict=False)
+            for part in self.trusted_proxies.split(",")
+            if part.strip()
+        )
 
     @property
     def max_upload_bytes(self) -> int:
@@ -101,6 +124,10 @@ class Settings(BaseSettings):
         if self.database_url.scheme != "postgresql+asyncpg":
             raise ValueError("DATABASE_URL must use the postgresql+asyncpg:// scheme")
         self.app_origin = self.app_origin.rstrip("/")
+        try:
+            self.trusted_proxy_networks  # noqa: B018 - validates the list at startup
+        except ValueError as exc:
+            raise ValueError(f"TRUSTED_PROXIES is not a list of addresses: {exc}") from exc
         if self.is_production:
             if not self.session_cookie_secure:
                 raise ValueError("SESSION_COOKIE_SECURE must be true in production")

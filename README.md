@@ -136,6 +136,23 @@ there if missing) and run `make test-api`.
 After changing API endpoints or schemas, run `make openapi` to regenerate
 `apps/api/openapi.json` and the web app's types. CI fails if they are out of date.
 
+CI also audits the locked runtime dependencies (`pip-audit`, `npm audit --omit=dev`);
+Dependabot keeps all dependencies, including development tools, up to date.
+
+## Security
+
+- **Sessions:** server-side, in an HttpOnly, SameSite cookie. Registration needs an invite.
+  State-changing requests must come from `APP_ORIGIN` ([ADR 0002](docs/adr/0002-session-authentication.md)).
+- **Limits:** per account on questions, searches, uploads and the number of documents, plus a
+  daily token quota; per client address on failed logins and registrations
+  ([ADR 0011](docs/adr/0011-hardening.md)).
+- **Content Security Policy:** a fresh nonce for every page, so only the app's own scripts run.
+  API responses forbid running or framing anything.
+- **Answers:** Markdown is rendered without raw HTML. Document text is treated as data in
+  prompts; the answer evaluation checks that planted instructions do not leak.
+- **Your data:** Account → Delete account removes the account with every document, file,
+  note, collection and conversation.
+
 ## Configuration
 
 All configuration comes from environment variables; see [`.env.example`](.env.example).
@@ -160,6 +177,9 @@ Secrets are never committed.
 | `LLM_MODEL`, `LLM_FAST_MODEL` | API | Answer model (default `claude-sonnet-5-5`) and the cheaper model that rewrites follow-up questions for search (default `claude-haiku-4-5-20251001`) |
 | `CHAT_DAILY_TOKEN_LIMIT` | API | Tokens (input + output) each user may spend on answers per UTC day (default 200,000) |
 | `CHAT_MAX_SOURCES`, `CHAT_CONTEXT_CHARS`, `CHAT_MAX_OUTPUT_TOKENS`, `CHAT_HISTORY_TURNS` | API | Optional answer limits (defaults 8 sources, 24,000 characters of sources, 1024 output tokens, 4 earlier turns) |
+| `CHAT_QUESTIONS_PER_MINUTE`, `SEARCHES_PER_MINUTE`, `DOCUMENT_WRITES_PER_HOUR`, `MAX_DOCUMENTS_PER_USER` | API | Per-user limits (defaults 10, 60, 120 uploads/note saves, 2,000 documents) |
+| `LOGIN_IP_MAX_ATTEMPTS`, `REGISTER_IP_MAX_ATTEMPTS` | API | Per-address limits: failed logins per 15 minutes across all emails (50) and registrations per hour (10) |
+| `TRUSTED_PROXIES` | API | Comma-separated addresses or networks of reverse proxies whose `X-Forwarded-For` is believed. Leave empty unless a proxy that overwrites the header (the production proxy, not the Next.js development server) sits in front of the API |
 | `API_INTERNAL_URL` | Web | Where the Next.js server forwards `/api/*` |
 
 ## Admin commands
@@ -243,6 +263,8 @@ pipeline; the committed fake-model report is the floor a language model has to b
 ## API
 
 - Health: `GET /healthz` (process up), `GET /readyz` (database reachable)
+- Account: `/api/v1/auth/register`, `/login`, `/logout`, `GET /me`; `DELETE /me` with
+  `{"password": "..."}` deletes the account and all its data
 - Library: `/api/v1/collections`, `/api/v1/documents` (upload, list, detail, `/file`,
   `/chunks`, `/reprocess`), `/api/v1/notes`
 - Search: `POST /api/v1/retrieval/search` with `{"query": "...", "top_k": 8}` and optional
@@ -299,8 +321,8 @@ apps/
       cli.py           admin commands
   web/                 Next.js app
     src/app/           routes: login, register, dashboard, library, library/[id], library/notes/…,
-                       search, chat, chat/[id]
-    src/features/      auth, dashboard, library, search, chat
+                       search, chat, chat/[id], account
+    src/features/      auth, account, dashboard, library, search, chat
     src/lib/api/       typed API client and generated types
 eval/                  retrieval evaluation: corpus, labelled questions, reports
 docs/                  architecture and ADRs

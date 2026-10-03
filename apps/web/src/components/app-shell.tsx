@@ -63,7 +63,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="border-t border-slate-200 px-5 py-4 text-sm">
-          <p className="truncate font-medium text-slate-900">{user.data.display_name}</p>
+          <Link
+            href="/account"
+            className="block truncate font-medium text-slate-900 hover:text-brand-700 hover:underline"
+          >
+            {user.data.display_name}
+          </Link>
           <p className="truncate text-slate-500">{user.data.email}</p>
           <Button
             variant="ghost"
@@ -83,6 +88,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             {NAV_ITEMS.filter((item) => !item.availableIn).map((item) => (
               <NavLink key={item.href} item={item} active={pathname.startsWith(item.href)} />
             ))}
+            <NavLink
+              item={{ href: "/account", label: "Account" }}
+              active={pathname.startsWith("/account")}
+            />
             <Button
               variant="ghost"
               className="ml-auto whitespace-nowrap px-2"

@@ -38,6 +38,7 @@ from knowvault.modules.retrieval.infrastructure.postgres_index import PostgresCh
 
 # Large enough never to stop an evaluation run.
 _UNLIMITED_TOKENS = 10**12
+_UNLIMITED_QUESTIONS = 10**9
 
 
 @dataclass(frozen=True)
@@ -296,6 +297,7 @@ async def run_answer_eval(
         history_turns=0,
         history_chars=0,
         daily_token_limit=_UNLIMITED_TOKENS,
+        questions_per_minute=_UNLIMITED_QUESTIONS,
     )
     service = AnswerService(
         store,

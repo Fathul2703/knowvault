@@ -1,6 +1,7 @@
 """HTTP endpoint for semantic search."""
 
 import uuid
+from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -9,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from knowvault.core.db import SessionDep
 from knowvault.core.deps import EmbeddingsDep
 from knowvault.core.errors import Problem
-from knowvault.modules.identity.dependencies import CurrentUser
+from knowvault.modules.identity.dependencies import CurrentUser, user_rate_limit
 from knowvault.modules.retrieval.application.search import SearchService
 from knowvault.modules.retrieval.domain.model import MAX_TOP_K, SearchMode, SearchScope
 from knowvault.modules.retrieval.infrastructure.postgres_index import PostgresChunkIndex
@@ -74,8 +75,16 @@ def get_search_service(embeddings: EmbeddingsDep) -> SearchService:
     response_model=SearchResponse,
     responses={
         code: {"model": Problem, "content": {"application/problem+json": {}}}
-        for code in (401, 403, 415, 422)
+        for code in (401, 403, 415, 422, 429)
     },
+    dependencies=[
+        user_rate_limit(
+            "search",
+            lambda settings: settings.searches_per_minute,
+            timedelta(minutes=1),
+            "Too many searches. Wait a moment and try again.",
+        )
+    ],
 )
 async def search(
     body: SearchRequest,

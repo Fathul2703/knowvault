@@ -17,6 +17,10 @@ logger = logging.getLogger("knowvault.request")
 
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+# API responses are data (JSON, event streams, file downloads), never pages: nothing in them may
+# run, load resources or be framed. The interactive docs (development only) are pages.
+API_CONTENT_SECURITY_POLICY = "default-src 'none'; frame-ancestors 'none'; sandbox"
+_DOCS_PREFIX = "/api/docs"
 
 
 class RequestContextMiddleware:
@@ -44,6 +48,11 @@ class RequestContextMiddleware:
                 headers["x-request-id"] = request_id
                 headers["x-content-type-options"] = "nosniff"
                 headers.setdefault("cache-control", "no-store")
+                headers.setdefault("referrer-policy", "no-referrer")
+                headers.setdefault("cross-origin-resource-policy", "same-origin")
+                if not scope["path"].startswith(_DOCS_PREFIX):
+                    headers.setdefault("content-security-policy", API_CONTENT_SECURITY_POLICY)
+                    headers.setdefault("x-frame-options", "DENY")
             await send(message)
 
         try:

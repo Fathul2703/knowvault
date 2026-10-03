@@ -19,6 +19,9 @@ x-api-environment: &api-environment
   LLM_FAST_MODEL: ${LLM_FAST_MODEL:-claude-haiku-4-5-20251001}
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
   CHAT_DAILY_TOKEN_LIMIT: ${CHAT_DAILY_TOKEN_LIMIT:-200000}
+  # Reverse proxies whose X-Forwarded-For is trusted for per-address limits. Leave empty here:
+  # the Next.js development proxy passes a client-supplied X-Forwarded-For through unchanged.
+  TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
 
 services:
   db:

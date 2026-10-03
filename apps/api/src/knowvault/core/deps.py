@@ -7,6 +7,7 @@ from fastapi import Depends, Request
 from knowvault.core.chat import ChatModels
 from knowvault.core.config import Settings
 from knowvault.core.embeddings import EmbeddingModel
+from knowvault.core.net import client_address
 from knowvault.core.storage import ObjectStorage
 
 
@@ -40,3 +41,10 @@ def get_chat_models(request: Request) -> ChatModels:
 
 
 ChatModelsDep = Annotated[ChatModels, Depends(get_chat_models)]
+
+
+def get_client_address(request: Request, settings: SettingsDep) -> str:
+    return client_address(request, settings.trusted_proxy_networks)
+
+
+ClientAddressDep = Annotated[str, Depends(get_client_address)]
