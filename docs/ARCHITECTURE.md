@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v1.8** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval: ADR 0013); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.9** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval: ADR 0013, 0014); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -30,6 +30,7 @@
 | v1.6 | Rilis `v0.1.0` (MVP, lihat `CHANGELOG.md`) dengan catatan status §20: eval jawaban dengan Claude dan review manual, demo/video, screenshot README, serta pengukuran coverage belum dilakukan dan dicatat sebagai keterbatasan rilis. |
 | v1.7 | Phase 5 dimulai dengan dataset eval yang lebih sulit (addendum ADR 0007): dokumen versi lama, dokumen tetangga pengecoh, dua dokumen panjang, dan pertanyaan nyaris-terjawab; 28 dokumen, 108 pertanyaan. Baseline baru hybrid Success@1 89,5% / MRR 0,941 sebagai pembanding reranker dan perubahan retrieval berikutnya. |
 | v1.8 | Phase 5 reranking (ADR 0013): port `Reranker` dan adapter `BAAI/bge-reranker-v2-m3` int8 (Apache-2.0; `jina-reranker-v2` ditolak karena lisensi non-komersial) sebagai tahap opsional di mode hybrid; diukur +2,1 poin Success@1 / MRR 0,941 → 0,953, 8 pertanyaan membaik dan 6 memburuk, latensi p50 71 ms → 2,5 detik; **tidak diaktifkan secara default** dan tidak dipakai sebagai evidence threshold. |
+| v1.9 | Phase 5 tuning chunking (ADR 0014): korpus eval ditambah 3 PDF tanpa heading (kasus unggahan paling umum); ukuran chunk menjadi setting; default berubah dari 1.800/2.400/200 ke **1.000/1.400/150** setelah diukur (hybrid Success@1 82,9% → 85,6%, MRR 0,902 → 0,920) karena chunk PDF besar menjadi "hub" yang mengalahkan passage yang benar. Dokumen lama perlu `knowvault reindex --all`. |
 
 ---
 
@@ -507,7 +508,7 @@ sequenceDiagram
 | **1. Intake (API)** | Batas ukuran ditegakkan dengan **menghitung byte saat streaming** (bukan percaya `Content-Length`), juga di proxy. Tipe dideteksi dari *magic bytes*; allowlist PDF, DOCX, Markdown, plain text. SHA-256 untuk dedup. Nama file asli hanya metadata. | File di storage, dokumen `pending`, job di-enqueue dalam transaksi yang sama. Jika insert gagal, file dihapus. |
 | **2. Extract** | Parser per MIME type di belakang port `DocumentParser`, dijalankan di **child process** dengan timeout keras dan batas memori (parser Python yang CPU-bound tidak bisa dihentikan dari dalam event loop). PDF: teks per halaman (nomor halaman fisik, 1-based). DOCX: paragraf + heading; cek total ukuran setelah dekompresi sebelum parsing (DOCX adalah ZIP). MD/TXT: langsung, heading Markdown dipertahankan. Batas jumlah halaman dan ukuran teks hasil. | Daftar blok `{text, page, heading_path}`. |
 | **3. Normalize** | Unicode NFC, perbaikan whitespace, perbaikan hyphenation di akhir baris. Heuristik penghapusan header/footer berulang ditunda sampai eval menunjukkan kebutuhannya. Dokumen tanpa teks → `failed: no_extractable_text`. | Blok bersih. |
-| **4. Chunk** | *Structure-aware recursive chunking*: pecah menurut heading → paragraf → kalimat. Ukuran berbasis karakter: target 1.800, maksimum 2.400, overlap hingga 200 karakter berupa kalimat/paragraf utuh, tidak menyeberang batas section bila memungkinkan. Setiap chunk menyimpan `page_start/end` (PDF), `heading_path`, offset karakter. Parameter di-tuning lewat eval. | Chunk di memori. |
+| **4. Chunk** | *Structure-aware recursive chunking*: pecah menurut heading → paragraf → kalimat. Ukuran berbasis karakter: target 1.000, maksimum 1.400, overlap hingga 150 karakter (ADR 0014; semula 1.800/2.400/200) berupa kalimat/paragraf utuh, tidak menyeberang batas section bila memungkinkan. Setiap chunk menyimpan `page_start/end` (PDF), `heading_path`, offset karakter. Parameter di-tuning lewat eval. | Chunk di memori. |
 | **5. Embed** | Batch, retry dengan exponential backoff untuk error transien. Teks yang diembed = `judul dokumen + heading_path + isi chunk` (contextual header sederhana). | Vector di memori. |
 | **6. Commit** | **Satu transaksi**: pastikan `documents.content_version` masih sama dengan versi di job (jika berubah → hasil dibuang, job baru sudah menunggu), hapus chunk lama, insert chunk baru beserta embedding, set `status=ready`. | Search tidak pernah melihat dokumen dalam keadaan setengah jadi; pipeline **idempotent** dan aman di-retry. |
 

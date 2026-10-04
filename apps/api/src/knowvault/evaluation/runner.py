@@ -278,7 +278,11 @@ async def run_retrieval_eval(
         reranker=reranker,
         rerank_candidates=rerank_candidates,
     )
-    chunking = ChunkingConfig()
+    chunking = ChunkingConfig(
+        target_chars=settings.chunk_target_chars,
+        max_chars=settings.chunk_max_chars,
+        overlap_chars=settings.chunk_overlap_chars,
+    )
     return EvalReport(
         created_at=datetime.now(UTC),
         config={

@@ -24,6 +24,8 @@ CATEGORIES = (
     "distractor",
     # The answer is one section of a long document.
     "long_document",
+    # The answer is in a PDF without headings, where chunk size and overlap decide the chunks.
+    "unstructured",
     "unanswerable",
 )
 _WHITESPACE = re.compile(r"\s+")

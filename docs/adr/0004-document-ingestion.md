@@ -1,6 +1,6 @@
 # ADR 0004: Document ingestion in Phase 2
 
-- Status: Accepted
+- Status: Accepted; chunk sizes changed in ADR 0014
 - Date: 2026-09-29
 
 ## Context

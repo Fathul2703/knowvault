@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     max_note_chars: int = Field(default=200_000, ge=1)
     max_pages: int = Field(default=500, ge=1)
     max_extracted_chars: int = Field(default=5_000_000, ge=1)
+    # Chunk sizes in characters (ADR 0004, 0014). Changing them affects new and reprocessed
+    # documents only; `knowvault reindex --all` re-chunks the rest.
+    chunk_target_chars: int = Field(default=1000, ge=200)
+    chunk_max_chars: int = Field(default=1400, ge=200)
+    chunk_overlap_chars: int = Field(default=150, ge=0)
     parse_timeout_seconds: float = Field(default=60, gt=0)
     parse_memory_mb: int = Field(default=1024, ge=64)
 
@@ -132,6 +137,8 @@ class Settings(BaseSettings):
         if self.database_url.scheme != "postgresql+asyncpg":
             raise ValueError("DATABASE_URL must use the postgresql+asyncpg:// scheme")
         self.app_origin = self.app_origin.rstrip("/")
+        if not self.chunk_overlap_chars < self.chunk_target_chars <= self.chunk_max_chars:
+            raise ValueError("expected CHUNK_OVERLAP_CHARS < CHUNK_TARGET_CHARS <= CHUNK_MAX_CHARS")
         try:
             self.trusted_proxy_networks  # noqa: B018 - validates the list at startup
         except ValueError as exc:

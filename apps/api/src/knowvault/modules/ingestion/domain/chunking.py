@@ -24,9 +24,11 @@ _SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?])\s+")
 
 @dataclass(frozen=True)
 class ChunkingConfig:
-    target_chars: int = 1800
-    max_chars: int = 2400
-    overlap_chars: int = 200
+    # Measured on the evaluation corpus with PDFs (ADR 0014): smaller chunks stop long PDF
+    # chunks from outranking the right passage of another document.
+    target_chars: int = 1000
+    max_chars: int = 1400
+    overlap_chars: int = 150
 
     def __post_init__(self) -> None:
         if not 0 <= self.overlap_chars < self.target_chars <= self.max_chars:

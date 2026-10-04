@@ -15,6 +15,7 @@ from knowvault.core.embeddings import EmbeddingModel
 from knowvault.core.logging import configure_logging
 from knowvault.core.storage import ObjectStorage
 from knowvault.modules.ingestion.application.pipeline import IngestionPipeline
+from knowvault.modules.ingestion.domain.chunking import ChunkingConfig
 from knowvault.modules.ingestion.infrastructure.chunks import SqlChunkWriter
 from knowvault.modules.ingestion.infrastructure.subprocess_parser import (
     SubprocessDocumentParser,
@@ -41,6 +42,11 @@ def build_pipeline(
         ),
         chunk_writer=SqlChunkWriter(),
         embeddings=embeddings or build_embedding_model(settings),
+        chunking=ChunkingConfig(
+            target_chars=settings.chunk_target_chars,
+            max_chars=settings.chunk_max_chars,
+            overlap_chars=settings.chunk_overlap_chars,
+        ),
     )
 
 
