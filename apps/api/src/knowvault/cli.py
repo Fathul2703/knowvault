@@ -63,16 +63,22 @@ async def _reindex(settings: Settings, *, include_all: bool) -> int:
 
 
 def _download_model(settings: Settings) -> str:
+    """Downloads the configured local models: the embedding model and, if set, the reranker."""
     from knowvault.adapters.embeddings import BgeM3Embeddings
+    from knowvault.adapters.reranking import BgeReranker
 
-    if settings.embedding_provider != "bge-m3":
-        return f"Nothing to download for EMBEDDING_PROVIDER={settings.embedding_provider}."
-    model = BgeM3Embeddings(
-        settings.embedding_cache_dir,
-        threads=settings.embedding_threads,
-        batch_size=settings.embedding_batch_size,
-    )
-    return f"{model.model_id} is ready in {model.download()}"
+    lines = []
+    if settings.embedding_provider == "bge-m3":
+        model = BgeM3Embeddings(
+            settings.embedding_cache_dir,
+            threads=settings.embedding_threads,
+            batch_size=settings.embedding_batch_size,
+        )
+        lines.append(f"{model.model_id} is ready in {model.download()}")
+    if settings.reranker == "bge-reranker-v2-m3":
+        reranker = BgeReranker(settings.embedding_cache_dir, threads=settings.embedding_threads)
+        lines.append(f"{reranker.model_id} is ready in {reranker.download()}")
+    return "\n".join(lines) or "Nothing to download for the configured providers."
 
 
 def _export_openapi() -> str:

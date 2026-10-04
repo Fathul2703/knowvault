@@ -93,6 +93,14 @@ class Settings(BaseSettings):
     document_writes_per_hour: int = Field(default=120, ge=1)
     max_documents_per_user: int = Field(default=2000, ge=1)
 
+    # --- Reranking ---------------------------------------------------------------------------
+    # "bge-reranker-v2-m3": BAAI/bge-reranker-v2-m3 (int8 ONNX, multilingual, run locally) reorders
+    # the best hybrid results; "none" keeps the fused order; "fake" is for tests only.
+    reranker: Literal["none", "bge-reranker-v2-m3", "fake"] = "none"
+    # Fused hybrid results the reranker reorders; the rest keep their fused order. Ten scored as
+    # well as twenty on the evaluation, at about half the latency (ADR 0013).
+    rerank_candidates: int = Field(default=10, ge=2, le=50)
+
     worker_poll_interval_seconds: float = Field(default=1.0, gt=0)
     job_max_attempts: int = Field(default=3, ge=1)
     # A running job whose worker has been silent this long is considered abandoned.
@@ -137,6 +145,8 @@ class Settings(BaseSettings):
                 raise ValueError("EMBEDDING_PROVIDER=fake is for tests only")
             if self.llm_provider == "fake":
                 raise ValueError("LLM_PROVIDER=fake is for development and tests only")
+            if self.reranker == "fake":
+                raise ValueError("RERANKER=fake is for tests only")
         if self.llm_provider == "anthropic" and not self.anthropic_api_key:
             raise ValueError("ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic")
         return self

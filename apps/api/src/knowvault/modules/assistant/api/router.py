@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from fastapi.responses import StreamingResponse
 
 from knowvault.core.db import Database, SessionDep, get_database
-from knowvault.core.deps import ChatModelsDep, EmbeddingsDep, SettingsDep
+from knowvault.core.deps import ChatModelsDep, EmbeddingsDep, RerankerDep, SettingsDep
 from knowvault.core.errors import Problem
 from knowvault.modules.assistant.api import sse
 from knowvault.modules.assistant.api.schemas import (
@@ -74,11 +74,13 @@ def get_answer_service(
     database: Annotated[Database, Depends(get_database)],
     store: Store,
     embeddings: EmbeddingsDep,
+    reranker: RerankerDep,
     models: ChatModelsDep,
 ) -> AnswerService:
-    retriever = SearchRetriever(
-        database.sessionmaker, SearchService(embeddings, PostgresChunkIndex())
+    search = SearchService(
+        embeddings, PostgresChunkIndex(), reranker, rerank_candidates=settings.rerank_candidates
     )
+    retriever = SearchRetriever(database.sessionmaker, search)
     return AnswerService(
         store,
         retriever,

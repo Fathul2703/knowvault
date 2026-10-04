@@ -22,6 +22,12 @@ the name must end in `_eval`), uploads the corpus through the normal library and
 drops the database, and writes a dated report to `reports/` (Markdown for reading, JSON with
 every result). Commit the report together with the change it measures.
 
+### Reranking (retrieval)
+
+`RERANKER=bge-reranker-v2-m3` (with `--modes hybrid` to save time) evaluates hybrid search with
+the cross-encoder; the report then also shows the distribution of reranker scores for answerable
+and unanswerable questions. The measurements behind keeping it off are in ADR 0013.
+
 ## Contents
 
 | Path | What |

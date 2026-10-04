@@ -17,6 +17,7 @@ from knowvault.core.chat import ChatModels
 from knowvault.core.config import Settings
 from knowvault.core.db import Database
 from knowvault.core.embeddings import EmbeddingModel
+from knowvault.core.reranker import Reranker
 from knowvault.core.storage import ObjectStorage
 from knowvault.evaluation.dataset import Question, is_relevant
 from knowvault.evaluation.metrics import percentile
@@ -284,6 +285,7 @@ async def run_answer_eval(
     models: ChatModels,
     corpus: Sequence[Path],
     questions: Sequence[Question],
+    reranker: Reranker | None = None,
 ) -> AnswerReport:
     owner_id, names = await ingest_corpus(
         settings=settings,
@@ -301,7 +303,15 @@ async def run_answer_eval(
     )
     service = AnswerService(
         store,
-        SearchRetriever(database.sessionmaker, SearchService(embeddings, PostgresChunkIndex())),
+        SearchRetriever(
+            database.sessionmaker,
+            SearchService(
+                embeddings,
+                PostgresChunkIndex(),
+                reranker,
+                rerank_candidates=settings.rerank_candidates,
+            ),
+        ),
         models,
         AnswerSettings(
             max_sources=settings.chat_max_sources,
@@ -322,6 +332,7 @@ async def run_answer_eval(
             "llm_provider": settings.llm_provider,
             "answer_model": models.answer.model_id,
             "embedding_model": embeddings.model_id,
+            "reranker": reranker.model_id if reranker else None,
             "prompt_version": PROMPT_VERSION,
             "documents": len(names),
             "chunks": await count_chunks(database, owner_id),

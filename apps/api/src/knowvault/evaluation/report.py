@@ -37,6 +37,12 @@ def to_markdown(report: EvalReport) -> str:
         "## Setup",
         "",
         f"- Embedding model: `{config['embedding_model']}`",
+        (
+            f"- Reranker (hybrid mode): `{config['reranker']}`, top "
+            f"{config['rerank_candidates']} fused results"
+            if config.get("reranker")
+            else "- Reranker: none"
+        ),
         f"- Corpus: {config['documents']} documents, {config['chunks']} chunks "
         f"(target {config['chunk_target_chars']} / max {config['chunk_max_chars']} characters, "
         f"overlap {config['chunk_overlap_chars']})",
@@ -89,6 +95,19 @@ def to_markdown(report: EvalReport) -> str:
         "",
         f"- First relevant chunk of answerable questions: {_stats(report.similarity['relevant'])}",
         f"- Best chunk for unanswerable questions: {_stats(report.similarity['unanswerable_top'])}",
+        *(
+            [
+                "",
+                "Reranker scores (hybrid):",
+                "",
+                f"- First relevant chunk of answerable questions: "
+                f"{_stats(report.similarity['rerank_relevant'])}",
+                f"- Best chunk for unanswerable questions: "
+                f"{_stats(report.similarity.get('rerank_unanswerable_top', []))}",
+            ]
+            if report.similarity.get("rerank_relevant")
+            else []
+        ),
         "",
         "## Misses (no relevant chunk in the top 10)",
         "",

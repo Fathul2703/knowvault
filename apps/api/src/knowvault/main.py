@@ -8,6 +8,7 @@ from fastapi.routing import APIRoute
 
 from knowvault.adapters.chat import build_chat_models
 from knowvault.adapters.embeddings import build_embedding_model
+from knowvault.adapters.reranking import build_reranker
 from knowvault.adapters.storage.filesystem import FilesystemStorage
 from knowvault.core.chat import ChatModels
 from knowvault.core.config import Settings, get_settings
@@ -21,6 +22,7 @@ from knowvault.core.middleware import (
     CsrfProtectionMiddleware,
     RequestContextMiddleware,
 )
+from knowvault.core.reranker import Reranker
 from knowvault.core.storage import ObjectStorage
 from knowvault.modules.assistant.api.router import router as assistant_router
 from knowvault.modules.identity.router import router as identity_router
@@ -45,6 +47,7 @@ def create_app(
     storage: ObjectStorage | None = None,
     embeddings: EmbeddingModel | None = None,
     chat_models: ChatModels | None = None,
+    reranker: Reranker | None = None,
 ) -> FastAPI:
     settings = settings or get_settings()
     database = database or Database(settings)
@@ -52,6 +55,7 @@ def create_app(
     # Loaded lazily on the first search, so startup and health checks stay fast.
     embeddings = embeddings or build_embedding_model(settings)
     chat_models = chat_models or build_chat_models(settings)
+    reranker = reranker or build_reranker(settings)
     configure_logging(settings.log_level)
 
     @asynccontextmanager
@@ -73,6 +77,7 @@ def create_app(
     app.state.storage = storage
     app.state.embeddings = embeddings
     app.state.chat_models = chat_models
+    app.state.reranker = reranker
 
     register_error_handlers(app)
     # Middleware added last runs first: request context wraps everything so rejections are

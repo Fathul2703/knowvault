@@ -61,3 +61,5 @@ class SearchHit:
     # 1-based rank in each method's candidate list, when the chunk appeared there.
     vector_rank: int | None
     fulltext_rank: int | None
+    # Cross-encoder relevance in [0, 1] when the hit was reranked (hybrid mode with a reranker).
+    rerank_score: float | None = None
