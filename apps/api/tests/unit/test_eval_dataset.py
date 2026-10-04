@@ -4,6 +4,7 @@ If chunking parameters change and split an evidence passage across chunks, this 
 labels are fixed before an evaluation silently reports false misses.
 """
 
+import importlib.util
 from collections import Counter
 from pathlib import Path
 
@@ -12,7 +13,11 @@ import pytest
 from knowvault.evaluation.dataset import DatasetError, is_relevant, load_dataset, normalize
 from knowvault.modules.ingestion.domain.chunking import chunk_blocks
 from knowvault.modules.ingestion.domain.normalize import normalize_blocks
-from knowvault.modules.ingestion.infrastructure.parsers import ParseLimits, parse_markdown
+from knowvault.modules.ingestion.infrastructure.parsers import (
+    ParseLimits,
+    parse_markdown,
+    parse_pdf,
+)
 
 EVAL_DIR = Path(__file__).resolve().parents[4] / "eval"
 CORPUS = EVAL_DIR / "corpus"
@@ -20,9 +25,14 @@ DATASET = EVAL_DIR / "datasets" / "retrieval.jsonl"
 LIMITS = ParseLimits(max_pages=500, max_chars=5_000_000)
 
 
+def corpus_documents() -> list[Path]:
+    return sorted(p for p in CORPUS.iterdir() if p.suffix in (".md", ".pdf"))
+
+
 def chunks_of(path: Path) -> list[str]:
     """The chunks the production pipeline creates for a corpus file."""
-    blocks = normalize_blocks(parse_markdown(path.read_bytes(), LIMITS).blocks)
+    parse = parse_pdf if path.suffix == ".pdf" else parse_markdown
+    blocks = normalize_blocks(parse(path.read_bytes(), LIMITS).blocks)
     return [chunk.content for chunk in chunk_blocks(blocks)]
 
 
@@ -41,13 +51,13 @@ def test_dataset_size_and_balance(questions: list) -> None:  # type: ignore[type
 
 def test_every_corpus_document_is_asked_about(questions: list) -> None:  # type: ignore[type-arg]
     asked = Counter(q.document for q in questions if q.answerable)
-    files = {p.name for p in CORPUS.glob("*.md")}
+    files = {p.name for p in corpus_documents()}
     assert set(asked) <= files, "dataset refers to missing corpus files"
     assert all(asked[name] >= 2 for name in files), "every document needs at least 2 questions"
 
 
 def test_every_evidence_passage_lies_within_one_chunk(questions: list) -> None:  # type: ignore[type-arg]
-    chunks = {p.name: chunks_of(p) for p in CORPUS.glob("*.md")}
+    chunks = {p.name: chunks_of(p) for p in corpus_documents()}
     problems = []
     for question in questions:
         if not question.answerable:
@@ -103,3 +113,21 @@ def test_loader_rejects_duplicate_ids(tmp_path: Path) -> None:
     path.write_text(f"{entry}\n{entry}\n")
     with pytest.raises(DatasetError, match="duplicate id"):
         load_dataset(path)
+
+
+def test_committed_pdfs_match_their_sources() -> None:
+    """eval/corpus/*.pdf are built from eval/corpus-src/*.txt; rebuild them after editing."""
+    spec = importlib.util.spec_from_file_location(
+        "build_pdf_corpus", EVAL_DIR / "tools" / "build_pdf_corpus.py"
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    builder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(builder)
+    sources = sorted((EVAL_DIR / "corpus-src").glob("*.txt"))
+    assert sources
+    for source in sources:
+        built = builder.make_pdf(source.read_text(encoding="utf-8"))
+        assert (CORPUS / f"{source.stem}.pdf").read_bytes() == built, (
+            f"{source.stem}.pdf is out of date: run python eval/tools/build_pdf_corpus.py"
+        )

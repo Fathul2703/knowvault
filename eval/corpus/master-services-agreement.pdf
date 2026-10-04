@@ -1,0 +1,43 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 3606 >>
+stream
+BT /F1 10 Tf 14 TL 56 740 Td (Master Services Agreement) Tj T* () Tj T* (This Master Services Agreement is entered into between the provider of the hosted document) Tj T* (platform \(the Provider\) and the organisation that signs the order form \(the Customer\). It) Tj T* (governs every order form that refers to it. Where an order form contradicts this) Tj T* (agreement, the order form prevails for that order only.) Tj T* () Tj T* (1. Definitions. The Services are the hosted platform, its interfaces and the support) Tj T* (described in this agreement. Customer Data is all data that the Customer or its users) Tj T* (upload to the Services. A Business Day is a day on which banks are open in Amsterdam.) Tj T* () Tj T* (2. Term and renewal. The agreement starts on the effective date of the first order form) Tj T* (and runs for an initial term of twenty-four months. After the initial term it renews) Tj T* (automatically for successive periods of twelve months, unless either party gives notice of) Tj T* (non-renewal at least ninety days before the end of the current period. Notice must be) Tj T* (given in writing; email to the contract addresses in the order form counts as writing.) Tj T* () Tj T* (3. Fees and payment. Fees are invoiced quarterly in advance. The Customer pays each) Tj T* (invoice within forty-five days after the invoice date, by bank transfer to the account) Tj T* (stated on the invoice. Amounts that are not disputed in good faith and remain unpaid after) Tj T* (the due date bear interest of one percent per month. If an invoice remains unpaid thirty) Tj T* (days after a written reminder, the Provider may suspend the Services until payment is) Tj T* (received; suspension does not affect the fees owed.) Tj T* () Tj T* (4. Price changes. The Provider may increase its prices once per contract year, by no more) Tj T* (than five percent, with at least sixty days of written notice before the increase takes) Tj T* (effect. Price increases never apply retroactively to periods already invoiced.) Tj T* () Tj T* (5. Service availability. The Provider makes the Services available at least 99.5 percent) Tj T* (of each calendar month, measured at the Provider's network edge and excluding planned) Tj T* (maintenance announced at least five Business Days in advance. Planned maintenance takes) Tj T* (place outside the hours of 07:00 to 19:00 Central European Time on Business Days.) Tj T* () Tj T* (6. Service credits. If availability in a month falls below the commitment, the Customer) Tj T* (receives a service credit of five percent of the monthly fee for each full half percentage) Tj T* (point below 99.5 percent, up to a maximum of twenty-five percent of the monthly fee.) Tj T* (Credits are deducted from the next invoice and are the Customer's only financial remedy) Tj T* (for unavailability. The Customer must claim a credit within thirty days after the end of) Tj T* (the month concerned.) Tj T* () Tj T* (7. Support. Support is available by email and through the support portal. Critical) Tj T* (incidents, meaning that the Services are unavailable or Customer Data is at risk, are) Tj T* (answered within one hour at any time of day. Other requests are answered within one) Tj T* (Business Day. The Customer names up to five support contacts who may open requests.) Tj T* () Tj T* (8. Customer Data. The Customer remains the owner of all Customer Data. The Provider) Tj T* (processes Customer Data only to provide the Services and as described in the data) Tj T* (processing terms annexed to this agreement. The Provider does not use Customer Data to) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 2657 >>
+stream
+BT /F1 10 Tf 14 TL 56 740 Td (train machine learning models that serve other customers.) Tj T* () Tj T* (9. Subprocessors. The Provider may use subprocessors to provide the Services. The Provider) Tj T* (notifies the Customer at least thirty days before adding a new subprocessor. The Customer) Tj T* (may object on reasonable grounds within that period; if the parties cannot agree, the) Tj T* (Customer may terminate the affected order form without penalty.) Tj T* () Tj T* (10. Security and audits. The Provider maintains the security measures described in its) Tj T* (security annex and holds a current ISO 27001 certificate. The Customer may audit the) Tj T* (Provider's compliance with this agreement once per calendar year, with at least thirty) Tj T* (days of notice, during Business Days and at its own cost. Audits by a third party require) Tj T* (that party to sign a confidentiality agreement with the Provider.) Tj T* () Tj T* (11. Confidentiality. Each party keeps the other party's confidential information secret) Tj T* (and uses it only for the purposes of this agreement. These obligations continue for five) Tj T* (years after the agreement ends, and for trade secrets for as long as they remain trade) Tj T* (secrets.) Tj T* () Tj T* (12. Liability. Each party's total liability under this agreement is limited to the fees) Tj T* (paid by the Customer in the twelve months before the event that gave rise to the claim.) Tj T* (This limit does not apply to damage caused intentionally or by gross negligence, to) Tj T* (breaches of confidentiality, or to the Customer's payment obligations. Neither party is) Tj T* (liable for lost profits or indirect damage.) Tj T* () Tj T* (13. Termination. Either party may terminate the agreement with immediate effect if the) Tj T* (other party materially breaches it and does not remedy the breach within thirty days after) Tj T* (written notice. Termination does not entitle the Customer to a refund of fees for periods) Tj T* (already provided, except where the Provider terminates for convenience under an order) Tj T* (form.) Tj T* () Tj T* (14. Return and deletion of data. After termination, the Customer may export its Customer) Tj T* (Data through the export function for thirty days. The Provider then deletes all Customer) Tj T* (Data within sixty days after termination, including from backups, and confirms the) Tj T* (deletion in writing on request.) Tj T* () Tj T* (15. Governing law. This agreement is governed by the laws of the Netherlands. Disputes are) Tj T* (submitted exclusively to the competent courts of Amsterdam, unless the parties agree to) Tj T* (mediation first.) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000003905 00000 n 
+0000004031 00000 n 
+0000006740 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+6837
+%%EOF

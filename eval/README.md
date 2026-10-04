@@ -32,14 +32,15 @@ and unanswerable questions. The measurements behind keeping it off are in ADR 00
 
 | Path | What |
 |---|---|
-| `corpus/` | 28 Markdown documents, 14 in English and 14 in Indonesian, two of them long |
-| `datasets/retrieval.jsonl` | 108 questions: 95 answerable, 13 that the corpus cannot answer |
+| `corpus/` | 31 documents, 16 in English and 15 in Indonesian: 28 Markdown files (two of them long) and 3 PDFs without headings |
+| `corpus-src/` | Plain-text sources of the PDFs; `python eval/tools/build_pdf_corpus.py` rebuilds them (a test checks that they match) |
+| `datasets/retrieval.jsonl` | 124 questions: 111 answerable, 13 that the corpus cannot answer |
 | `reports/` | One Markdown and one JSON report per run of either evaluation |
 | `reviews/` | Manual review sheets of answer evaluation runs, once filled in |
 
 Each question line has an `id`, the `question`, its `language`, a `category`
 (`lexical`, `paraphrase`, `cross_lingual`, `identifier`, `injection`, `version`, `distractor`,
-`long_document`, `unanswerable`), the corpus file
+`long_document`, `unstructured`, `unanswerable`), the corpus file
 (`document`) that answers it and one or more short `evidence` passages copied from that file.
 A retrieved chunk is relevant when it comes from that file and contains an evidence passage
 (case and whitespace are ignored). Labels do not refer to chunk ids, so they survive changes to
@@ -68,6 +69,10 @@ Some documents are there to make retrieval harder, as real libraries do:
 - `long_document`: an employee handbook and a warehouse manual of several thousand words, where
   the answer is one section among many and is often asked with other words or in the other
   language.
+- `unstructured`: a services contract, an annual report and a field study as PDFs without
+  headings, the most common kind of upload. The PDF parser returns plain page text, so chunk size
+  and overlap decide what a chunk contains — unlike the Markdown files, where every section
+  becomes its own chunk.
 - Unanswerable questions include near misses, such as the limit of a plan that does not exist or
   an outage in a month without a postmortem.
 

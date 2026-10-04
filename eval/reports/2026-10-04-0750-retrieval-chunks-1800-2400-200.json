@@ -1,0 +1,6016 @@
+{
+  "created_at": "2026-10-04T07:50:49.734510+00:00",
+  "config": {
+    "embedding_model": "BAAI/bge-m3:int8@4de1325",
+    "reranker": null,
+    "rerank_candidates": null,
+    "documents": 31,
+    "chunks": 159,
+    "questions": 124,
+    "answerable_questions": 111,
+    "top_k": 10,
+    "chunk_target_chars": 1800,
+    "chunk_max_chars": 2400,
+    "chunk_overlap_chars": 200,
+    "rrf_k": 60,
+    "candidates_per_list": 30,
+    "label": "chunks-1800-2400-200"
+  },
+  "summaries": [
+    {
+      "mode": "hybrid",
+      "questions": 111,
+      "mrr": 0.9024024024024024,
+      "latency_p50_ms": 77.34658399999716,
+      "latency_p95_ms": 104.01904200000445,
+      "by_category": {
+        "cross_lingual": {
+          "questions": 19,
+          "success@1": 0.5789473684210527,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.7719298245614035
+        },
+        "distractor": {
+          "questions": 6,
+          "success@1": 0.8333333333333334,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.9166666666666666
+        },
+        "identifier": {
+          "questions": 21,
+          "success@1": 0.9523809523809523,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.9682539682539681
+        },
+        "injection": {
+          "questions": 4,
+          "success@1": 1.0,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 1.0
+        },
+        "lexical": {
+          "questions": 11,
+          "success@1": 1.0,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 1.0
+        },
+        "long_document": {
+          "questions": 15,
+          "success@1": 0.8666666666666667,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.9333333333333333
+        },
+        "paraphrase": {
+          "questions": 16,
+          "success@1": 0.75,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.859375
+        },
+        "unstructured": {
+          "questions": 16,
+          "success@1": 0.8125,
+          "success@5": 0.9375,
+          "success@10": 1.0,
+          "mrr@10": 0.8697916666666666
+        },
+        "version": {
+          "questions": 3,
+          "success@1": 1.0,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 1.0
+        }
+      },
+      "success": {
+        "@1": 0.8288288288288288,
+        "@5": 0.990990990990991,
+        "@10": 1.0
+      }
+    },
+    {
+      "mode": "vector",
+      "questions": 111,
+      "mrr": 0.9004504504504505,
+      "latency_p50_ms": 74.62095899998644,
+      "latency_p95_ms": 103.56366599998523,
+      "by_category": {
+        "cross_lingual": {
+          "questions": 19,
+          "success@1": 0.6842105263157895,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.8245614035087719
+        },
+        "distractor": {
+          "questions": 6,
+          "success@1": 0.8333333333333334,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.9166666666666666
+        },
+        "identifier": {
+          "questions": 21,
+          "success@1": 0.8095238095238095,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.8928571428571429
+        },
+        "injection": {
+          "questions": 4,
+          "success@1": 1.0,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 1.0
+        },
+        "lexical": {
+          "questions": 11,
+          "success@1": 1.0,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 1.0
+        },
+        "long_document": {
+          "questions": 15,
+          "success@1": 1.0,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 1.0
+        },
+        "paraphrase": {
+          "questions": 16,
+          "success@1": 0.75,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.8645833333333334
+        },
+        "unstructured": {
+          "questions": 16,
+          "success@1": 0.75,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 0.825
+        },
+        "version": {
+          "questions": 3,
+          "success@1": 1.0,
+          "success@5": 1.0,
+          "success@10": 1.0,
+          "mrr@10": 1.0
+        }
+      },
+      "success": {
+        "@1": 0.8288288288288288,
+        "@5": 1.0,
+        "@10": 1.0
+      }
+    },
+    {
+      "mode": "fulltext",
+      "questions": 111,
+      "mrr": 0.4864864864864865,
+      "latency_p50_ms": 21.208375000014712,
+      "latency_p95_ms": 25.585749999976315,
+      "by_category": {
+        "cross_lingual": {
+          "questions": 19,
+          "success@1": 0.0,
+          "success@5": 0.0,
+          "success@10": 0.0,
+          "mrr@10": 0.0
+        },
+        "distractor": {
+          "questions": 6,
+          "success@1": 0.16666666666666666,
+          "success@5": 0.16666666666666666,
+          "success@10": 0.16666666666666666,
+          "mrr@10": 0.16666666666666666
+        },
+        "identifier": {
+          "questions": 21,
+          "success@1": 0.7142857142857143,
+          "success@5": 0.7619047619047619,
+          "success@10": 0.8095238095238095,
+          "mrr@10": 0.7380952380952381
+        },
+        "injection": {
+          "questions": 4,
+          "success@1": 0.5,
+          "success@5": 0.5,
+          "success@10": 0.5,
+          "mrr@10": 0.5
+        },
+        "lexical": {
+          "questions": 11,
+          "success@1": 0.8181818181818182,
+          "success@5": 0.8181818181818182,
+          "success@10": 0.8181818181818182,
+          "mrr@10": 0.8181818181818182
+        },
+        "long_document": {
+          "questions": 15,
+          "success@1": 0.4,
+          "success@5": 0.4,
+          "success@10": 0.4,
+          "mrr@10": 0.4
+        },
+        "paraphrase": {
+          "questions": 16,
+          "success@1": 0.625,
+          "success@5": 0.625,
+          "success@10": 0.625,
+          "mrr@10": 0.625
+        },
+        "unstructured": {
+          "questions": 16,
+          "success@1": 0.5,
+          "success@5": 0.5625,
+          "success@10": 0.5625,
+          "mrr@10": 0.53125
+        },
+        "version": {
+          "questions": 3,
+          "success@1": 0.6666666666666666,
+          "success@5": 0.6666666666666666,
+          "success@10": 0.6666666666666666,
+          "mrr@10": 0.6666666666666666
+        }
+      },
+      "success": {
+        "@1": 0.4774774774774775,
+        "@5": 0.4954954954954955,
+        "@10": 0.5045045045045045
+      }
+    }
+  ],
+  "similarity": {
+    "relevant": [
+      0.3646199163114934,
+      0.46678130625654024,
+      0.48563549008158,
+      0.4874706130501134,
+      0.5103057787277985,
+      0.5189585067083231,
+      0.5270882687840402,
+      0.5291380251481541,
+      0.5322448572820633,
+      0.5332972685517519,
+      0.5345778465271034,
+      0.5401192855692761,
+      0.5401889407747352,
+      0.5433804826921199,
+      0.5451433116368427,
+      0.5494840904916555,
+      0.5495399832725525,
+      0.5532850889393645,
+      0.5614281296730081,
+      0.5617668628692627,
+      0.5622947551187727,
+      0.5664765149184948,
+      0.5698474049568216,
+      0.5718227710512603,
+      0.5759462804730314,
+      0.5773570537567139,
+      0.5789202796769319,
+      0.589869534365508,
+      0.5904894051101629,
+      0.5907490037086001,
+      0.5929991006851238,
+      0.5977713349138142,
+      0.5988763213827514,
+      0.5992365718342928,
+      0.6059335289617453,
+      0.6082196416920319,
+      0.6099036437445334,
+      0.6121020584349816,
+      0.6147265387827047,
+      0.6159528126744751,
+      0.6195679903030396,
+      0.619667805413473,
+      0.6229146347692927,
+      0.6230112763629823,
+      0.6235465182987772,
+      0.6250478476228896,
+      0.6265635081101513,
+      0.6286847932167068,
+      0.6318057148282894,
+      0.6333306024471108,
+      0.6377301786300702,
+      0.6403112983981939,
+      0.6408011485101207,
+      0.6425671599000323,
+      0.6436766043480386,
+      0.6441426701375685,
+      0.6460358867102696,
+      0.64883953332901,
+      0.6516432762145996,
+      0.6534690856933594,
+      0.6539885218157193,
+      0.6553339742621814,
+      0.6559066352649467,
+      0.6572309323824563,
+      0.658476710319519,
+      0.6594209861065132,
+      0.6599209898639636,
+      0.6599716353450303,
+      0.661657313207229,
+      0.6626741089030581,
+      0.6653303701079345,
+      0.665480017555954,
+      0.6667547821998596,
+      0.6677078803690639,
+      0.6689253646775875,
+      0.6699574193345734,
+      0.6709122257881042,
+      0.6751409776634879,
+      0.6755165070911107,
+      0.6757118492470016,
+      0.6759472296206503,
+      0.6792607104998643,
+      0.6795141268934901,
+      0.6800567305071163,
+      0.6809330392439997,
+      0.6810048412677753,
+      0.681999921798706,
+      0.6822230233749498,
+      0.6824449125595288,
+      0.6826303208658198,
+      0.6917741298675537,
+      0.6939120523824767,
+      0.6951382963400574,
+      0.695601541066089,
+      0.6998153507819674,
+      0.7005583761791286,
+      0.7096374207951188,
+      0.7138092985465156,
+      0.7208834623237348,
+      0.7267791032791138,
+      0.7278705835342407,
+      0.730598509311676,
+      0.737529516220098,
+      0.7410361921169657,
+      0.747155122713295,
+      0.7581163048744202,
+      0.7720254335373178,
+      0.7748768001941901,
+      0.7849284666861988,
+      0.7887761827938614,
+      0.7925717234611568
+    ],
+    "unanswerable_top": [
+      0.34060242707111965,
+      0.4269246673353362,
+      0.4310964983048149,
+      0.45536732939677194,
+      0.4628789584970885,
+      0.4796438062084858,
+      0.5034457445144653,
+      0.5064363042170319,
+      0.547771692276001,
+      0.5588354468345642,
+      0.5705723762512207,
+      0.5736828705195892,
+      0.6006389738271786
+    ]
+  },
+  "results": [
+    {
+      "question_id": "en-runbook-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 68.49720899998601,
+      "top_similarity": 0.730598509311676,
+      "relevant_similarity": 0.730598509311676,
+      "top_documents": [
+        "incident-runbook.md",
+        "incident-postmortem-err-4711.md",
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-2",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 69.10449999998036,
+      "top_similarity": 0.6826303208658198,
+      "relevant_similarity": 0.6826303208658198,
+      "top_documents": [
+        "incident-runbook.md",
+        "billing-error-codes.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-runbook-3",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 3,
+      "latency_ms": 67.77279199999953,
+      "top_similarity": 0.5743133343142295,
+      "relevant_similarity": 0.5495399832725525,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-runbook.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-4",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 79.76466700000628,
+      "top_similarity": 0.5622947551187727,
+      "relevant_similarity": 0.5622947551187727,
+      "top_documents": [
+        "incident-runbook.md",
+        "engineer-onboarding.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-5",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 110.87387500001,
+      "top_similarity": 0.6792607104998643,
+      "relevant_similarity": 0.6792607104998643,
+      "top_documents": [
+        "incident-runbook.md",
+        "incident-runbook.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-runbook-6",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 3,
+      "latency_ms": 83.72066599997652,
+      "top_similarity": 0.5402116131530308,
+      "relevant_similarity": 0.5322448572820633,
+      "top_documents": [
+        "employee-handbook.md",
+        "api-rate-limits-partner.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-1",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 65.26845799999137,
+      "top_similarity": 0.5992365718342928,
+      "relevant_similarity": 0.5992365718342928,
+      "top_documents": [
+        "data-retention-policy.md",
+        "engineer-onboarding.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-2",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 77.65600000001882,
+      "top_similarity": 0.5789202796769319,
+      "relevant_similarity": 0.5789202796769319,
+      "top_documents": [
+        "data-retention-policy.md",
+        "data-retention-policy.md",
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-retention-3",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 72.87004200000524,
+      "top_similarity": 0.747155122713295,
+      "relevant_similarity": 0.747155122713295,
+      "top_documents": [
+        "data-retention-policy.md",
+        "data-retention-policy.md",
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-4",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 82.9349579999814,
+      "top_similarity": 0.6403112983981939,
+      "relevant_similarity": 0.6403112983981939,
+      "top_documents": [
+        "data-retention-policy.md",
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-onboarding-1",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 106.3128749999862,
+      "top_similarity": 0.6286847932167068,
+      "relevant_similarity": 0.6286847932167068,
+      "top_documents": [
+        "engineer-onboarding.md",
+        "engineer-onboarding.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-onboarding-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 141.18887600000107,
+      "top_similarity": 0.6265635081101513,
+      "relevant_similarity": 0.6265635081101513,
+      "top_documents": [
+        "engineer-onboarding.md",
+        "engineer-onboarding.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-onboarding-3",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 74.62200000000507,
+      "top_similarity": 0.5345778465271034,
+      "relevant_similarity": 0.5345778465271034,
+      "top_documents": [
+        "engineer-onboarding.md",
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 72.9096249999941,
+      "top_similarity": 0.5929991006851238,
+      "relevant_similarity": 0.5929991006851238,
+      "top_documents": [
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-2",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 81.46570899998551,
+      "top_similarity": 0.7410361921169657,
+      "relevant_similarity": 0.7410361921169657,
+      "top_documents": [
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-ratelimit-3",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 77.18349999998964,
+      "top_similarity": 0.5994399428701531,
+      "relevant_similarity": 0.5614281296730081,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-4",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 84.73125000000437,
+      "top_similarity": 0.6782766368059401,
+      "relevant_similarity": 0.6757118492470016,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-coffee-1",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 82.02145800001404,
+      "top_similarity": 0.604885816574101,
+      "relevant_similarity": 0.5718227710512603,
+      "top_documents": [
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-coffee-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 75.8190840000168,
+      "top_similarity": 0.5698474049568216,
+      "relevant_similarity": 0.5698474049568216,
+      "top_documents": [
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-coffee-3",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 70.77704200000312,
+      "top_similarity": 0.7138092985465156,
+      "relevant_similarity": 0.7138092985465156,
+      "top_documents": [
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md",
+        "sourdough-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-travel-1",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 66.74458300000197,
+      "top_similarity": 0.6099036437445334,
+      "relevant_similarity": 0.6099036437445334,
+      "top_documents": [
+        "travel-expense-policy.md",
+        "api-rate-limits.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-travel-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 73.60345899999743,
+      "top_similarity": 0.5103057787277985,
+      "relevant_similarity": 0.5103057787277985,
+      "top_documents": [
+        "travel-expense-policy.md",
+        "travel-expense-policy.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-travel-3",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 78.62191699999244,
+      "top_similarity": 0.6917741298675537,
+      "relevant_similarity": 0.6917741298675537,
+      "top_documents": [
+        "travel-expense-policy.md",
+        "employee-handbook.md",
+        "vendor-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 75.92700000000718,
+      "top_similarity": 0.64883953332901,
+      "relevant_similarity": 0.64883953332901,
+      "top_documents": [
+        "release-notes.md",
+        "release-notes.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-2",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 74.53812500000367,
+      "top_similarity": 0.6667547821998596,
+      "relevant_similarity": 0.6667547821998596,
+      "top_documents": [
+        "release-notes.md",
+        "engineer-onboarding.md",
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-release-3",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 77.24266600001783,
+      "top_similarity": 0.6195679903030396,
+      "relevant_similarity": 0.6195679903030396,
+      "top_documents": [
+        "release-notes.md",
+        "billing-error-codes.md",
+        "travel-expense-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-4",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 65.57466600000339,
+      "top_similarity": 0.48563549008158,
+      "relevant_similarity": 0.48563549008158,
+      "top_documents": [
+        "release-notes.md",
+        "mobile-release-notes.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sourdough-1",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 68.69037499998853,
+      "top_similarity": 0.5977713349138142,
+      "relevant_similarity": 0.5977713349138142,
+      "top_documents": [
+        "sourdough-notes.md",
+        "engineer-onboarding.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sourdough-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 72.71149999999693,
+      "top_similarity": 0.6755165070911107,
+      "relevant_similarity": 0.6755165070911107,
+      "top_documents": [
+        "sourdough-notes.md",
+        "sourdough-notes.md",
+        "sourdough-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sourdough-3",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 69.82854200001043,
+      "top_similarity": 0.3646199163114934,
+      "relevant_similarity": 0.3646199163114934,
+      "top_documents": [
+        "sourdough-notes.md",
+        "incident-runbook.md",
+        "pemulihan-bencana.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-1",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 104.01904200000445,
+      "top_similarity": 0.6559066352649467,
+      "relevant_similarity": 0.6559066352649467,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-2",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 73.95399999998631,
+      "top_similarity": 0.7278705835342407,
+      "relevant_similarity": 0.7278705835342407,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti-3",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 92.1678340000085,
+      "top_similarity": 0.48718035144688887,
+      "relevant_similarity": 0.6534690856933594,
+      "top_documents": [
+        "employee-handbook.md",
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti-4",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 84.5322499999952,
+      "top_similarity": 0.6169100632125201,
+      "relevant_similarity": 0.5907490037086001,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-5",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 4,
+      "latency_ms": 83.87124999998719,
+      "top_similarity": 0.4192998457372348,
+      "relevant_similarity": 0.5291380251481541,
+      "top_documents": [
+        "helpdesk-tiket.md",
+        "kebijakan-cuti-2022.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sandi-1",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 73.29437500001745,
+      "top_similarity": 0.7267791032791138,
+      "relevant_similarity": 0.7267791032791138,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sandi-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 83.53675000000749,
+      "top_similarity": 0.695601541066089,
+      "relevant_similarity": 0.695601541066089,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "mobile-release-notes.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sandi-3",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 70.93375100001253,
+      "top_similarity": 0.6553339742621814,
+      "relevant_similarity": 0.6553339742621814,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sandi-4",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 81.44879200000332,
+      "top_similarity": 0.6800567305071163,
+      "relevant_similarity": 0.6800567305071163,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "employee-handbook.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rapat-1",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 105.80291599998759,
+      "top_similarity": 0.3939867137070512,
+      "relevant_similarity": 0.658476710319519,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "rapat-perencanaan-q3.md",
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-rapat-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 81.23870800000077,
+      "top_similarity": 0.6230112763629823,
+      "relevant_similarity": 0.6230112763629823,
+      "top_documents": [
+        "rapat-perencanaan-q3.md",
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rapat-3",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 71.3845420000041,
+      "top_similarity": 0.5617668628692627,
+      "relevant_similarity": 0.5617668628692627,
+      "top_documents": [
+        "rapat-perencanaan-q3.md",
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-rendang-1",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 80.42824999998288,
+      "top_similarity": 0.6844976732434241,
+      "relevant_similarity": 0.6699574193345734,
+      "top_documents": [
+        "resep-rendang.md",
+        "resep-rendang.md",
+        "resep-rendang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rendang-2",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 95.543417000016,
+      "top_similarity": 0.6939120523824767,
+      "relevant_similarity": 0.6939120523824767,
+      "top_documents": [
+        "resep-rendang.md",
+        "resep-rendang.md",
+        "resep-rendang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rendang-3",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 73.8026249999848,
+      "top_similarity": 0.7925717234611568,
+      "relevant_similarity": 0.7925717234611568,
+      "top_documents": [
+        "resep-rendang.md",
+        "resep-rendang.md",
+        "resep-rendang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-bencana-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 76.6309999999919,
+      "top_similarity": 0.6408011485101207,
+      "relevant_similarity": 0.6408011485101207,
+      "top_documents": [
+        "pemulihan-bencana.md",
+        "api-rate-limits.md",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-bencana-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 101.09854199998836,
+      "top_similarity": 0.6516432762145996,
+      "relevant_similarity": 0.6516432762145996,
+      "top_documents": [
+        "pemulihan-bencana.md",
+        "pemulihan-bencana.md",
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-bencana-3",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 81.35929200000191,
+      "top_similarity": 0.5401889407747352,
+      "relevant_similarity": 0.5401889407747352,
+      "top_documents": [
+        "pemulihan-bencana.md",
+        "pemulihan-bencana.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-irigasi-1",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 91.63612500000795,
+      "top_similarity": 0.5483079283421006,
+      "relevant_similarity": 0.5451433116368427,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "riset-irigasi-sawah.md",
+        "field-study-cover-crops.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-irigasi-2",
+      "category": "paraphrase",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 72.7782090000062,
+      "top_similarity": 0.6147265387827047,
+      "relevant_similarity": 0.6147265387827047,
+      "top_documents": [
+        "riset-irigasi-sawah.md",
+        "riset-irigasi-sawah.md",
+        "riset-irigasi-sawah.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-helpdesk-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 60.86920800001394,
+      "top_similarity": 0.5773570537567139,
+      "relevant_similarity": 0.5773570537567139,
+      "top_documents": [
+        "helpdesk-tiket.md",
+        "status-pengiriman.md",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-helpdesk-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 86.03441599998973,
+      "top_similarity": 0.4720480864090999,
+      "relevant_similarity": 0.665480017555954,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "helpdesk-tiket.md",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-hidroponik-1",
+      "category": "lexical",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 120.01837500000079,
+      "top_similarity": 0.6751409776634879,
+      "relevant_similarity": 0.6751409776634879,
+      "top_documents": [
+        "hidroponik.md",
+        "hidroponik.md",
+        "hidroponik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-hidroponik-2",
+      "category": "cross_lingual",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 97.34191699999428,
+      "top_similarity": 0.6377301786300702,
+      "relevant_similarity": 0.6377301786300702,
+      "top_documents": [
+        "hidroponik.md",
+        "hidroponik.md",
+        "hidroponik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 77.34658399999716,
+      "top_similarity": 0.6250478476228896,
+      "relevant_similarity": 0.6250478476228896,
+      "top_documents": [
+        "billing-error-codes.md",
+        "incident-runbook.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-2",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 3,
+      "latency_ms": 74.97104200001559,
+      "top_similarity": 0.5993670225143433,
+      "relevant_similarity": 0.661657313207229,
+      "top_documents": [
+        "incident-runbook.md",
+        "billing-error-codes.md",
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-3",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 67.54345799998873,
+      "top_similarity": 0.6425671599000323,
+      "relevant_similarity": 0.6425671599000323,
+      "top_documents": [
+        "billing-error-codes.md",
+        "incident-runbook.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-mobile-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 87.62979099998347,
+      "top_similarity": 0.5664765149184948,
+      "relevant_similarity": 0.5664765149184948,
+      "top_documents": [
+        "mobile-release-notes.md",
+        "release-notes.md",
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-mobile-2",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 65.03487500000915,
+      "top_similarity": 0.6121020584349816,
+      "relevant_similarity": 0.6121020584349816,
+      "top_documents": [
+        "mobile-release-notes.md",
+        "incident-postmortem-err-4711.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-mobile-3",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 65.49774999999158,
+      "top_similarity": 0.7208834623237348,
+      "relevant_similarity": 0.7208834623237348,
+      "top_documents": [
+        "mobile-release-notes.md",
+        "release-notes.md",
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-kirim-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 66.31458300000759,
+      "top_similarity": 0.5494840904916555,
+      "relevant_similarity": 0.5494840904916555,
+      "top_documents": [
+        "status-pengiriman.md",
+        "helpdesk-tiket.md",
+        "status-pengiriman.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-kirim-2",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 78.67749999999774,
+      "top_similarity": 0.619667805413473,
+      "relevant_similarity": 0.619667805413473,
+      "top_documents": [
+        "status-pengiriman.md",
+        "status-pengiriman.md",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-kirim-3",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 81.11708300000942,
+      "top_similarity": 0.6810048412677753,
+      "relevant_similarity": 0.6810048412677753,
+      "top_documents": [
+        "status-pengiriman.md",
+        "status-pengiriman.md",
+        "status-pengiriman.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-1",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 71.32445799999232,
+      "top_similarity": 0.6677078803690639,
+      "relevant_similarity": 0.6677078803690639,
+      "top_documents": [
+        "kode-barang-elektronik.md",
+        "kode-barang-alat-tulis.md",
+        "kode-barang-alat-tulis.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-2",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 79.31320800000208,
+      "top_similarity": 0.6951382963400574,
+      "relevant_similarity": 0.6951382963400574,
+      "top_documents": [
+        "kode-barang-elektronik.md",
+        "kode-barang-alat-tulis.md",
+        "kode-barang-alat-tulis.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-3",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 72.47420800001692,
+      "top_similarity": 0.6229146347692927,
+      "relevant_similarity": 0.6229146347692927,
+      "top_documents": [
+        "kode-barang-alat-tulis.md",
+        "buku-panduan-gudang.md",
+        "kode-barang-alat-tulis.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sku-4",
+      "category": "identifier",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 88.99908300000448,
+      "top_similarity": 0.6436766043480386,
+      "relevant_similarity": 0.6436766043480386,
+      "top_documents": [
+        "kode-barang-alat-tulis.md",
+        "kode-barang-elektronik.md",
+        "kode-barang-elektronik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-inject-1",
+      "category": "injection",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 74.08504099998936,
+      "top_similarity": 0.7887761827938614,
+      "relevant_similarity": 0.7887761827938614,
+      "top_documents": [
+        "vendor-onboarding.md",
+        "vendor-onboarding.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-inject-2",
+      "category": "injection",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 76.00904200000969,
+      "top_similarity": 0.7096374207951188,
+      "relevant_similarity": 0.7096374207951188,
+      "top_documents": [
+        "vendor-onboarding.md",
+        "vendor-onboarding.md",
+        "vendor-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-inject-3",
+      "category": "injection",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 90.65379199998347,
+      "top_similarity": 0.7748768001941901,
+      "relevant_similarity": 0.7748768001941901,
+      "top_documents": [
+        "pengumuman-kantin.md",
+        "laporan-tahunan-2025.pdf",
+        "pengumuman-kantin.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-inject-4",
+      "category": "injection",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 87.69649999999274,
+      "top_similarity": 0.681999921798706,
+      "relevant_similarity": 0.681999921798706,
+      "top_documents": [
+        "pengumuman-kantin.md",
+        "pengumuman-kantin.md",
+        "pengumuman-kantin.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti2022-1",
+      "category": "version",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 89.4270830000039,
+      "top_similarity": 0.737529516220098,
+      "relevant_similarity": 0.737529516220098,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti2022-2",
+      "category": "version",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 86.18125099999929,
+      "top_similarity": 0.5401192855692761,
+      "relevant_similarity": 0.5401192855692761,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti2022-3",
+      "category": "version",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 63.25516699999412,
+      "top_similarity": 0.6572309323824563,
+      "relevant_similarity": 0.6572309323824563,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-partner-1",
+      "category": "distractor",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 73.09891699998161,
+      "top_similarity": 0.7849284666861988,
+      "relevant_similarity": 0.7849284666861988,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-partner-2",
+      "category": "distractor",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 81.86249999999973,
+      "top_similarity": 0.6441426701375685,
+      "relevant_similarity": 0.6441426701375685,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-partner-3",
+      "category": "distractor",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 77.88483299998461,
+      "top_similarity": 0.7581163048744202,
+      "relevant_similarity": 0.7581163048744202,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-postmortem-1",
+      "category": "distractor",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 78.1178329999932,
+      "top_similarity": 0.6967406715066244,
+      "relevant_similarity": 0.6594209861065132,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-postmortem-2",
+      "category": "distractor",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 69.5741250000026,
+      "top_similarity": 0.5433804826921199,
+      "relevant_similarity": 0.5433804826921199,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-postmortem-3",
+      "category": "distractor",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 79.90795899999625,
+      "top_similarity": 0.6824449125595288,
+      "relevant_similarity": 0.6824449125595288,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-runbook.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-1",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 69.99641600000928,
+      "top_similarity": 0.6599716353450303,
+      "relevant_similarity": 0.6599716353450303,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-2",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 75.93845899998541,
+      "top_similarity": 0.6822230233749498,
+      "relevant_similarity": 0.6822230233749498,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-3",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 69.69741700001464,
+      "top_similarity": 0.6333306024471108,
+      "relevant_similarity": 0.6333306024471108,
+      "top_documents": [
+        "employee-handbook.md",
+        "billing-error-codes.md",
+        "pengumuman-kantin.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-4",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 75.25508300000183,
+      "top_similarity": 0.6759472296206503,
+      "relevant_similarity": 0.6759472296206503,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-5",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 67.21941699998979,
+      "top_similarity": 0.46455051321830254,
+      "relevant_similarity": 0.7005583761791286,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "employee-handbook.md",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-6",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 119.143667000003,
+      "top_similarity": 0.6235465182987772,
+      "relevant_similarity": 0.6235465182987772,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-7",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 78.80299999999352,
+      "top_similarity": 0.6998153507819674,
+      "relevant_similarity": 0.6998153507819674,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-8",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 73.26312500001109,
+      "top_similarity": 0.5018070045364508,
+      "relevant_similarity": 0.6460358867102696,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-9",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 77.29891700000735,
+      "top_similarity": 0.5988763213827514,
+      "relevant_similarity": 0.5988763213827514,
+      "top_documents": [
+        "employee-handbook.md",
+        "data-retention-policy.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-1",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 91.6157089999956,
+      "top_similarity": 0.6809330392439997,
+      "relevant_similarity": 0.6809330392439997,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "laporan-tahunan-2025.pdf",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-2",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 72.34199999999191,
+      "top_similarity": 0.6539885218157193,
+      "relevant_similarity": 0.6539885218157193,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "kode-barang-elektronik.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-3",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 104.01654199998234,
+      "top_similarity": 0.6599209898639636,
+      "relevant_similarity": 0.6599209898639636,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "coffee-fermentation-study.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-4",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 85.1948749999849,
+      "top_similarity": 0.6318057148282894,
+      "relevant_similarity": 0.6318057148282894,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "keamanan-kata-sandi.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-5",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 93.52720799998337,
+      "top_similarity": 0.6059335289617453,
+      "relevant_similarity": 0.6059335289617453,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-6",
+      "category": "long_document",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 73.24366699998563,
+      "top_similarity": 0.6795141268934901,
+      "relevant_similarity": 0.6795141268934901,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-1",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 67.48245899999006,
+      "top_similarity": 0.6689253646775875,
+      "relevant_similarity": 0.6689253646775875,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-2",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 74.6512909999808,
+      "top_similarity": 0.6709122257881042,
+      "relevant_similarity": 0.6709122257881042,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "vendor-onboarding.md",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-3",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 88.77233300000853,
+      "top_similarity": 0.589869534365508,
+      "relevant_similarity": 0.589869534365508,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-msa-4",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 6,
+      "latency_ms": 79.57250000001181,
+      "top_similarity": 0.5007590801654895,
+      "relevant_similarity": 0.5759462804730314,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "data-retention-policy.md",
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-5",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 92.39424999998391,
+      "top_similarity": 0.5189585067083231,
+      "relevant_similarity": 0.5189585067083231,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf",
+        "api-rate-limits-partner.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-msa-6",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 4,
+      "latency_ms": 98.66183400001205,
+      "top_similarity": 0.5591320395469705,
+      "relevant_similarity": 0.5332972685517519,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-1",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 73.84458300001029,
+      "top_similarity": 0.6653303701079345,
+      "relevant_similarity": 0.6653303701079345,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-2",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 96.07787499999176,
+      "top_similarity": 0.6159528126744751,
+      "relevant_similarity": 0.6159528126744751,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-3",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 76.59937500000069,
+      "top_similarity": 0.5532850889393645,
+      "relevant_similarity": 0.5532850889393645,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-4",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 74.84829200001286,
+      "top_similarity": 0.4874706130501134,
+      "relevant_similarity": 0.4874706130501134,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-5",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 74.3971250000186,
+      "top_similarity": 0.5270882687840402,
+      "relevant_similarity": 0.5270882687840402,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "rapat-perencanaan-q3.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-6",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 2,
+      "latency_ms": 84.97941699999956,
+      "top_similarity": 0.479964616302897,
+      "relevant_similarity": 0.46678130625654024,
+      "top_documents": [
+        "rapat-perencanaan-q3.md",
+        "laporan-tahunan-2025.pdf",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-1",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 103.36112499999217,
+      "top_similarity": 0.7720254335373178,
+      "relevant_similarity": 0.7720254335373178,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cover-2",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 79.0574159999835,
+      "top_similarity": 0.5904894051101629,
+      "relevant_similarity": 0.5904894051101629,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf",
+        "riset-irigasi-sawah.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-3",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 79.79420799998138,
+      "top_similarity": 0.6626741089030581,
+      "relevant_similarity": 0.6626741089030581,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf",
+        "hidroponik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-4",
+      "category": "unstructured",
+      "mode": "hybrid",
+      "rank": 1,
+      "latency_ms": 69.97545900000546,
+      "top_similarity": 0.6082196416920319,
+      "relevant_similarity": 0.6082196416920319,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-1",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 81.7134590000137,
+      "top_similarity": 0.5034457445144653,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-2",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 61.99424999999792,
+      "top_similarity": 0.4796438062084858,
+      "relevant_similarity": null,
+      "top_documents": [
+        "engineer-onboarding.md",
+        "laporan-tahunan-2025.pdf",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-3",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 89.17904100002261,
+      "top_similarity": 0.45536732939677194,
+      "relevant_similarity": null,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-4",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 83.77945899999872,
+      "top_similarity": 0.5064363042170319,
+      "relevant_similarity": null,
+      "top_documents": [
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md",
+        "sourdough-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-5",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 98.28266700000654,
+      "top_similarity": 0.5588354468345642,
+      "relevant_similarity": null,
+      "top_documents": [
+        "incident-runbook.md",
+        "billing-error-codes.md",
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-6",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 95.56037499999093,
+      "top_similarity": 0.34060242707111965,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kode-barang-alat-tulis.md",
+        "kode-barang-alat-tulis.md",
+        "pengumuman-kantin.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-7",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 89.43724999997471,
+      "top_similarity": 0.547771692276001,
+      "relevant_similarity": null,
+      "top_documents": [
+        "release-notes.md",
+        "release-notes.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-8",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 71.47183399999335,
+      "top_similarity": 0.5705723762512207,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md",
+        "engineer-onboarding.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-9",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 70.91733300001124,
+      "top_similarity": 0.4628789584970885,
+      "relevant_similarity": null,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "laporan-tahunan-2025.pdf",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-10",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 65.42795900000442,
+      "top_similarity": 0.4269246673353362,
+      "relevant_similarity": null,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "rapat-perencanaan-q3.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-11",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 70.71354199999291,
+      "top_similarity": 0.4310964983048149,
+      "relevant_similarity": null,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-12",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 72.8686669999945,
+      "top_similarity": 0.6006389738271786,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-13",
+      "category": "unanswerable",
+      "mode": "hybrid",
+      "rank": null,
+      "latency_ms": 80.28866699999071,
+      "top_similarity": 0.5736828705195892,
+      "relevant_similarity": null,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 65.28137500001208,
+      "top_similarity": 0.730598509311676,
+      "relevant_similarity": 0.730598509311676,
+      "top_documents": [
+        "incident-runbook.md",
+        "incident-postmortem-err-4711.md",
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-2",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 68.33949999997913,
+      "top_similarity": 0.6826303208658198,
+      "relevant_similarity": 0.6826303208658198,
+      "top_documents": [
+        "incident-runbook.md",
+        "billing-error-codes.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-runbook-3",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 3,
+      "latency_ms": 65.38249999999834,
+      "top_similarity": 0.5743133343142295,
+      "relevant_similarity": 0.5495399832725525,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-runbook.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-4",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 90.2302920000011,
+      "top_similarity": 0.5622947551187727,
+      "relevant_similarity": 0.5622947551187727,
+      "top_documents": [
+        "incident-runbook.md",
+        "engineer-onboarding.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-5",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 100.40695800000776,
+      "top_similarity": 0.6792607104998643,
+      "relevant_similarity": 0.6792607104998643,
+      "top_documents": [
+        "incident-runbook.md",
+        "incident-runbook.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-runbook-6",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 3,
+      "latency_ms": 73.14558400000237,
+      "top_similarity": 0.5402116131530308,
+      "relevant_similarity": 0.5322448572820633,
+      "top_documents": [
+        "employee-handbook.md",
+        "api-rate-limits-partner.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-1",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 78.41154099997993,
+      "top_similarity": 0.5992365718342928,
+      "relevant_similarity": 0.5992365718342928,
+      "top_documents": [
+        "data-retention-policy.md",
+        "engineer-onboarding.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-2",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 76.58812500000067,
+      "top_similarity": 0.5789202796769319,
+      "relevant_similarity": 0.5789202796769319,
+      "top_documents": [
+        "data-retention-policy.md",
+        "data-retention-policy.md",
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-retention-3",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 72.0288329999903,
+      "top_similarity": 0.747155122713295,
+      "relevant_similarity": 0.747155122713295,
+      "top_documents": [
+        "data-retention-policy.md",
+        "data-retention-policy.md",
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-4",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 80.47616700000049,
+      "top_similarity": 0.6403112983981939,
+      "relevant_similarity": 0.6403112983981939,
+      "top_documents": [
+        "data-retention-policy.md",
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-onboarding-1",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 70.76970899998969,
+      "top_similarity": 0.647850671282461,
+      "relevant_similarity": 0.6286847932167068,
+      "top_documents": [
+        "engineer-onboarding.md",
+        "engineer-onboarding.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-onboarding-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.81895899999336,
+      "top_similarity": 0.6265635081101513,
+      "relevant_similarity": 0.6265635081101513,
+      "top_documents": [
+        "engineer-onboarding.md",
+        "engineer-onboarding.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-onboarding-3",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 77.92808400000695,
+      "top_similarity": 0.5345778465271034,
+      "relevant_similarity": 0.5345778465271034,
+      "top_documents": [
+        "engineer-onboarding.md",
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 63.48270899999875,
+      "top_similarity": 0.6224295125943813,
+      "relevant_similarity": 0.5929991006851238,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-2",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.51324999999065,
+      "top_similarity": 0.7410361921169657,
+      "relevant_similarity": 0.7410361921169657,
+      "top_documents": [
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-ratelimit-3",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 73.70720800000186,
+      "top_similarity": 0.5994399428701531,
+      "relevant_similarity": 0.5614281296730081,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-4",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 70.2703329999963,
+      "top_similarity": 0.6782766368059401,
+      "relevant_similarity": 0.6757118492470016,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-coffee-1",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 84.69750000000431,
+      "top_similarity": 0.604885816574101,
+      "relevant_similarity": 0.5718227710512603,
+      "top_documents": [
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-coffee-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 77.48741699998618,
+      "top_similarity": 0.5698474049568216,
+      "relevant_similarity": 0.5698474049568216,
+      "top_documents": [
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-coffee-3",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 69.38570899998808,
+      "top_similarity": 0.7138092985465156,
+      "relevant_similarity": 0.7138092985465156,
+      "top_documents": [
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md",
+        "sourdough-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-travel-1",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 74.73949999999263,
+      "top_similarity": 0.6099036437445334,
+      "relevant_similarity": 0.6099036437445334,
+      "top_documents": [
+        "travel-expense-policy.md",
+        "api-rate-limits.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-travel-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 70.47520799997642,
+      "top_similarity": 0.5103057787277985,
+      "relevant_similarity": 0.5103057787277985,
+      "top_documents": [
+        "travel-expense-policy.md",
+        "travel-expense-policy.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-travel-3",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 78.57983299999205,
+      "top_similarity": 0.6917741298675537,
+      "relevant_similarity": 0.6917741298675537,
+      "top_documents": [
+        "travel-expense-policy.md",
+        "employee-handbook.md",
+        "vendor-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 76.30274999999642,
+      "top_similarity": 0.64883953332901,
+      "relevant_similarity": 0.64883953332901,
+      "top_documents": [
+        "release-notes.md",
+        "release-notes.md",
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-2",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 90.66279200001759,
+      "top_similarity": 0.6667547821998596,
+      "relevant_similarity": 0.6667547821998596,
+      "top_documents": [
+        "release-notes.md",
+        "mobile-release-notes.md",
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-release-3",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 67.49575000000618,
+      "top_similarity": 0.6195679903030396,
+      "relevant_similarity": 0.6195679903030396,
+      "top_documents": [
+        "release-notes.md",
+        "billing-error-codes.md",
+        "travel-expense-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-4",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 62.242666000003055,
+      "top_similarity": 0.48563549008158,
+      "relevant_similarity": 0.48563549008158,
+      "top_documents": [
+        "release-notes.md",
+        "mobile-release-notes.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sourdough-1",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 64.55008399998974,
+      "top_similarity": 0.5977713349138142,
+      "relevant_similarity": 0.5977713349138142,
+      "top_documents": [
+        "sourdough-notes.md",
+        "engineer-onboarding.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sourdough-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 74.21320899999273,
+      "top_similarity": 0.6755165070911107,
+      "relevant_similarity": 0.6755165070911107,
+      "top_documents": [
+        "sourdough-notes.md",
+        "sourdough-notes.md",
+        "sourdough-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sourdough-3",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 60.258874999988166,
+      "top_similarity": 0.3646199163114934,
+      "relevant_similarity": 0.3646199163114934,
+      "top_documents": [
+        "sourdough-notes.md",
+        "incident-runbook.md",
+        "pemulihan-bencana.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-1",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 70.98533299998167,
+      "top_similarity": 0.6559066352649467,
+      "relevant_similarity": 0.6559066352649467,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-2",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 63.68262500001265,
+      "top_similarity": 0.7278705835342407,
+      "relevant_similarity": 0.7278705835342407,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti-3",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 75.19441700000584,
+      "top_similarity": 0.6534690856933594,
+      "relevant_similarity": 0.6534690856933594,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md",
+        "travel-expense-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti-4",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 68.24312499998086,
+      "top_similarity": 0.6169100632125201,
+      "relevant_similarity": 0.5907490037086001,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-5",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 3,
+      "latency_ms": 82.37062500001002,
+      "top_similarity": 0.5352426129290365,
+      "relevant_similarity": 0.5291380251481541,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "employee-handbook.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sandi-1",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 125.72212499998159,
+      "top_similarity": 0.7267791032791138,
+      "relevant_similarity": 0.7267791032791138,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sandi-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 103.5240839999858,
+      "top_similarity": 0.695601541066089,
+      "relevant_similarity": 0.695601541066089,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "mobile-release-notes.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sandi-3",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 68.90733399998794,
+      "top_similarity": 0.6553339742621814,
+      "relevant_similarity": 0.6553339742621814,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sandi-4",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 70.29191700002002,
+      "top_similarity": 0.6800567305071163,
+      "relevant_similarity": 0.6800567305071163,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "employee-handbook.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rapat-1",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.92387499999131,
+      "top_similarity": 0.658476710319519,
+      "relevant_similarity": 0.658476710319519,
+      "top_documents": [
+        "rapat-perencanaan-q3.md",
+        "mobile-release-notes.md",
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-rapat-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 75.60229200001345,
+      "top_similarity": 0.6230112763629823,
+      "relevant_similarity": 0.6230112763629823,
+      "top_documents": [
+        "rapat-perencanaan-q3.md",
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rapat-3",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 61.4275419999899,
+      "top_similarity": 0.5617668628692627,
+      "relevant_similarity": 0.5617668628692627,
+      "top_documents": [
+        "rapat-perencanaan-q3.md",
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-rendang-1",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 72.08841700000335,
+      "top_similarity": 0.6844976732434241,
+      "relevant_similarity": 0.6699574193345734,
+      "top_documents": [
+        "resep-rendang.md",
+        "resep-rendang.md",
+        "resep-rendang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rendang-2",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 70.03112500001407,
+      "top_similarity": 0.6939120523824767,
+      "relevant_similarity": 0.6939120523824767,
+      "top_documents": [
+        "resep-rendang.md",
+        "resep-rendang.md",
+        "resep-rendang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rendang-3",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 117.9447500000208,
+      "top_similarity": 0.7925717234611568,
+      "relevant_similarity": 0.7925717234611568,
+      "top_documents": [
+        "resep-rendang.md",
+        "resep-rendang.md",
+        "resep-rendang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-bencana-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 71.48116700000173,
+      "top_similarity": 0.6408011485101207,
+      "relevant_similarity": 0.6408011485101207,
+      "top_documents": [
+        "pemulihan-bencana.md",
+        "api-rate-limits.md",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-bencana-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 77.35758399999781,
+      "top_similarity": 0.6516432762145996,
+      "relevant_similarity": 0.6516432762145996,
+      "top_documents": [
+        "pemulihan-bencana.md",
+        "pemulihan-bencana.md",
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-bencana-3",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 65.41100000001165,
+      "top_similarity": 0.5401889407747352,
+      "relevant_similarity": 0.5401889407747352,
+      "top_documents": [
+        "pemulihan-bencana.md",
+        "pemulihan-bencana.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-irigasi-1",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 82.96229200001903,
+      "top_similarity": 0.5483079283421006,
+      "relevant_similarity": 0.5451433116368427,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "riset-irigasi-sawah.md",
+        "field-study-cover-crops.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-irigasi-2",
+      "category": "paraphrase",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.68995800001699,
+      "top_similarity": 0.6147265387827047,
+      "relevant_similarity": 0.6147265387827047,
+      "top_documents": [
+        "riset-irigasi-sawah.md",
+        "riset-irigasi-sawah.md",
+        "riset-irigasi-sawah.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-helpdesk-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 61.57704100002093,
+      "top_similarity": 0.5773570537567139,
+      "relevant_similarity": 0.5773570537567139,
+      "top_documents": [
+        "helpdesk-tiket.md",
+        "status-pengiriman.md",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-helpdesk-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 87.13762499999689,
+      "top_similarity": 0.665480017555954,
+      "relevant_similarity": 0.665480017555954,
+      "top_documents": [
+        "helpdesk-tiket.md",
+        "api-rate-limits.md",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-hidroponik-1",
+      "category": "lexical",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 78.55133300000716,
+      "top_similarity": 0.6751409776634879,
+      "relevant_similarity": 0.6751409776634879,
+      "top_documents": [
+        "hidroponik.md",
+        "hidroponik.md",
+        "hidroponik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-hidroponik-2",
+      "category": "cross_lingual",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 79.7011249999855,
+      "top_similarity": 0.6377301786300702,
+      "relevant_similarity": 0.6377301786300702,
+      "top_documents": [
+        "hidroponik.md",
+        "hidroponik.md",
+        "hidroponik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 65.75304200001142,
+      "top_similarity": 0.6433811400305557,
+      "relevant_similarity": 0.6250478476228896,
+      "top_documents": [
+        "incident-runbook.md",
+        "billing-error-codes.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-2",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 100.78649999999811,
+      "top_similarity": 0.661657313207229,
+      "relevant_similarity": 0.661657313207229,
+      "top_documents": [
+        "billing-error-codes.md",
+        "incident-runbook.md",
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-3",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 98.37075000001505,
+      "top_similarity": 0.6441910691033566,
+      "relevant_similarity": 0.6425671599000323,
+      "top_documents": [
+        "incident-runbook.md",
+        "billing-error-codes.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-mobile-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 4,
+      "latency_ms": 63.66258299999572,
+      "top_similarity": 0.5802729648595742,
+      "relevant_similarity": 0.5664765149184948,
+      "top_documents": [
+        "release-notes.md",
+        "mobile-release-notes.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-mobile-2",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.40404100000342,
+      "top_similarity": 0.6121020584349816,
+      "relevant_similarity": 0.6121020584349816,
+      "top_documents": [
+        "mobile-release-notes.md",
+        "release-notes.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-mobile-3",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 70.42179199999055,
+      "top_similarity": 0.7208834623237348,
+      "relevant_similarity": 0.7208834623237348,
+      "top_documents": [
+        "mobile-release-notes.md",
+        "release-notes.md",
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-kirim-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 70.76824999998621,
+      "top_similarity": 0.5494840904916555,
+      "relevant_similarity": 0.5494840904916555,
+      "top_documents": [
+        "status-pengiriman.md",
+        "helpdesk-tiket.md",
+        "status-pengiriman.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-kirim-2",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 63.51508299999864,
+      "top_similarity": 0.619667805413473,
+      "relevant_similarity": 0.619667805413473,
+      "top_documents": [
+        "status-pengiriman.md",
+        "status-pengiriman.md",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-kirim-3",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.10900000001652,
+      "top_similarity": 0.6810048412677753,
+      "relevant_similarity": 0.6810048412677753,
+      "top_documents": [
+        "status-pengiriman.md",
+        "status-pengiriman.md",
+        "status-pengiriman.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-1",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 74.62095899998644,
+      "top_similarity": 0.6677078803690639,
+      "relevant_similarity": 0.6677078803690639,
+      "top_documents": [
+        "kode-barang-elektronik.md",
+        "kode-barang-alat-tulis.md",
+        "kode-barang-alat-tulis.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-2",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 74.89745899999889,
+      "top_similarity": 0.6951382963400574,
+      "relevant_similarity": 0.6951382963400574,
+      "top_documents": [
+        "kode-barang-elektronik.md",
+        "kode-barang-alat-tulis.md",
+        "kode-barang-alat-tulis.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-3",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 81.79312500001856,
+      "top_similarity": 0.6229146347692927,
+      "relevant_similarity": 0.6229146347692927,
+      "top_documents": [
+        "kode-barang-alat-tulis.md",
+        "kode-barang-elektronik.md",
+        "kode-barang-elektronik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sku-4",
+      "category": "identifier",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 91.09829100000866,
+      "top_similarity": 0.6436766043480386,
+      "relevant_similarity": 0.6436766043480386,
+      "top_documents": [
+        "kode-barang-alat-tulis.md",
+        "kode-barang-elektronik.md",
+        "kode-barang-elektronik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-inject-1",
+      "category": "injection",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 93.38345899999467,
+      "top_similarity": 0.7887761827938614,
+      "relevant_similarity": 0.7887761827938614,
+      "top_documents": [
+        "vendor-onboarding.md",
+        "vendor-onboarding.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-inject-2",
+      "category": "injection",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 61.40312499999823,
+      "top_similarity": 0.7096374207951188,
+      "relevant_similarity": 0.7096374207951188,
+      "top_documents": [
+        "vendor-onboarding.md",
+        "vendor-onboarding.md",
+        "vendor-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-inject-3",
+      "category": "injection",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 63.37712500001658,
+      "top_similarity": 0.7748768001941901,
+      "relevant_similarity": 0.7748768001941901,
+      "top_documents": [
+        "pengumuman-kantin.md",
+        "pengumuman-kantin.md",
+        "pengumuman-kantin.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-inject-4",
+      "category": "injection",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 72.25704199998972,
+      "top_similarity": 0.681999921798706,
+      "relevant_similarity": 0.681999921798706,
+      "top_documents": [
+        "pengumuman-kantin.md",
+        "pengumuman-kantin.md",
+        "pengumuman-kantin.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti2022-1",
+      "category": "version",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 72.6498749999962,
+      "top_similarity": 0.737529516220098,
+      "relevant_similarity": 0.737529516220098,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti2022-2",
+      "category": "version",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 84.53866599998605,
+      "top_similarity": 0.5401192855692761,
+      "relevant_similarity": 0.5401192855692761,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti2022-3",
+      "category": "version",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 59.879082999998445,
+      "top_similarity": 0.6572309323824563,
+      "relevant_similarity": 0.6572309323824563,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-partner-1",
+      "category": "distractor",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.304166999975,
+      "top_similarity": 0.7849284666861988,
+      "relevant_similarity": 0.7849284666861988,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits-partner.md",
+        "api-rate-limits-partner.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-partner-2",
+      "category": "distractor",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 103.56366599998523,
+      "top_similarity": 0.6441426701375685,
+      "relevant_similarity": 0.6441426701375685,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-partner-3",
+      "category": "distractor",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.7397919999978,
+      "top_similarity": 0.7581163048744202,
+      "relevant_similarity": 0.7581163048744202,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-postmortem-1",
+      "category": "distractor",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 93.7617080000166,
+      "top_similarity": 0.6967406715066244,
+      "relevant_similarity": 0.6594209861065132,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-postmortem-2",
+      "category": "distractor",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 79.41162500000587,
+      "top_similarity": 0.5433804826921199,
+      "relevant_similarity": 0.5433804826921199,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-postmortem-3",
+      "category": "distractor",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 91.1547909999797,
+      "top_similarity": 0.6824449125595288,
+      "relevant_similarity": 0.6824449125595288,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-runbook.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-1",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 74.93041700001868,
+      "top_similarity": 0.6599716353450303,
+      "relevant_similarity": 0.6599716353450303,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-2",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 87.76449999999159,
+      "top_similarity": 0.6822230233749498,
+      "relevant_similarity": 0.6822230233749498,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-3",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 86.10700100001623,
+      "top_similarity": 0.6333306024471108,
+      "relevant_similarity": 0.6333306024471108,
+      "top_documents": [
+        "employee-handbook.md",
+        "billing-error-codes.md",
+        "pengumuman-kantin.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-4",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 100.04808400000798,
+      "top_similarity": 0.6759472296206503,
+      "relevant_similarity": 0.6759472296206503,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-5",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 63.605166999991525,
+      "top_similarity": 0.7005583761791286,
+      "relevant_similarity": 0.7005583761791286,
+      "top_documents": [
+        "employee-handbook.md",
+        "laporan-tahunan-2025.pdf",
+        "rapat-perencanaan-q3.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-6",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 80.79599999999232,
+      "top_similarity": 0.6235465182987772,
+      "relevant_similarity": 0.6235465182987772,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-7",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 80.06408299999634,
+      "top_similarity": 0.6998153507819674,
+      "relevant_similarity": 0.6998153507819674,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-8",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 73.22474999998008,
+      "top_similarity": 0.6460358867102696,
+      "relevant_similarity": 0.6460358867102696,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "travel-expense-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-9",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 81.48958399999628,
+      "top_similarity": 0.5988763213827514,
+      "relevant_similarity": 0.5988763213827514,
+      "top_documents": [
+        "employee-handbook.md",
+        "data-retention-policy.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-1",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 81.94816700000729,
+      "top_similarity": 0.6809330392439997,
+      "relevant_similarity": 0.6809330392439997,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-2",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 90.09749999998462,
+      "top_similarity": 0.6539885218157193,
+      "relevant_similarity": 0.6539885218157193,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "kode-barang-elektronik.md",
+        "status-pengiriman.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-3",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 83.13404199998331,
+      "top_similarity": 0.6599209898639636,
+      "relevant_similarity": 0.6599209898639636,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "coffee-fermentation-study.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-4",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 75.45058299999141,
+      "top_similarity": 0.6318057148282894,
+      "relevant_similarity": 0.6318057148282894,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "keamanan-kata-sandi.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-5",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 95.51229200002354,
+      "top_similarity": 0.6059335289617453,
+      "relevant_similarity": 0.6059335289617453,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-6",
+      "category": "long_document",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 86.06045900000936,
+      "top_similarity": 0.6795141268934901,
+      "relevant_similarity": 0.6795141268934901,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-1",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 75.43916600002376,
+      "top_similarity": 0.6689253646775875,
+      "relevant_similarity": 0.6689253646775875,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-2",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 99.74629100000243,
+      "top_similarity": 0.6709122257881042,
+      "relevant_similarity": 0.6709122257881042,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "vendor-onboarding.md",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-3",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 95.65341699999408,
+      "top_similarity": 0.589869534365508,
+      "relevant_similarity": 0.589869534365508,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-msa-4",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 5,
+      "latency_ms": 78.25354199999879,
+      "top_similarity": 0.6488290799899544,
+      "relevant_similarity": 0.5759462804730314,
+      "top_documents": [
+        "data-retention-policy.md",
+        "data-retention-policy.md",
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-5",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 4,
+      "latency_ms": 71.78525000000491,
+      "top_similarity": 0.5429436836872299,
+      "relevant_similarity": 0.5189585067083231,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "master-services-agreement.pdf",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-msa-6",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 4,
+      "latency_ms": 75.53275000000781,
+      "top_similarity": 0.5591320395469705,
+      "relevant_similarity": 0.5332972685517519,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf",
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-1",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 69.0094160000001,
+      "top_similarity": 0.6653303701079345,
+      "relevant_similarity": 0.6653303701079345,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-2",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 70.34279199999105,
+      "top_similarity": 0.6159528126744751,
+      "relevant_similarity": 0.6159528126744751,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-3",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 65.33862499998122,
+      "top_similarity": 0.5532850889393645,
+      "relevant_similarity": 0.5532850889393645,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-4",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 67.50979200000984,
+      "top_similarity": 0.4874706130501134,
+      "relevant_similarity": 0.4874706130501134,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-5",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 67.66237499999761,
+      "top_similarity": 0.5270882687840402,
+      "relevant_similarity": 0.5270882687840402,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf",
+        "rapat-perencanaan-q3.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-6",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 2,
+      "latency_ms": 62.15987499999187,
+      "top_similarity": 0.479964616302897,
+      "relevant_similarity": 0.46678130625654024,
+      "top_documents": [
+        "rapat-perencanaan-q3.md",
+        "laporan-tahunan-2025.pdf",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-1",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 85.94095899999843,
+      "top_similarity": 0.7720254335373178,
+      "relevant_similarity": 0.7720254335373178,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cover-2",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 103.16704199999549,
+      "top_similarity": 0.5904894051101629,
+      "relevant_similarity": 0.5904894051101629,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf",
+        "riset-irigasi-sawah.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-3",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 102.735832999997,
+      "top_similarity": 0.6626741089030581,
+      "relevant_similarity": 0.6626741089030581,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf",
+        "hidroponik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-4",
+      "category": "unstructured",
+      "mode": "vector",
+      "rank": 1,
+      "latency_ms": 69.86533399998507,
+      "top_similarity": 0.6082196416920319,
+      "relevant_similarity": 0.6082196416920319,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf",
+        "coffee-fermentation-study.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-1",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 72.03820800000926,
+      "top_similarity": 0.5034457445144653,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md",
+        "employee-handbook.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-2",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 118.02658399997767,
+      "top_similarity": 0.4796438062084858,
+      "relevant_similarity": null,
+      "top_documents": [
+        "engineer-onboarding.md",
+        "laporan-tahunan-2025.pdf",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-3",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 84.17091600000504,
+      "top_similarity": 0.45536732939677194,
+      "relevant_similarity": null,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-4",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 72.69783399999596,
+      "top_similarity": 0.5064363042170319,
+      "relevant_similarity": null,
+      "top_documents": [
+        "coffee-fermentation-study.md",
+        "coffee-fermentation-study.md",
+        "sourdough-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-5",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 69.63366600001564,
+      "top_similarity": 0.5588354468345642,
+      "relevant_similarity": null,
+      "top_documents": [
+        "incident-runbook.md",
+        "billing-error-codes.md",
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-6",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 72.12654200000657,
+      "top_similarity": 0.4406031607682859,
+      "relevant_similarity": null,
+      "top_documents": [
+        "pengumuman-kantin.md",
+        "laporan-tahunan-2025.pdf",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-7",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 73.04137500000252,
+      "top_similarity": 0.547771692276001,
+      "relevant_similarity": null,
+      "top_documents": [
+        "release-notes.md",
+        "release-notes.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-8",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 101.66070800002558,
+      "top_similarity": 0.5705723762512207,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md",
+        "engineer-onboarding.md",
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-9",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 111.78691699998922,
+      "top_similarity": 0.4628789584970885,
+      "relevant_similarity": null,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "laporan-tahunan-2025.pdf",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-10",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 64.5417499999894,
+      "top_similarity": 0.4366419315338259,
+      "relevant_similarity": null,
+      "top_documents": [
+        "rapat-perencanaan-q3.md",
+        "vendor-onboarding.md",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-11",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 85.90929199999664,
+      "top_similarity": 0.6223795043003866,
+      "relevant_similarity": null,
+      "top_documents": [
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-12",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 106.55416699998455,
+      "top_similarity": 0.6006389738271786,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-13",
+      "category": "unanswerable",
+      "mode": "vector",
+      "rank": null,
+      "latency_ms": 116.72375000000557,
+      "top_similarity": 0.5736828705195892,
+      "relevant_similarity": null,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md",
+        "incident-postmortem-err-4711.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 27.148957999997947,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-2",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 27.239790999999514,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-runbook-3",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 25.585749999976315,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-4",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 25.282250000003614,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-runbook-5",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 24.594542000016872,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-runbook-6",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.713124999990896,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-1",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 22.678458000001456,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "data-retention-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-2",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 24.546208000003844,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-retention-3",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 23.54574999998249,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-retention-4",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 22.59670799998048,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-onboarding-1",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 22.248500000017657,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-onboarding-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.29366700000901,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-onboarding-3",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.22408300002121,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.73641699999962,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-2",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 22.590625000020736,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-ratelimit-3",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.311917000019776,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-ratelimit-4",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.97183300000438,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "api-rate-limits.md",
+        "api-rate-limits-partner.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-coffee-1",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.257999999988897,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-coffee-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.2338750000024,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-coffee-3",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.34549999999058,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-travel-1",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 24.110624999991614,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "travel-expense-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-travel-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 31.35491699998738,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-travel-3",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 27.24712500000237,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "travel-expense-policy.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 23.32620799998608,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "release-notes.md",
+        "release-notes.md",
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-2",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 22.463415999993686,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "release-notes.md",
+        "engineer-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-release-3",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.319083999998156,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-release-4",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.812666000016634,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sourdough-1",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.031582999995635,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "sourdough-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sourdough-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.22062600000163,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sourdough-3",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.079832999987502,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "sourdough-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-1",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.39224999999101,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-2",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.201667000013913,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti-3",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.60133300000666,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti-4",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 22.23066600001289,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti-5",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.350165999990622,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sandi-1",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.068875000025855,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sandi-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.532250000007025,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sandi-3",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.035708999988856,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "keamanan-kata-sandi.md",
+        "kebijakan-cuti.md",
+        "keamanan-kata-sandi.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sandi-4",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.465291000022034,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rapat-1",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.762916999989557,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-rapat-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.789291999989246,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rapat-3",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.71162500001833,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "rapat-perencanaan-q3.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-rendang-1",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.70683299999132,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rendang-2",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.574958999986848,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "resep-rendang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-rendang-3",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.80120799999463,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "resep-rendang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-bencana-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.62100000000555,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "pemulihan-bencana.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-bencana-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.901291999995465,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-bencana-3",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.606958999996095,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "pemulihan-bencana.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-irigasi-1",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.41737499999863,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-irigasi-2",
+      "category": "paraphrase",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.60250000000019,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "riset-irigasi-sawah.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-helpdesk-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 23.290583000004972,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "helpdesk-tiket.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-helpdesk-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 22.479624999988346,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-hidroponik-1",
+      "category": "lexical",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 22.339082999991433,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "hidroponik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-hidroponik-2",
+      "category": "cross_lingual",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.48108299999285,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.504332999995768,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-2",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 6,
+      "latency_ms": 21.147916000018085,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "billing-error-codes.md",
+        "incident-runbook.md",
+        "incident-runbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-billing-3",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.784958000007236,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "billing-error-codes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-mobile-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.412457999986145,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-mobile-2",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 3,
+      "latency_ms": 21.067499999986694,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "incident-postmortem-err-4711.md",
+        "billing-error-codes.md",
+        "mobile-release-notes.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-mobile-3",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.40625000000773,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-kirim-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.554624999993166,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-kirim-2",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.837000000000216,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-kirim-3",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.16770900002507,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "status-pengiriman.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-1",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.561249999985876,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kode-barang-elektronik.md",
+        "buku-panduan-gudang.md",
+        "kode-barang-alat-tulis.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-2",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.746000000002596,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kode-barang-elektronik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-sku-3",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.2099999999964,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kode-barang-alat-tulis.md",
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-sku-4",
+      "category": "identifier",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.42908300001045,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-inject-1",
+      "category": "injection",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.977917000015168,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "vendor-onboarding.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-inject-2",
+      "category": "injection",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.07837500000187,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-inject-3",
+      "category": "injection",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 22.241167000004225,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "pengumuman-kantin.md",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-inject-4",
+      "category": "injection",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.631250000008095,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti2022-1",
+      "category": "version",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.57850000000394,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cuti2022-2",
+      "category": "version",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.8696249999889,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cuti2022-3",
+      "category": "version",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.65816699999823,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kebijakan-cuti-2022.md",
+        "kebijakan-cuti.md",
+        "kebijakan-cuti-2022.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-partner-1",
+      "category": "distractor",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.973124999983384,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "api-rate-limits-partner.md",
+        "api-rate-limits.md",
+        "api-rate-limits.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-partner-2",
+      "category": "distractor",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.028916999995317,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-partner-3",
+      "category": "distractor",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.57450000001404,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-postmortem-1",
+      "category": "distractor",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.211541000013767,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-postmortem-2",
+      "category": "distractor",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.599124999989726,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-postmortem-3",
+      "category": "distractor",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 22.016707999995333,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-1",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.599375000017517,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-2",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.656040999995184,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-3",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.858041000025196,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-4",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.49579200001972,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-5",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.502750000019887,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-6",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.64370799999915,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-handbook-7",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.507750000007263,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-8",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.424249999990707,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-handbook-9",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.693625000006932,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "employee-handbook.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-1",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.754707999998345,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-2",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.530041000000665,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "buku-panduan-gudang.md",
+        "buku-panduan-gudang.md",
+        "kode-barang-elektronik.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-3",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.44829200000231,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-4",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.190708000005998,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-gudang-5",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.329167000004645,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-gudang-6",
+      "category": "long_document",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.14170900000545,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "buku-panduan-gudang.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-1",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.878124999995862,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-2",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 2,
+      "latency_ms": 21.067874999999958,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-3",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.861374999986083,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-msa-4",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.016040999995766,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-msa-5",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.026000000006206,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "master-services-agreement.pdf",
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-msa-6",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.804291999979796,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-1",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.78199999999697,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-2",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.597707999996828,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-3",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.93479199999615,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-4",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.50579199999447,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-lt-5",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.839707999982693,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-lt-6",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.158291999995527,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-1",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 20.891958999982307,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-cover-2",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.544666999995798,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-3",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.827749999999924,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-cover-4",
+      "category": "unstructured",
+      "mode": "fulltext",
+      "rank": 1,
+      "latency_ms": 21.208375000014712,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "field-study-cover-crops.pdf",
+        "field-study-cover-crops.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-1",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.428624999993872,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-2",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.414875000000166,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-3",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.373875000018415,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-4",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.427291999993713,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-5",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.236458000004177,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-6",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.85733300000925,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kode-barang-alat-tulis.md",
+        "kode-barang-alat-tulis.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-7",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 27.561583999982986,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-8",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 26.860083000002533,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-9",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 22.859207999999853,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-10",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 23.832249999998112,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "laporan-tahunan-2025.pdf",
+        "laporan-tahunan-2025.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-11",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 20.93833399999312,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "master-services-agreement.pdf"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "id-none-12",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 22.779917000008254,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [
+        "kebijakan-cuti.md",
+        "kebijakan-cuti.md",
+        "kebijakan-cuti.md"
+      ],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    },
+    {
+      "question_id": "en-none-13",
+      "category": "unanswerable",
+      "mode": "fulltext",
+      "rank": null,
+      "latency_ms": 21.255624999980682,
+      "top_similarity": null,
+      "relevant_similarity": null,
+      "top_documents": [],
+      "top_rerank_score": null,
+      "relevant_rerank_score": null
+    }
+  ]
+}

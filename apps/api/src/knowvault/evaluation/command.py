@@ -109,10 +109,13 @@ async def eval_environment(
             await _admin_execute(url, f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)')
 
 
+CORPUS_SUFFIXES = (".md", ".pdf", ".txt", ".docx")
+
+
 def corpus_files(corpus_dir: Path) -> list[Path]:
-    corpus = sorted(corpus_dir.glob("*.md"))
+    corpus = sorted(p for p in corpus_dir.iterdir() if p.suffix in CORPUS_SUFFIXES)
     if not corpus:
-        raise SystemExit(f"No Markdown files in {corpus_dir}")
+        raise SystemExit(f"No documents ({', '.join(CORPUS_SUFFIXES)}) in {corpus_dir}")
     return corpus
 
 

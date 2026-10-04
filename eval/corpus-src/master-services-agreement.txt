@@ -1,0 +1,33 @@
+Master Services Agreement
+
+This Master Services Agreement is entered into between the provider of the hosted document platform (the Provider) and the organisation that signs the order form (the Customer). It governs every order form that refers to it. Where an order form contradicts this agreement, the order form prevails for that order only.
+
+1. Definitions. The Services are the hosted platform, its interfaces and the support described in this agreement. Customer Data is all data that the Customer or its users upload to the Services. A Business Day is a day on which banks are open in Amsterdam.
+
+2. Term and renewal. The agreement starts on the effective date of the first order form and runs for an initial term of twenty-four months. After the initial term it renews automatically for successive periods of twelve months, unless either party gives notice of non-renewal at least ninety days before the end of the current period. Notice must be given in writing; email to the contract addresses in the order form counts as writing.
+
+3. Fees and payment. Fees are invoiced quarterly in advance. The Customer pays each invoice within forty-five days after the invoice date, by bank transfer to the account stated on the invoice. Amounts that are not disputed in good faith and remain unpaid after the due date bear interest of one percent per month. If an invoice remains unpaid thirty days after a written reminder, the Provider may suspend the Services until payment is received; suspension does not affect the fees owed.
+
+4. Price changes. The Provider may increase its prices once per contract year, by no more than five percent, with at least sixty days of written notice before the increase takes effect. Price increases never apply retroactively to periods already invoiced.
+
+5. Service availability. The Provider makes the Services available at least 99.5 percent of each calendar month, measured at the Provider's network edge and excluding planned maintenance announced at least five Business Days in advance. Planned maintenance takes place outside the hours of 07:00 to 19:00 Central European Time on Business Days.
+
+6. Service credits. If availability in a month falls below the commitment, the Customer receives a service credit of five percent of the monthly fee for each full half percentage point below 99.5 percent, up to a maximum of twenty-five percent of the monthly fee. Credits are deducted from the next invoice and are the Customer's only financial remedy for unavailability. The Customer must claim a credit within thirty days after the end of the month concerned.
+
+7. Support. Support is available by email and through the support portal. Critical incidents, meaning that the Services are unavailable or Customer Data is at risk, are answered within one hour at any time of day. Other requests are answered within one Business Day. The Customer names up to five support contacts who may open requests.
+
+8. Customer Data. The Customer remains the owner of all Customer Data. The Provider processes Customer Data only to provide the Services and as described in the data processing terms annexed to this agreement. The Provider does not use Customer Data to train machine learning models that serve other customers.
+
+9. Subprocessors. The Provider may use subprocessors to provide the Services. The Provider notifies the Customer at least thirty days before adding a new subprocessor. The Customer may object on reasonable grounds within that period; if the parties cannot agree, the Customer may terminate the affected order form without penalty.
+
+10. Security and audits. The Provider maintains the security measures described in its security annex and holds a current ISO 27001 certificate. The Customer may audit the Provider's compliance with this agreement once per calendar year, with at least thirty days of notice, during Business Days and at its own cost. Audits by a third party require that party to sign a confidentiality agreement with the Provider.
+
+11. Confidentiality. Each party keeps the other party's confidential information secret and uses it only for the purposes of this agreement. These obligations continue for five years after the agreement ends, and for trade secrets for as long as they remain trade secrets.
+
+12. Liability. Each party's total liability under this agreement is limited to the fees paid by the Customer in the twelve months before the event that gave rise to the claim. This limit does not apply to damage caused intentionally or by gross negligence, to breaches of confidentiality, or to the Customer's payment obligations. Neither party is liable for lost profits or indirect damage.
+
+13. Termination. Either party may terminate the agreement with immediate effect if the other party materially breaches it and does not remedy the breach within thirty days after written notice. Termination does not entitle the Customer to a refund of fees for periods already provided, except where the Provider terminates for convenience under an order form.
+
+14. Return and deletion of data. After termination, the Customer may export its Customer Data through the export function for thirty days. The Provider then deletes all Customer Data within sixty days after termination, including from backups, and confirms the deletion in writing on request.
+
+15. Governing law. This agreement is governed by the laws of the Netherlands. Disputes are submitted exclusively to the competent courts of Amsterdam, unless the parties agree to mediation first.

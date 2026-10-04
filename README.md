@@ -256,7 +256,9 @@ environment loaded.
   browser's declared type. Uploading the same file twice is refused.
 - **Processing:** each upload or note edit is queued. The worker extracts the text in a
   separate, time- and memory-limited process, normalises it and splits it into chunks of about
-  1,800 characters that never cross a heading. PDF chunks keep their page numbers; other
+  1,000 characters that never cross a heading
+  ([ADR 0014](docs/adr/0014-chunk-sizes.md)); `CHUNK_TARGET_CHARS`, `CHUNK_MAX_CHARS` and
+  `CHUNK_OVERLAP_CHARS` change that, and `knowvault reindex --all` re-chunks existing documents. PDF chunks keep their page numbers; other
   formats keep their heading trail. Open a document to see exactly what was extracted.
 - **Failures** are shown with a reason (for example, scanned PDFs without a text layer are not
   supported yet) and can be retried with **Try again**.

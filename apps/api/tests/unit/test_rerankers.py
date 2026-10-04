@@ -38,3 +38,17 @@ def test_production_refuses_the_fake_reranker() -> None:
             anthropic_api_key="k",
             reranker="fake",
         )
+
+
+def test_chunk_sizes_must_be_consistent() -> None:
+    with pytest.raises(ValidationError, match="CHUNK_OVERLAP_CHARS < CHUNK_TARGET_CHARS"):
+        Settings(database_url=DATABASE_URL, chunk_target_chars=1000, chunk_max_chars=800)
+    with pytest.raises(ValidationError, match="CHUNK_OVERLAP_CHARS < CHUNK_TARGET_CHARS"):
+        Settings(database_url=DATABASE_URL, chunk_target_chars=500, chunk_overlap_chars=500)
+    settings = Settings(
+        database_url=DATABASE_URL,
+        chunk_target_chars=1000,
+        chunk_max_chars=1400,
+        chunk_overlap_chars=150,
+    )
+    assert settings.chunk_target_chars == 1000
