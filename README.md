@@ -224,6 +224,7 @@ Secrets are never committed.
 | `EMBEDDING_PROVIDER` | API, worker | `bge-m3` (default) or `fake` (tests only; refused in production) |
 | `EMBEDDING_CACHE_DIR` | API, worker on the host | Where the model is stored, relative to `apps/api`; Compose uses the `models` volume |
 | `EMBEDDING_THREADS`, `EMBEDDING_BATCH_SIZE` | API, worker | Optional ONNX Runtime threads per process and chunks per batch (defaults: runtime's choice, 8) |
+| `RERANKER`, `RERANK_CANDIDATES` | API | Optional cross-encoder for hybrid search: `none` (default) or `bge-reranker-v2-m3` (571 MB, fetched by `knowvault download-model`), and how many fused results it reorders (10). On a CPU it adds about 2.5 s per search for a small gain; see [ADR 0013](docs/adr/0013-reranking.md) |
 | `LLM_PROVIDER` | API | `fake` (default: quotes your documents without a language model, no key needed; refused in production) or `anthropic` |
 | `ANTHROPIC_API_KEY` | API | Required when `LLM_PROVIDER=anthropic` |
 | `LLM_MODEL`, `LLM_FAST_MODEL` | API | Answer model (default `claude-sonnet-5-5`) and the cheaper model that rewrites follow-up questions for search (default `claude-haiku-4-5-20251001`) |

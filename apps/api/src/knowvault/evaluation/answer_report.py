@@ -62,7 +62,8 @@ def to_markdown(report: AnswerReport, *, review_file: str | None, reviewed: int)
         "",
         f"- Answer model: `{config['answer_model']}` (provider `{config['llm_provider']}`), "
         f"prompt `{config['prompt_version']}`",
-        f"- Embedding model: `{config['embedding_model']}`",
+        f"- Embedding model: `{config['embedding_model']}`; reranker: "
+        f"`{config.get('reranker') or 'none'}`",
         f"- Corpus: {config['documents']} documents, {config['chunks']} chunks",
         f"- Questions: {summary.questions} ({summary.answerable} answerable, "
         f"{summary.unanswerable} unanswerable; {summary.injection_questions} about documents "

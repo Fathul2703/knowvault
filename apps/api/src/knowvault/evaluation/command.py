@@ -17,6 +17,7 @@ from sqlalchemy.engine import make_url
 import knowvault
 from knowvault.adapters.chat import build_chat_models
 from knowvault.adapters.embeddings import build_embedding_model
+from knowvault.adapters.reranking import build_reranker
 from knowvault.adapters.storage.filesystem import FilesystemStorage
 from knowvault.core.config import Settings
 from knowvault.core.db import Database
@@ -134,6 +135,8 @@ async def run(settings: Settings, options: EvalOptions) -> Path:
             questions=questions,
             modes=options.modes,
             top_k=options.top_k,
+            reranker=build_reranker(env.settings),
+            rerank_candidates=env.settings.rerank_candidates,
         )
 
     options.output_dir.mkdir(parents=True, exist_ok=True)
@@ -172,6 +175,7 @@ async def run_answers(settings: Settings, options: AnswerEvalOptions) -> Path:
             storage=env.storage,
             embeddings=build_embedding_model(env.settings),
             models=build_chat_models(env.settings),
+            reranker=build_reranker(env.settings),
             corpus=corpus,
             questions=questions,
         )

@@ -16,6 +16,7 @@ x-api-environment: &api-environment
   STORAGE_DIR: /data/uploads
   EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-bge-m3}
   EMBEDDING_CACHE_DIR: /data/models
+  RERANKER: ${RERANKER:-none}
   LLM_PROVIDER: ${LLM_PROVIDER:-anthropic}
   LLM_MODEL: ${LLM_MODEL:-claude-sonnet-5-5}
   LLM_FAST_MODEL: ${LLM_FAST_MODEL:-claude-haiku-4-5-20251001}

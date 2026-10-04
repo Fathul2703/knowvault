@@ -8,6 +8,7 @@ from knowvault.core.chat import ChatModels
 from knowvault.core.config import Settings
 from knowvault.core.embeddings import EmbeddingModel
 from knowvault.core.net import client_address
+from knowvault.core.reranker import Reranker
 from knowvault.core.storage import ObjectStorage
 
 
@@ -48,3 +49,11 @@ def get_client_address(request: Request, settings: SettingsDep) -> str:
 
 
 ClientAddressDep = Annotated[str, Depends(get_client_address)]
+
+
+def get_reranker(request: Request) -> Reranker | None:
+    reranker: Reranker | None = request.app.state.reranker
+    return reranker
+
+
+RerankerDep = Annotated[Reranker | None, Depends(get_reranker)]

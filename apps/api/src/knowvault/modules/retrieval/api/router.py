@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from knowvault.core.db import SessionDep
-from knowvault.core.deps import EmbeddingsDep
+from knowvault.core.deps import EmbeddingsDep, RerankerDep, SettingsDep
 from knowvault.core.errors import Problem
 from knowvault.modules.identity.dependencies import CurrentUser, user_rate_limit
 from knowvault.modules.retrieval.application.search import SearchService
@@ -56,6 +56,10 @@ class SearchResultOut(BaseModel):
     )
     vector_rank: int | None = Field(description="Rank among vector candidates (1-based).")
     fulltext_rank: int | None = Field(description="Rank among full-text candidates (1-based).")
+    rerank_score: float | None = Field(
+        default=None,
+        description="Cross-encoder relevance in [0, 1] when hybrid results were reranked.",
+    )
 
 
 class SearchResponse(BaseModel):
@@ -63,11 +67,17 @@ class SearchResponse(BaseModel):
     mode: SearchMode
     # Null in fulltext mode, where the query is not embedded.
     embedding_model: str | None
+    # Set when hybrid results were reordered by a cross-encoder.
+    reranker: str | None = None
     results: list[SearchResultOut]
 
 
-def get_search_service(embeddings: EmbeddingsDep) -> SearchService:
-    return SearchService(embeddings, PostgresChunkIndex())
+def get_search_service(
+    embeddings: EmbeddingsDep, reranker: RerankerDep, settings: SettingsDep
+) -> SearchService:
+    return SearchService(
+        embeddings, PostgresChunkIndex(), reranker, rerank_candidates=settings.rerank_candidates
+    )
 
 
 @router.post(
@@ -113,6 +123,7 @@ async def search(
         query=body.query,
         mode=result.mode,
         embedding_model=result.embedding_model,
+        reranker=result.reranker,
         results=[
             SearchResultOut(
                 chunk_id=hit.chunk.chunk_id,
@@ -128,6 +139,7 @@ async def search(
                 similarity=None if hit.similarity is None else round(hit.similarity, 6),
                 vector_rank=hit.vector_rank,
                 fulltext_rank=hit.fulltext_rank,
+                rerank_score=None if hit.rerank_score is None else round(hit.rerank_score, 6),
             )
             for hit in result.hits
         ],

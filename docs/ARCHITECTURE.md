@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v1.7** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v1.8** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval: ADR 0013); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -29,6 +29,7 @@
 | v1.5 | Phase 4 bagian produksi & E2E (ADR 0012): image produksi (multi-stage, non-root; Next.js standalone), `compose.prod.yaml` dengan Caddy (TLS otomatis, HSTS, `/api/*` langsung ke FastAPI tanpa buffering, IP tetap sebagai satu-satunya `TRUSTED_PROXIES`), container API/worker read-only tanpa capability; `compose.e2e.yaml` + Playwright untuk alur kritis di CI. E2E menemukan bug hapus akun (cascade ganda ke `message_citations`) yang sudah diperbaiki. Prosedur backup di README. |
 | v1.6 | Rilis `v0.1.0` (MVP, lihat `CHANGELOG.md`) dengan catatan status §20: eval jawaban dengan Claude dan review manual, demo/video, screenshot README, serta pengukuran coverage belum dilakukan dan dicatat sebagai keterbatasan rilis. |
 | v1.7 | Phase 5 dimulai dengan dataset eval yang lebih sulit (addendum ADR 0007): dokumen versi lama, dokumen tetangga pengecoh, dua dokumen panjang, dan pertanyaan nyaris-terjawab; 28 dokumen, 108 pertanyaan. Baseline baru hybrid Success@1 89,5% / MRR 0,941 sebagai pembanding reranker dan perubahan retrieval berikutnya. |
+| v1.8 | Phase 5 reranking (ADR 0013): port `Reranker` dan adapter `BAAI/bge-reranker-v2-m3` int8 (Apache-2.0; `jina-reranker-v2` ditolak karena lisensi non-komersial) sebagai tahap opsional di mode hybrid; diukur +2,1 poin Success@1 / MRR 0,941 → 0,953, 8 pertanyaan membaik dan 6 memburuk, latensi p50 71 ms → 2,5 detik; **tidak diaktifkan secara default** dan tidak dipakai sebagai evidence threshold. |
 
 ---
 
@@ -561,7 +562,7 @@ flowchart TD
 | **Citation** | Runtime hanya menjamin **validitas indeks** (setiap `[n]` merujuk sumber yang benar-benar diberikan) dan menyimpan snapshot sumber. **Apakah sumber benar-benar mendukung klaim** tidak dapat dijamin saat runtime; itu diukur di eval. Jawaban tanpa citation valid ditandai di UI sebagai "tidak terverifikasi". | Klaim yang jujur tentang apa yang sistem jamin. Fitur citation native provider bisa dipakai di dalam adapter, bukan dependensi arsitektur. |
 | **Lokasi sumber** | PDF: nomor halaman fisik (1-based, bukan label halaman tercetak). DOCX/MD/TXT/note: `heading_path`. | Dokumen non-PDF tidak punya halaman. |
 | **Streaming & koneksi DB** | Retrieval dilakukan dalam transaksi singkat, koneksi DB **dikembalikan ke pool sebelum** streaming LLM dimulai; hasil disimpan dengan transaksi baru setelah stream selesai. Timeout provider; retry hanya sebelum token pertama. | Menahan koneksi selama 10–60 detik streaming akan menghabiskan connection pool pada beban kecil sekalipun. |
-| **Reranking** | Tidak di MVP; tidak ada port yang disiapkan lebih dulu. | Ditambahkan di Phase 5 jika eval membuktikan manfaatnya. |
+| **Reranking** | Port `Reranker` + `BAAI/bge-reranker-v2-m3` (int8, Apache-2.0) tersedia sejak Phase 5, **nonaktif secara default** (ADR 0013). | Eval: +2,1 poin Success@1 tetapi merugikan token persis dan menambah ~2,5 detik per pencarian di CPU; skornya juga tidak cukup bersih untuk evidence threshold. |
 
 ### 10.3 Abstraksi provider
 

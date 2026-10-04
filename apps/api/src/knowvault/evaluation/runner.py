@@ -17,6 +17,7 @@ from sqlalchemy import func, select
 from knowvault.core.config import Settings
 from knowvault.core.db import Database
 from knowvault.core.embeddings import EmbeddingModel
+from knowvault.core.reranker import Reranker
 from knowvault.core.storage import ObjectStorage
 from knowvault.evaluation.dataset import Question, is_relevant
 from knowvault.evaluation.metrics import first_relevant_rank, mrr_at, percentile, success_at
@@ -50,6 +51,9 @@ class QuestionResult:
     top_similarity: float | None
     relevant_similarity: float | None
     top_documents: tuple[str, ...]
+    # Cross-encoder scores (hybrid mode with a reranker only).
+    top_rerank_score: float | None = None
+    relevant_rerank_score: float | None = None
 
 
 @dataclass(frozen=True)
@@ -134,8 +138,12 @@ async def evaluate(
     questions: Sequence[Question],
     modes: Sequence[SearchMode],
     top_k: int,
+    reranker: Reranker | None = None,
+    rerank_candidates: int = 10,
 ) -> list[QuestionResult]:
-    service = SearchService(embeddings, PostgresChunkIndex())
+    service = SearchService(
+        embeddings, PostgresChunkIndex(), reranker, rerank_candidates=rerank_candidates
+    )
     scope = SearchScope(owner_id=owner_id)
     results: list[QuestionResult] = []
     for mode in modes:
@@ -163,6 +171,8 @@ async def evaluate(
                     top_documents=tuple(
                         document_names[hit.chunk.document_id] for hit in found.hits[:3]
                     ),
+                    top_rerank_score=found.hits[0].rerank_score if found.hits else None,
+                    relevant_rerank_score=found.hits[rank - 1].rerank_score if rank else None,
                 )
             )
     return results
@@ -206,7 +216,18 @@ def similarity_distributions(results: Sequence[QuestionResult]) -> dict[str, lis
     `unanswerable_top`: best similarity returned for questions the corpus cannot answer.
     """
     hybrid = [r for r in results if r.mode == SearchMode.HYBRID.value]
+    reranked = {
+        "rerank_relevant": sorted(
+            r.relevant_rerank_score for r in hybrid if r.relevant_rerank_score is not None
+        ),
+        "rerank_unanswerable_top": sorted(
+            r.top_rerank_score
+            for r in hybrid
+            if r.category == "unanswerable" and r.top_rerank_score is not None
+        ),
+    }
     return {
+        **{name: values for name, values in reranked.items() if values},
         "relevant": sorted(
             r.relevant_similarity for r in hybrid if r.relevant_similarity is not None
         ),
@@ -236,6 +257,8 @@ async def run_retrieval_eval(
     questions: Sequence[Question],
     modes: Sequence[SearchMode] = tuple(SearchMode),
     top_k: int = 10,
+    reranker: Reranker | None = None,
+    rerank_candidates: int = 10,
 ) -> EvalReport:
     owner_id, names = await ingest_corpus(
         settings=settings,
@@ -252,12 +275,16 @@ async def run_retrieval_eval(
         questions=questions,
         modes=modes,
         top_k=top_k,
+        reranker=reranker,
+        rerank_candidates=rerank_candidates,
     )
     chunking = ChunkingConfig()
     return EvalReport(
         created_at=datetime.now(UTC),
         config={
             "embedding_model": embeddings.model_id,
+            "reranker": reranker.model_id if reranker else None,
+            "rerank_candidates": rerank_candidates if reranker else None,
             "documents": len(names),
             "chunks": await count_chunks(database, owner_id),
             "questions": len(questions),

@@ -103,6 +103,7 @@ def _candidate(hit: SearchHit) -> dict[str, object]:
         "similarity": None if hit.similarity is None else round(hit.similarity, 6),
         "vector_rank": hit.vector_rank,
         "fulltext_rank": hit.fulltext_rank,
+        "rerank_score": None if hit.rerank_score is None else round(hit.rerank_score, 6),
     }
 
 

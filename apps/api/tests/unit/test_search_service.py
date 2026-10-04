@@ -134,3 +134,81 @@ async def test_rejects_invalid_top_k(
     _, _, service = parts
     with pytest.raises(ValueError, match="top_k"):
         await service.search(SESSION, query="q", scope=SCOPE, top_k=0)
+
+
+class CommitCounter:
+    """Stands in for the session: reranking first ends the read-only transaction."""
+
+    def __init__(self) -> None:
+        self.commits = 0
+
+    async def commit(self) -> None:
+        self.commits += 1
+
+
+class ScriptedReranker:
+    """Scores chunk n (content "chunk n") with scores[n]."""
+
+    def __init__(self, scores: dict[int, float]) -> None:
+        self.scores = scores
+        self.calls: list[list[str]] = []
+
+    @property
+    def model_id(self) -> str:
+        return "scripted"
+
+    async def score(self, query: str, passages: list[str]) -> list[float]:
+        self.calls.append(passages)
+        return [self.scores[int(passage.split()[1])] for passage in passages]
+
+
+async def test_reranker_reorders_hybrid_results_and_records_scores() -> None:
+    session = CommitCounter()
+    reranker = ScriptedReranker({1: 0.2, 2: 0.9, 3: 0.1, 4: 0.5})
+    service = SearchService(CountingEmbeddings(), MemoryIndex(), reranker, rerank_candidates=10)
+
+    result = await service.search(cast(AsyncSession, session), query="q", scope=SCOPE, top_k=2)
+
+    assert [hit.chunk.chunk_id.int for hit in result.hits] == [2, 4]
+    assert [hit.rerank_score for hit in result.hits] == [0.9, 0.5]
+    assert result.reranker == "scripted"
+    # All four fused results were scored although only two were requested.
+    assert len(reranker.calls[0]) == 4
+    assert session.commits == 1
+
+
+async def test_only_the_first_candidates_are_reranked() -> None:
+    reranker = ScriptedReranker({1: 0.9, 2: 0.9, 3: 0.1, 4: 0.9})
+    service = SearchService(CountingEmbeddings(), MemoryIndex(), reranker, rerank_candidates=2)
+
+    result = await service.search(
+        cast(AsyncSession, CommitCounter()), query="q", scope=SCOPE, top_k=4
+    )
+
+    # Fused order is 3, then the others; only the first two are scored. Chunk 3 scores lower
+    # than its partner, the rest keep their fused order with no score.
+    scored = [hit for hit in result.hits if hit.rerank_score is not None]
+    assert len(scored) == 2
+    assert result.hits[1].chunk.chunk_id.int == 3
+    assert result.hits[2].rerank_score is None
+
+
+async def test_ties_keep_the_fused_order() -> None:
+    plain = await SearchService(CountingEmbeddings(), MemoryIndex()).search(
+        SESSION, query="q", scope=SCOPE, top_k=4
+    )
+    reranker = ScriptedReranker(dict.fromkeys(range(1, 5), 0.5))
+    reranked = await SearchService(CountingEmbeddings(), MemoryIndex(), reranker).search(
+        cast(AsyncSession, CommitCounter()), query="q", scope=SCOPE, top_k=4
+    )
+    assert [h.chunk.chunk_id for h in reranked.hits] == [h.chunk.chunk_id for h in plain.hits]
+
+
+@pytest.mark.parametrize("mode", [SearchMode.VECTOR, SearchMode.FULLTEXT])
+async def test_single_method_modes_are_not_reranked(mode: SearchMode) -> None:
+    reranker = ScriptedReranker({})
+    service = SearchService(CountingEmbeddings(), MemoryIndex(), reranker)
+    result = await service.search(SESSION, query="q", scope=SCOPE, top_k=3, mode=mode)
+    assert reranker.calls == []
+    assert result.reranker is None
+    assert all(hit.rerank_score is None for hit in result.hits)

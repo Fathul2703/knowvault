@@ -220,3 +220,47 @@ class TestScope:
             )
         ).json()
         assert ids(body) == [notes["timeouts"]]
+
+
+async def test_reranker_reorders_hybrid_results(
+    settings: Settings,
+    database: Database,
+    app_client_factory: Callable[[], AsyncClient],
+    make_invite: MakeInvite,
+    run_worker: Callable[[], Awaitable[None]],
+) -> None:
+    from knowvault.adapters.reranking import FakeReranker
+    from knowvault.adapters.storage.filesystem import FilesystemStorage
+    from knowvault.main import create_app
+
+    app = create_app(
+        settings, database, FilesystemStorage(settings.storage_dir), reranker=FakeReranker()
+    )
+    from httpx import ASGITransport
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://testserver",
+        headers={"Origin": "http://testserver"},
+    ) as client:
+        await client.post(
+            "/api/v1/auth/register",
+            json={
+                "invite_code": await make_invite(),
+                "email": "rerank@example.com",
+                "password": "correct horse battery",
+                "display_name": "R",
+            },
+        )
+        incident = await note(client, "Incident", "The storage cluster timed out at night.")
+        await note(client, "Recipes", "Fried rice with garlic.")
+        await run_worker()
+
+        body = (await client.post(SEARCH, json={"query": "storage cluster timed out"})).json()
+        assert body["reranker"] == "fake-overlap"
+        top = body["results"][0]
+        assert top["document_id"] == incident
+        assert top["rerank_score"] == 1.0
+        vector = (await client.post(SEARCH, json={"query": "storage", "mode": "vector"})).json()
+        assert vector["reranker"] is None
+        assert all(r["rerank_score"] is None for r in vector["results"])

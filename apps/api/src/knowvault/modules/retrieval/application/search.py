@@ -1,12 +1,13 @@
 """Search over a user's chunks: vector, full-text, or both fused with RRF."""
 
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Protocol
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from knowvault.core.embeddings import EmbeddingModel
+from knowvault.core.reranker import Reranker
 from knowvault.modules.retrieval.domain.fusion import reciprocal_rank_fusion
 from knowvault.modules.retrieval.domain.model import (
     CANDIDATES_PER_LIST,
@@ -59,12 +60,35 @@ class SearchResult:
     mode: SearchMode
     # None in full-text mode, where the query is not embedded.
     embedding_model: str | None
+    # Set when hybrid results were reordered by a cross-encoder.
+    reranker: str | None = None
 
 
 class SearchService:
-    def __init__(self, embeddings: EmbeddingModel, index: ChunkIndex) -> None:
+    def __init__(
+        self,
+        embeddings: EmbeddingModel,
+        index: ChunkIndex,
+        reranker: Reranker | None = None,
+        rerank_candidates: int = 10,
+    ) -> None:
         self._embeddings = embeddings
         self._index = index
+        self._reranker = reranker
+        self._rerank_candidates = rerank_candidates
+
+    async def _rerank(
+        self, reranker: Reranker, query: str, hits: list[SearchHit]
+    ) -> list[SearchHit]:
+        """Reorders the first `rerank_candidates` hits by cross-encoder relevance.
+
+        Hits beyond the candidates keep their fused order after the reranked ones. Ties keep
+        the fused order, so a reranker that cannot tell passages apart changes nothing.
+        """
+        head, tail = hits[: self._rerank_candidates], hits[self._rerank_candidates :]
+        scores = await reranker.score(query, [hit.chunk.content for hit in head])
+        order = sorted(range(len(head)), key=lambda i: (-scores[i], i))
+        return [replace(head[i], rerank_score=scores[i]) for i in order] + tail
 
     async def search(
         self,
@@ -111,7 +135,9 @@ class SearchService:
                 "vector": [c.chunk.chunk_id for c in by_vector],
                 "fulltext": [c.chunk.chunk_id for c in by_text],
             }
-        )[:top_k]
+        )
+        # With a reranker, more fused results than requested are scored and the best kept.
+        fused = fused[: max(top_k, self._rerank_candidates) if self._reranker else top_k]
 
         # Chunks found only by full-text search still get a similarity, for callers that
         # need an absolute relevance signal (e.g. deciding there is not enough evidence).
@@ -131,4 +157,12 @@ class SearchService:
             )
             for item in fused
         ]
-        return SearchResult(hits, mode, embedding_model=model)
+        if self._reranker is None:
+            return SearchResult(hits, mode, embedding_model=model)
+        # Searching only reads: end the transaction so no connection is held while the
+        # cross-encoder runs (docs/ARCHITECTURE.md §10.2).
+        await session.commit()
+        reranked = await self._rerank(self._reranker, query, hits)
+        return SearchResult(
+            reranked[:top_k], mode, embedding_model=model, reranker=self._reranker.model_id
+        )

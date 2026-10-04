@@ -875,6 +875,8 @@ export interface components {
             mode: components["schemas"]["SearchMode"];
             /** Embedding Model */
             embedding_model: string | null;
+            /** Reranker */
+            reranker?: string | null;
             /** Results */
             results: components["schemas"]["SearchResultOut"][];
         };
@@ -924,6 +926,11 @@ export interface components {
              * @description Rank among full-text candidates (1-based).
              */
             fulltext_rank: number | null;
+            /**
+             * Rerank Score
+             * @description Cross-encoder relevance in [0, 1] when hybrid results were reranked.
+             */
+            rerank_score?: number | null;
         };
         /** UserOut */
         UserOut: {

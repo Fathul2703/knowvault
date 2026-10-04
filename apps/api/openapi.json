@@ -4523,6 +4523,17 @@
             ],
             "title": "Embedding Model"
           },
+          "reranker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reranker"
+          },
           "results": {
             "items": {
               "$ref": "#/components/schemas/SearchResultOut"
@@ -4637,6 +4648,18 @@
             ],
             "title": "Fulltext Rank",
             "description": "Rank among full-text candidates (1-based)."
+          },
+          "rerank_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rerank Score",
+            "description": "Cross-encoder relevance in [0, 1] when hybrid results were reranked."
           }
         },
         "type": "object",
