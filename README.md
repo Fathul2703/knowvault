@@ -3,17 +3,27 @@
 Personal knowledge management with AI answers that are grounded in your own documents and
 cite their sources.
 
-> **Status: v0.1.0 — MVP** ([changelog](CHANGELOG.md)). Accounts, collections, notes and document
-> upload work end to end: a background worker extracts the text of PDF, Word, Markdown and text
-> files, splits it into chunks that keep their page or section, and embeds each chunk with
-> BAAI/bge-m3 (multilingual, run locally). A search API combines semantic and keyword search
-> with Reciprocal Rank Fusion; the **Search** page shows the matching passages and links to
-> the exact chunk. A retrieval evaluation measures search quality on a labelled corpus.
-> The **Ask** page answers questions from your documents as they are written, cites passages
-> as `[n]` (select one to read the passage or open it in its document) and says so when the
-> documents do not contain the answer. Answer quality has not been measured with Claude yet
-> (see [Known limitations](#known-limitations)). See the
-> [roadmap](docs/ARCHITECTURE.md#5-feature-roadmap-phase-16).
+> **Status: v0.2.0 — complete** ([changelog](CHANGELOG.md)).
+>
+> - **What you can do:** upload PDF, Word, Markdown and text files or write notes; search them by
+>   meaning and by exact words, in Indonesian and English; ask questions that are answered only
+>   from your documents, with citations that open the quoted passage, or refused when the
+>   documents do not contain the answer; and browse a knowledge graph of the names and codes
+>   they mention.
+> - **How it was built:** every retrieval default was chosen by measurement on a labelled
+>   evaluation set, and features that did not help are kept off by default.
+> - **Not done yet:** answers have not yet been measured with Claude; see
+>   [Known limitations](#known-limitations).
+
+**[How KnowVault works →](docs/OVERVIEW.md)** — what it does, what happens behind each feature,
+measurements and limits. **Demo video:** [`docs/media/knowvault-demo.webm`](docs/media/knowvault-demo.webm)
+(41 s).
+
+| Search across languages | Answers with citations |
+|---|---|
+| ![Search](docs/images/search.png) | ![Answer](docs/images/answer.png) |
+| **Knowledge graph** | **An entity and its passages** |
+| ![Graph](docs/images/graph.png) | ![Entity](docs/images/entity.png) |
 
 ## Stack
 
@@ -157,7 +167,25 @@ make check      # lint + type checks + all tests (what CI runs)
 make test-api   # API tests; needs TEST_DATABASE_URL
 make test-web   # web tests
 make e2e        # browser tests (Playwright) against a throwaway Docker stack
+make coverage   # API test coverage of the feature modules; needs TEST_DATABASE_URL
+make demo       # record the demo video and the screenshots in docs/images (needs model-docker)
 ```
+
+Coverage on 2026-10-08 (374 tests):
+
+| Module | Lines covered |
+|---|---|
+| ingestion | 89.2% |
+| retrieval | 97.7% |
+| assistant | 96.2% |
+| graph | 91.1% |
+
+The parser's entry point runs in a child process and is not counted; its behaviour is tested
+through the subprocess parser.
+
+`make demo` runs `compose.e2e.yaml` with `compose.demo.yaml`: a throwaway database with the real
+bge-m3 model from the `models` volume and the fake answer model. Playwright then signs in to a
+library seeded from `eval/corpus` and records the tour in `apps/web/demo-output/`.
 
 `make e2e` starts `compose.e2e.yaml` — the production images with the fake embedding and chat
 models and a database in memory, on http://localhost:3100 — and walks through the critical path:
@@ -231,7 +259,10 @@ Restore with `pg_restore --clean` into the `db` service and by extracting the ar
 ## Known limitations
 
 - Answers are measured with an extractive fake model only; a measured run with Claude and its
-  manual review are still to be done (ADR 0010).
+  manual review are still to be done (ADR 0010). The demo video and screenshots also use the
+  fake model, so their answers quote the documents.
+- The knowledge graph is built by rules (codes and capitalised names, related when mentioned
+  together); using it for search did not help on the evaluation set (ADR 0018).
 - Scanned PDFs without a text layer are not supported (no OCR).
 - Answers cite whole chunks; a citation shows the passage, not the exact sentence.
 - One machine: files are stored on a volume, and the worker processes one document at a time.

@@ -36,3 +36,4 @@ next-env.d.ts
 # Playwright
 /apps/web/playwright-report/
 /apps/web/test-results/
+/apps/web/demo-output/

@@ -19,7 +19,7 @@ help: ## Show this help
 # --- Docker Compose -------------------------------------------------------------------
 
 .PHONY: up down logs invite-docker test-docker model-docker reindex-docker eval-docker \
-	eval-answers-docker e2e
+	eval-answers-docker e2e demo
 up: .env ## Start the full stack with Docker Compose
 	docker compose up --build
 
@@ -55,6 +55,15 @@ e2e: ## Browser end-to-end tests against a throwaway stack (compose.e2e.yaml, po
 	docker compose -f compose.e2e.yaml up -d --build --wait
 	cd $(WEB) && npx playwright install chromium && npm run e2e; \
 		status=$$?; cd $(CURDIR) && docker compose -f compose.e2e.yaml down; exit $$status
+
+DEMO_COMPOSE = docker compose -f compose.e2e.yaml -f compose.demo.yaml -p knowvault-demo
+
+demo: ## Record the demo video and screenshots (docs/images) with the real model; needs model-docker
+	$(DEMO_COMPOSE) up -d --build --wait
+	cd $(WEB) && npx playwright install chromium && \
+		E2E_INVITE_COMMAND="$(DEMO_COMPOSE) exec -T api knowvault create-invite --days 1" \
+		npx playwright test --config playwright.demo.config.ts; \
+		status=$$?; cd $(CURDIR) && $(DEMO_COMPOSE) down; exit $$status
 
 # --- Local (no Docker for the apps; needs PostgreSQL) ---------------------------------
 
@@ -95,7 +104,7 @@ web: ## Run the web app on http://localhost:3000
 
 # --- Quality ----------------------------------------------------------------------------
 
-.PHONY: check lint typecheck test test-api test-web openapi
+.PHONY: check lint typecheck test test-api test-web coverage openapi
 check: lint typecheck test ## Run every check that CI runs
 
 lint: ## Lint and format-check both apps
@@ -110,6 +119,10 @@ test: test-api test-web ## Run all tests
 
 test-api: ## Run API tests (needs TEST_DATABASE_URL)
 	$(LOAD_ENV) cd $(API) && uv run pytest
+
+coverage: ## API test coverage of the feature modules (needs TEST_DATABASE_URL)
+	$(LOAD_ENV) cd $(API) && uv run --with pytest-cov pytest -q -p no:cacheprovider \
+		--cov=knowvault.modules --cov-report=term-missing:skip-covered; rm -f .coverage
 
 test-web: ## Run web tests
 	cd $(WEB) && npm test
