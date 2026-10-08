@@ -405,6 +405,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/graph": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Graph Overview
+         * @description The entities mentioned most often in the user's documents (optionally one collection or
+         *     document) and the relations among them.
+         */
+        get: operations["graph_graph_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/entities/{entity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Entity
+         * @description An entity with the passages that mention it and its most related entities.
+         */
+        get: operations["graph_get_entity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -679,6 +720,107 @@ export interface components {
             title?: string | null;
             /** Collection Id */
             collection_id?: string | null;
+        };
+        /** EntityMentionOut */
+        EntityMentionOut: {
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /** Document Title */
+            document_title: string;
+            /** Chunk Ordinal */
+            chunk_ordinal: number;
+            /** Snippet */
+            snippet: string;
+            /** Count */
+            count: number;
+        };
+        /** EntityNeighbourOut */
+        EntityNeighbourOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+            /** Weight */
+            weight: number;
+        };
+        /** EntityOut */
+        EntityOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+            /** Mentions */
+            mentions: components["schemas"]["EntityMentionOut"][];
+            /** Neighbours */
+            neighbours: components["schemas"]["EntityNeighbourOut"][];
+        };
+        /** GraphEdge */
+        GraphEdge: {
+            /**
+             * Source
+             * Format: uuid
+             */
+            source: string;
+            /**
+             * Target
+             * Format: uuid
+             */
+            target: string;
+            /**
+             * Type
+             * @description co_occurs: mentioned in the same passage.
+             */
+            type: string;
+            /**
+             * Weight
+             * @description Passages that relate the two entities.
+             */
+            weight: number;
+        };
+        /** GraphNode */
+        GraphNode: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Type
+             * @description code, name, person, organization, place, product or concept
+             */
+            type: string;
+            /**
+             * Mentions
+             * @description Occurrences in the documents in scope.
+             */
+            mentions: number;
+            /**
+             * Documents
+             * @description Documents in scope that mention it.
+             */
+            documents: number;
+        };
+        /** GraphOut */
+        GraphOut: {
+            /** Nodes */
+            nodes: components["schemas"]["GraphNode"][];
+            /** Edges */
+            edges: components["schemas"]["GraphEdge"][];
         };
         /** HealthStatus */
         HealthStatus: {
@@ -3713,6 +3855,112 @@ export interface operations {
             };
             /** @description Too Many Requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": unknown;
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    graph_graph_overview: {
+        parameters: {
+            query?: {
+                collection_id?: string | null;
+                document_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": unknown;
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": unknown;
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": unknown;
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    graph_get_entity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": unknown;
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": unknown;
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

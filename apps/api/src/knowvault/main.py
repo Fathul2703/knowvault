@@ -25,6 +25,7 @@ from knowvault.core.middleware import (
 from knowvault.core.reranker import Reranker
 from knowvault.core.storage import ObjectStorage
 from knowvault.modules.assistant.api.router import router as assistant_router
+from knowvault.modules.graph.api.router import router as graph_router
 from knowvault.modules.identity.router import router as identity_router
 from knowvault.modules.ingestion.api.router import router as ingestion_router
 from knowvault.modules.library.router import UPLOAD_PATH
@@ -98,4 +99,5 @@ def create_app(
     app.include_router(ingestion_router)
     app.include_router(retrieval_router)
     app.include_router(assistant_router)
+    app.include_router(graph_router)
     return app

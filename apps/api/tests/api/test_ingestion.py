@@ -21,6 +21,8 @@ RunWorker = Callable[[], Awaitable[int]]
 @pytest.fixture
 def run_worker(settings: Settings, database: Database) -> RunWorker:
     """Processes queued jobs until the queue is empty; returns how many ran."""
+    # Ingestion only: no graph extraction jobs to count.
+    settings = settings.model_copy(update={"graph_extractor": "none"})
     pipeline = build_pipeline(settings, database)
 
     async def _run() -> int:

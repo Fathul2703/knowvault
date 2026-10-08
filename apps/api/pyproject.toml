@@ -139,3 +139,22 @@ name = "Other modules do not depend on the assistant"
 type = "forbidden"
 source_modules = ["knowvault.modules.identity", "knowvault.modules.library", "knowvault.modules.ingestion", "knowvault.modules.retrieval"]
 forbidden_modules = ["knowvault.modules.assistant"]
+
+[[tool.importlinter.contracts]]
+name = "Graph layers: api -> infrastructure -> application -> domain"
+type = "layers"
+containers = ["knowvault.modules.graph"]
+layers = ["api", "infrastructure", "application", "domain"]
+
+[[tool.importlinter.contracts]]
+name = "Graph domain is pure (no framework, database or other modules)"
+type = "forbidden"
+source_modules = ["knowvault.modules.graph.domain"]
+forbidden_modules = ["sqlalchemy", "fastapi", "pydantic", "knowvault.core", "knowvault.modules.identity", "knowvault.modules.library", "knowvault.modules.ingestion", "knowvault.modules.retrieval", "knowvault.modules.assistant"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Other modules do not depend on the graph (ingestion notifies it through a hook)"
+type = "forbidden"
+source_modules = ["knowvault.modules.identity", "knowvault.modules.library", "knowvault.modules.ingestion", "knowvault.modules.retrieval", "knowvault.modules.assistant"]
+forbidden_modules = ["knowvault.modules.graph"]

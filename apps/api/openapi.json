@@ -3325,6 +3325,176 @@
           }
         }
       }
+    },
+    "/api/v1/graph": {
+      "get": {
+        "tags": [
+          "graph"
+        ],
+        "summary": "Graph Overview",
+        "description": "The entities mentioned most often in the user's documents (optionally one collection or\ndocument) and the relations among them.",
+        "operationId": "graph_graph_overview",
+        "parameters": [
+          {
+            "name": "collection_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Collection Id"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Document Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 60,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/graph/entities/{entity_id}": {
+      "get": {
+        "tags": [
+          "graph"
+        ],
+        "summary": "Get Entity",
+        "description": "An entity with the passages that mention it and its most related entities.",
+        "operationId": "graph_get_entity",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4029,6 +4199,202 @@
         "type": "object",
         "title": "DocumentUpdate",
         "description": "Only the fields that are sent are changed. Send `collection_id: null` to unassign."
+      },
+      "EntityMentionOut": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "document_title": {
+            "type": "string",
+            "title": "Document Title"
+          },
+          "chunk_ordinal": {
+            "type": "integer",
+            "title": "Chunk Ordinal"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "document_title",
+          "chunk_ordinal",
+          "snippet",
+          "count"
+        ],
+        "title": "EntityMentionOut"
+      },
+      "EntityNeighbourOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "weight": {
+            "type": "integer",
+            "title": "Weight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "weight"
+        ],
+        "title": "EntityNeighbourOut"
+      },
+      "EntityOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "mentions": {
+            "items": {
+              "$ref": "#/components/schemas/EntityMentionOut"
+            },
+            "type": "array",
+            "title": "Mentions"
+          },
+          "neighbours": {
+            "items": {
+              "$ref": "#/components/schemas/EntityNeighbourOut"
+            },
+            "type": "array",
+            "title": "Neighbours"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "mentions",
+          "neighbours"
+        ],
+        "title": "EntityOut"
+      },
+      "GraphEdge": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Target"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "co_occurs: mentioned in the same passage."
+          },
+          "weight": {
+            "type": "integer",
+            "title": "Weight",
+            "description": "Passages that relate the two entities."
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "type",
+          "weight"
+        ],
+        "title": "GraphEdge"
+      },
+      "GraphNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "code, name, person, organization, place, product or concept"
+          },
+          "mentions": {
+            "type": "integer",
+            "title": "Mentions",
+            "description": "Occurrences in the documents in scope."
+          },
+          "documents": {
+            "type": "integer",
+            "title": "Documents",
+            "description": "Documents in scope that mention it."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "mentions",
+          "documents"
+        ],
+        "title": "GraphNode"
+      },
+      "GraphOut": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nodes",
+          "edges"
+        ],
+        "title": "GraphOut"
       },
       "HealthStatus": {
         "properties": {

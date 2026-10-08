@@ -255,6 +255,7 @@ Secrets are never committed.
 | `EMBEDDING_PROVIDER` | API, worker | `bge-m3` (default) or `fake` (tests only; refused in production) |
 | `EMBEDDING_CACHE_DIR` | API, worker on the host | Where the model is stored, relative to `apps/api`; Compose uses the `models` volume |
 | `EMBEDDING_THREADS`, `EMBEDDING_BATCH_SIZE` | API, worker | Optional ONNX Runtime threads per process and chunks per batch (defaults: runtime's choice, 8) |
+| `GRAPH_EXTRACTOR`, `GRAPH_MAX_ENTITIES_PER_CHUNK` | Worker | Knowledge graph extraction: `heuristic` (default, offline) or `none`, and entities kept per passage (12) |
 | `RERANKER`, `RERANK_CANDIDATES` | API | Optional cross-encoder for hybrid search: `none` (default) or `bge-reranker-v2-m3` (571 MB, fetched by `knowvault download-model`), and how many fused results it reorders (10). On a CPU it adds about 2.5 s per search for a small gain; see [ADR 0013](docs/adr/0013-reranking.md) |
 | `LLM_PROVIDER` | API | `fake` (default: quotes your documents without a language model, no key needed; refused in production) or `anthropic` |
 | `ANTHROPIC_API_KEY` | API | Required when `LLM_PROVIDER=anthropic` |
@@ -270,6 +271,7 @@ Secrets are never committed.
 
 ```bash
 knowvault create-invite [--days N]   # single-use registration invite
+knowvault extract-graph              # build the knowledge graph for every ready document
 knowvault reset-password EMAIL       # prompts for a new password, signs the user out everywhere
 knowvault export-openapi             # prints the OpenAPI schema
 knowvault worker                     # runs the document worker (the `worker` service in Compose)
@@ -309,6 +311,20 @@ The **Search** page (`/search`) finds passages across your ready documents and n
   and back/forward work.
 - The first search after the API starts loads the embedding model and can take up to about
   half a minute; the page says so while it waits.
+
+## Knowledge graph
+
+After a document is processed, the worker extracts the entities it mentions — codes such as
+`ERR_4711`, `SKU-A1270` or version `2.4.1`, and capitalised names such as "Master Services
+Agreement" or "Bekasi" — and relates the ones that appear in the same passage. The extraction is
+rule-based and runs offline ([ADR 0015](docs/adr/0015-knowledge-graph.md)); a language-model
+extractor can replace it later.
+
+- `GET /api/v1/graph` returns the most mentioned entities (optionally of one collection or
+  document) and the relations among them; `GET /api/v1/graph/entities/{id}` returns the passages
+  that mention an entity and its most related entities.
+- Documents processed before the graph existed: `docker compose exec api knowvault
+  extract-graph` queues them; `GRAPH_EXTRACTOR=none` turns the graph off.
 
 ## Ask
 

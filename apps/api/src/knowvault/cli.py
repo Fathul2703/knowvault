@@ -62,6 +62,19 @@ async def _reindex(settings: Settings, *, include_all: bool) -> int:
         await database.dispose()
 
 
+async def _extract_graph(settings: Settings) -> int:
+    from knowvault.modules.graph.infrastructure.store import queue_all_ready
+
+    database = Database(settings, use_null_pool=True)
+    try:
+        async with database.sessionmaker() as session:
+            count = await queue_all_ready(session, max_attempts=settings.job_max_attempts)
+            await session.commit()
+            return count
+    finally:
+        await database.dispose()
+
+
 def _download_model(settings: Settings) -> str:
     """Downloads the configured local models: the embedding model and, if set, the reranker."""
     from knowvault.adapters.embeddings import BgeM3Embeddings
@@ -158,6 +171,12 @@ def main(argv: list[str] | None = None) -> None:
         "--label", type=_report_label, help="short tag added to the report name, e.g. sonnet"
     )
 
+    commands.add_parser(
+        "extract-graph",
+        help="queue knowledge graph extraction for every ready document (e.g. after enabling "
+        "the graph); the worker builds it",
+    )
+
     review = commands.add_parser(
         "eval-review", help="print the totals of a filled-in answer review sheet"
     )
@@ -214,6 +233,11 @@ def main(argv: list[str] | None = None) -> None:
             )
         )
         print(f"Report written to {report}")
+    elif args.command == "extract-graph":
+        if settings.graph_extractor == "none":
+            sys.exit("GRAPH_EXTRACTOR is none: enable it first.")
+        count = asyncio.run(_extract_graph(settings))
+        print(f"Queued graph extraction for {count} document(s). The worker will build it.")
     elif args.command == "download-model":
         print(_download_model(settings))
     elif args.command == "reindex":

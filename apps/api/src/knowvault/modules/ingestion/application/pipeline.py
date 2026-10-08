@@ -8,7 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from knowvault.core import jobs
 from knowvault.core.embeddings import EmbeddingModel
 from knowvault.core.storage import ObjectStorage, StoredObjectNotFoundError
-from knowvault.modules.ingestion.application.ports import ChunkWriter, DocumentParser
+from knowvault.modules.ingestion.application.ports import (
+    ChunkWriter,
+    DocumentParser,
+    DocumentReadyHook,
+)
 from knowvault.modules.ingestion.domain.chunking import (
     ChunkingConfig,
     chunk_blocks,
@@ -42,6 +46,7 @@ class IngestionPipeline:
         chunk_writer: ChunkWriter,
         embeddings: EmbeddingModel,
         chunking: ChunkingConfig | None = None,
+        on_ready: DocumentReadyHook | None = None,
     ) -> None:
         self._sessions = sessions
         self._storage = storage
@@ -49,6 +54,7 @@ class IngestionPipeline:
         self._chunk_writer = chunk_writer
         self._embeddings = embeddings
         self._chunking = chunking or ChunkingConfig()
+        self._on_ready = on_ready
 
     async def process(self, job: jobs.ClaimedJob) -> None:
         """Processes one `process_document` job and records the outcome on job and document.
@@ -90,6 +96,8 @@ class IngestionPipeline:
                     page_count=result.page_count,
                     embedding_model=self._embeddings.model_id,
                 )
+                if self._on_ready is not None:
+                    await self._on_ready(session, document_id=document_id, content_version=version)
                 await jobs.mark_succeeded(session, job.id)
                 await session.commit()
             logger.info("document_processed", extra={**log, "chunks": len(result.chunks)})

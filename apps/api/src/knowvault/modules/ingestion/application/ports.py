@@ -14,6 +14,15 @@ class DocumentParser(Protocol):
         ...
 
 
+class DocumentReadyHook(Protocol):
+    async def __call__(
+        self, session: AsyncSession, *, document_id: uuid.UUID, content_version: int
+    ) -> None:
+        """Runs in the transaction that marks the document ready (e.g. to queue more work), so
+        it happens only if the document really is ready."""
+        ...
+
+
 class ChunkWriter(Protocol):
     async def replace_chunks(
         self,
