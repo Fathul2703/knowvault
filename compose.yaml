@@ -110,8 +110,11 @@ services:
       - "127.0.0.1:3000:3000"
     volumes:
       - ./apps/web:/app
-      - /app/node_modules
-      - /app/.next
+      # Linux packages and the build cache live inside Docker (a host node_modules is built for
+      # another platform). Named volumes are reused; anonymous ones would pile up, one set per
+      # recreated container. Dependencies are reinstalled when package-lock.json changes.
+      - web_node_modules:/app/node_modules
+      - web_next:/app/.next
     depends_on:
       api:
         condition: service_healthy
@@ -120,3 +123,5 @@ volumes:
   pgdata:
   uploads:
   models:
+  web_node_modules:
+  web_next:

@@ -5,12 +5,16 @@ ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+# The lockfile copy records what node_modules was installed from (see CMD).
+RUN npm ci && cp package-lock.json node_modules/.installed-package-lock.json
 
 COPY . .
 
 EXPOSE 3000
-CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
+# node_modules is a named volume in compose.yaml, so it outlives image rebuilds: reinstall when
+# package-lock.json differs from the one it was installed from. `npm install`, not `npm ci`,
+# because npm ci removes the node_modules directory, which here is a mount point.
+CMD ["sh", "-c", "cmp -s package-lock.json node_modules/.installed-package-lock.json || { echo 'package-lock.json changed: installing dependencies'; npm install --no-audit --no-fund && cp package-lock.json node_modules/.installed-package-lock.json; }; exec npm run dev -- --hostname 0.0.0.0"]
 
 # --- Production build --------------------------------------------------------------------------
 FROM node:22-alpine AS build
