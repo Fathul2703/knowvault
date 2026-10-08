@@ -1,0 +1,36 @@
+{"a": "Business Day", "b": "Business Days", "same": true, "kind": "plural"}
+{"a": "Service", "b": "Services", "same": true, "kind": "plural"}
+{"a": "Customer Data", "b": "customer data", "same": true, "kind": "case"}
+{"a": "Retry-After", "b": "Retry After", "same": true, "kind": "punctuation"}
+{"a": "Partner API", "b": "partner API", "same": true, "kind": "case"}
+{"a": "Master Services Agreement", "b": "Master Service Agreement", "same": true, "kind": "plural"}
+{"a": "Netherlands", "b": "Belanda", "same": true, "kind": "cross_lingual"}
+{"a": "Indonesia", "b": "Republik Indonesia", "same": true, "kind": "long_form"}
+{"a": "Jakarta", "b": "DKI Jakarta", "same": true, "kind": "long_form"}
+{"a": "Bank Indonesia", "b": "BI", "same": true, "kind": "abbreviation"}
+{"a": "International Organization for Standardization", "b": "ISO", "same": true, "kind": "abbreviation"}
+{"a": "Human Resources", "b": "Sumber Daya Manusia", "same": true, "kind": "cross_lingual"}
+{"a": "Finance Team", "b": "Tim Keuangan", "same": true, "kind": "cross_lingual"}
+{"a": "Amsterdam", "b": "Amsterdam, Netherlands", "same": true, "kind": "long_form"}
+{"a": "Support Portal", "b": "support portal", "same": true, "kind": "case"}
+{"a": "Kantor Pusat", "b": "Head Office", "same": true, "kind": "cross_lingual"}
+{"a": "Release Notes", "b": "Release Note", "same": true, "kind": "plural"}
+{"a": "Data Retention Policy", "b": "Data-Retention Policy", "same": true, "kind": "punctuation"}
+{"a": "Customer", "b": "Customer Data", "same": false, "kind": "related"}
+{"a": "Provider", "b": "Partner API", "same": false, "kind": "related"}
+{"a": "Jakarta", "b": "Bekasi", "same": false, "kind": "same_kind"}
+{"a": "Amsterdam", "b": "Netherlands", "same": false, "kind": "related"}
+{"a": "Business Day", "b": "Business Plan", "same": false, "kind": "shared_word"}
+{"a": "Bank Indonesia", "b": "Indonesia", "same": false, "kind": "shared_word"}
+{"a": "Public API", "b": "Partner API", "same": false, "kind": "shared_word"}
+{"a": "Finance Team", "b": "Support Team", "same": false, "kind": "shared_word"}
+{"a": "Release Notes", "b": "Mobile App", "same": false, "kind": "related"}
+{"a": "Kantor Pusat", "b": "Kantor Cabang", "same": false, "kind": "shared_word"}
+{"a": "Master Services Agreement", "b": "Partner Agreement", "same": false, "kind": "shared_word"}
+{"a": "Retry-After", "b": "X-RateLimit-Limit", "same": false, "kind": "same_kind"}
+{"a": "Belanda", "b": "Jerman", "same": false, "kind": "same_kind"}
+{"a": "Human Resources", "b": "Finance Team", "same": false, "kind": "same_kind"}
+{"a": "Support Portal", "b": "Partner Portal", "same": false, "kind": "shared_word"}
+{"a": "Data Retention Policy", "b": "Travel Policy", "same": false, "kind": "shared_word"}
+{"a": "ISO 27001", "b": "ISO 9001", "same": false, "kind": "same_kind"}
+{"a": "TLS", "b": "HTTP", "same": false, "kind": "same_kind"}

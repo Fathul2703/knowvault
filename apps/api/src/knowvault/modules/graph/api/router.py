@@ -54,12 +54,20 @@ class EntityNeighbourOut(BaseModel):
     weight: int
 
 
+class EntityAliasOut(BaseModel):
+    name: str
+    similarity: float = Field(description="Cosine similarity of the names when they were merged.")
+
+
 class EntityOut(BaseModel):
     id: uuid.UUID
     name: str
     type: str
     mentions: list[EntityMentionOut]
     neighbours: list[EntityNeighbourOut]
+    aliases: list[EntityAliasOut] = Field(
+        description="Other ways of writing the name, merged into this entity by similarity."
+    )
 
 
 @router.get("", response_model=GraphOut, responses=_ERRORS)
@@ -93,4 +101,5 @@ async def get_entity(entity_id: uuid.UUID, user: CurrentUser, session: SessionDe
         type=view.type,
         mentions=[EntityMentionOut(**m.__dict__) for m in view.mentions],
         neighbours=[EntityNeighbourOut(**n.__dict__) for n in view.neighbours],
+        aliases=[EntityAliasOut(**a.__dict__) for a in view.aliases],
     )

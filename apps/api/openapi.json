@@ -4200,6 +4200,25 @@
         "title": "DocumentUpdate",
         "description": "Only the fields that are sent are changed. Send `collection_id: null` to unassign."
       },
+      "EntityAliasOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "similarity": {
+            "type": "number",
+            "title": "Similarity",
+            "description": "Cosine similarity of the names when they were merged."
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "similarity"
+        ],
+        "title": "EntityAliasOut"
+      },
       "EntityMentionOut": {
         "properties": {
           "document_id": {
@@ -4291,6 +4310,14 @@
             },
             "type": "array",
             "title": "Neighbours"
+          },
+          "aliases": {
+            "items": {
+              "$ref": "#/components/schemas/EntityAliasOut"
+            },
+            "type": "array",
+            "title": "Aliases",
+            "description": "Other ways of writing the name, merged into this entity by similarity."
           }
         },
         "type": "object",
@@ -4299,7 +4326,8 @@
           "name",
           "type",
           "mentions",
-          "neighbours"
+          "neighbours",
+          "aliases"
         ],
         "title": "EntityOut"
       },

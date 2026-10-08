@@ -1,12 +1,25 @@
 """Persistence models for entities, their mentions in chunks, and relations."""
 
 import uuid
+from datetime import datetime
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, String, UniqueConstraint, text
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+    func,
+    text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from knowvault.core.db import Base, TimestampMixin
+from knowvault.core.embeddings import EMBEDDING_DIMENSIONS
 
 _UUID_DEFAULT = text("gen_random_uuid()")
 _TYPES = "'code', 'name', 'person', 'organization', 'place', 'product', 'concept'"
@@ -31,6 +44,30 @@ class Entity(TimestampMixin, Base):
     # As first written in the documents.
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     normalized_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    # Embedding of the name, for recognising other ways of writing it (ADR 0016). Null for
+    # codes and when entity resolution by similarity is off.
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMENSIONS))
+    embedding_model: Mapped[str | None] = mapped_column(String(100))
+
+
+class EntityAlias(Base):
+    """Another way of writing an entity's name, merged into it by similarity."""
+
+    __tablename__ = "entity_aliases"
+
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    type: Mapped[str] = mapped_column(String(16), primary_key=True)
+    normalized_name: Mapped[str] = mapped_column(String(200), primary_key=True)
+    entity_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("entities.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    similarity: Mapped[float] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class EntityMention(Base):

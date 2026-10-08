@@ -17,6 +17,7 @@ x-api-environment: &api-environment
   CHUNK_MAX_CHARS: ${CHUNK_MAX_CHARS:-1400}
   CHUNK_OVERLAP_CHARS: ${CHUNK_OVERLAP_CHARS:-150}
   GRAPH_EXTRACTOR: ${GRAPH_EXTRACTOR:-heuristic}
+  GRAPH_MERGE_THRESHOLD: ${GRAPH_MERGE_THRESHOLD:-0.82}
   # Optional cross-encoder that reorders hybrid search results (none, bge-reranker-v2-m3).
   RERANKER: ${RERANKER:-none}
   # Answers: "fake" works offline without a key; "anthropic" needs ANTHROPIC_API_KEY.

@@ -32,13 +32,18 @@ from knowvault.modules.library.processing import PROCESS_DOCUMENT_JOB
 logger = logging.getLogger("knowvault.worker")
 
 
-def build_graph_extraction(settings: Settings, database: Database) -> GraphExtraction | None:
+def build_graph_extraction(
+    settings: Settings, database: Database, embeddings: EmbeddingModel | None = None
+) -> GraphExtraction | None:
     if settings.graph_extractor == "none":
         return None
+    merge = settings.graph_merge_threshold < 1.0
     return GraphExtraction(
         database.sessionmaker,
         PostgresGraphStore(),
         HeuristicExtractor(settings.graph_max_entities_per_chunk),
+        embeddings=(embeddings or build_embedding_model(settings)) if merge else None,
+        merge_threshold=settings.graph_merge_threshold if merge else None,
     )
 
 
@@ -119,8 +124,10 @@ async def run_once(
 async def run(settings: Settings) -> None:
     configure_logging(settings.log_level)
     database = Database(settings)
-    pipeline = build_pipeline(settings, database)
-    graph = build_graph_extraction(settings, database)
+    # One embedding model for processing and the graph: it is loaded into memory once.
+    embeddings = build_embedding_model(settings)
+    pipeline = build_pipeline(settings, database, embeddings)
+    graph = build_graph_extraction(settings, database, embeddings)
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):

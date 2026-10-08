@@ -103,6 +103,9 @@ class Settings(BaseSettings):
     # "none": no graph is built.
     graph_extractor: Literal["heuristic", "none"] = "heuristic"
     graph_max_entities_per_chunk: int = Field(default=12, ge=1, le=50)
+    # A newly found name joins an existing entity of the same type when their embeddings are at
+    # least this similar and neither name contains the other (ADR 0016). 1 turns it off.
+    graph_merge_threshold: float = Field(default=0.82, ge=0.5, le=1.0)
 
     # --- Reranking ---------------------------------------------------------------------------
     # "bge-reranker-v2-m3": BAAI/bge-reranker-v2-m3 (int8 ONNX, multilingual, run locally) reorders

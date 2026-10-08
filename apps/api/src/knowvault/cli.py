@@ -62,6 +62,29 @@ async def _reindex(settings: Settings, *, include_all: bool) -> int:
         await database.dispose()
 
 
+def _eval_entities(settings: Settings, pairs_path: Path, output_dir: Path) -> str:
+    from datetime import UTC, datetime
+
+    from knowvault.adapters.embeddings import build_embedding_model
+    from knowvault.evaluation import entities
+
+    embeddings = build_embedding_model(settings)
+    pairs = entities.load_pairs(pairs_path)
+    threshold = settings.graph_merge_threshold
+    scored, rules, sweep = asyncio.run(entities.evaluate(pairs, embeddings, threshold))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stem = f"{datetime.now(UTC):%Y-%m-%d-%H%M}-entities"
+    model = embeddings.model_id
+    (output_dir / f"{stem}.json").write_text(
+        entities.to_json(model, threshold, scored, rules), encoding="utf-8"
+    )
+    markdown = output_dir / f"{stem}.md"
+    markdown.write_text(
+        entities.to_markdown(model, threshold, scored, rules, sweep), encoding="utf-8"
+    )
+    return f"Report written to {markdown}"
+
+
 async def _extract_graph(settings: Settings) -> int:
     from knowvault.modules.graph.infrastructure.store import queue_all_ready
 
@@ -177,6 +200,12 @@ def main(argv: list[str] | None = None) -> None:
         "the graph); the worker builds it",
     )
 
+    entities = commands.add_parser(
+        "eval-entities", help="measure entity name matching on labelled pairs of names"
+    )
+    entities.add_argument("--pairs", type=Path, required=True, help="labelled pairs (.jsonl)")
+    entities.add_argument("--output-dir", type=Path, required=True, help="where reports go")
+
     review = commands.add_parser(
         "eval-review", help="print the totals of a filled-in answer review sheet"
     )
@@ -233,6 +262,8 @@ def main(argv: list[str] | None = None) -> None:
             )
         )
         print(f"Report written to {report}")
+    elif args.command == "eval-entities":
+        print(_eval_entities(settings, args.pairs, args.output_dir))
     elif args.command == "extract-graph":
         if settings.graph_extractor == "none":
             sys.exit("GRAPH_EXTRACTOR is none: enable it first.")
