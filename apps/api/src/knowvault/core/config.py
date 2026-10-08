@@ -98,6 +98,12 @@ class Settings(BaseSettings):
     document_writes_per_hour: int = Field(default=120, ge=1)
     max_documents_per_user: int = Field(default=2000, ge=1)
 
+    # --- Knowledge graph ---------------------------------------------------------------------
+    # "heuristic": codes and capitalised names, related by co-occurrence (offline, default);
+    # "none": no graph is built.
+    graph_extractor: Literal["heuristic", "none"] = "heuristic"
+    graph_max_entities_per_chunk: int = Field(default=12, ge=1, le=50)
+
     # --- Reranking ---------------------------------------------------------------------------
     # "bge-reranker-v2-m3": BAAI/bge-reranker-v2-m3 (int8 ONNX, multilingual, run locally) reorders
     # the best hybrid results; "none" keeps the fused order; "fake" is for tests only.
