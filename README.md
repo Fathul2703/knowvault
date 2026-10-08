@@ -329,6 +329,11 @@ extractor can replace it later.
   and a name whose embedding is very close to an existing one ("Belanda" and "Netherlands")
   joins it as an alias, unless one name contains the other ("Customer", "Customer Data").
   Codes are never merged. Details and measurements: [ADR 0016](docs/adr/0016-entity-resolution.md).
+- The **Graph** page draws the most mentioned entities and links the ones that share passages;
+  pick a collection, or open it from a document ("Entities"). An entity's page lists the passages
+  that mention it, its other spellings and its related entities. The picture is an SVG laid out
+  by a small deterministic force layout, and every node is a link, so it works with the keyboard
+  ([ADR 0017](docs/adr/0017-graph-view.md)).
 
 ## Ask
 

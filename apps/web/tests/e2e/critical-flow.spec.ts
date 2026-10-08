@@ -2,10 +2,11 @@ import { expect, test } from "@playwright/test";
 
 /**
  * The critical path of docs/ARCHITECTURE.md §14: register → add a document → wait until it is
- * ready → search → ask → open the citation. Runs against the fake models, so answers quote the
- * matching sentence instead of being written by a language model.
+ * ready → search → ask → open the citation → browse the entities found in it. Runs against the
+ * fake models, so answers quote the matching sentence instead of being written by a language
+ * model.
  */
-test("register, add a note, search, ask, open the citation and delete the account", async ({
+test("register, add a note, search, ask, open the citation, browse the graph and delete the account", async ({
   page,
 }) => {
   const email = `e2e-${Date.now()}@example.com`;
@@ -29,7 +30,7 @@ test("register, add a note, search, ask, open the citation and delete the accoun
       .getByLabel("Content (Markdown)")
       .fill(
         "# Annual leave\n\nEmployees get twelve days of annual leave per year. " +
-          "Unused days expire at the end of March.",
+          "Unused days expire at the end of March. Request leave with form LV-12 in the People Portal.",
       );
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page).toHaveURL(/\/library\/[0-9a-f-]{36}$/);
@@ -56,6 +57,26 @@ test("register, add a note, search, ask, open the citation and delete the accoun
     await expect(sources.locator("blockquote")).toContainText("Unused days expire");
 
     await sources.getByRole("link", { name: "Leave policy" }).click();
+    await expect(page).toHaveURL(new RegExp(`${documentPath}#chunk-0$`));
+  });
+
+  await test.step("browse the entities found in the note", async () => {
+    await page.goto("/graph");
+    const entities = page.getByRole("list", { name: "Entities" });
+    // The graph is built by a background job after the note is ready.
+    await expect(async () => {
+      await page.reload();
+      await expect(entities.getByRole("link", { name: "People Portal" })).toBeVisible({
+        timeout: 2_000,
+      });
+    }).toPass({ timeout: 30_000 });
+
+    await entities.getByRole("link", { name: "People Portal" }).click();
+    await expect(page.getByRole("heading", { name: "People Portal" })).toBeVisible();
+    const related = page.getByRole("region", { name: "Related" });
+    await expect(related.getByRole("link", { name: "LV-12" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Open passage 1" }).click();
     await expect(page).toHaveURL(new RegExp(`${documentPath}#chunk-0$`));
   });
 
