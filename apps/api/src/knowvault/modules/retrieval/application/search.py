@@ -1,4 +1,5 @@
-"""Search over a user's chunks: vector, full-text, or both fused with RRF."""
+"""Search over a user's chunks: vector, full-text, or both fused with RRF (optionally with the
+chunks that mention entities named in the query as a third list)."""
 
 import uuid
 from dataclasses import dataclass, replace
@@ -13,6 +14,7 @@ from knowvault.modules.retrieval.domain.model import (
     CANDIDATES_PER_LIST,
     MAX_TOP_K,
     Candidate,
+    ChunkRecord,
     SearchHit,
     SearchMode,
     SearchScope,
@@ -53,6 +55,24 @@ class ChunkIndex(Protocol):
         """Cosine similarity of the given chunks to the query vector, where available."""
         ...
 
+    async def records(
+        self, session: AsyncSession, *, chunk_ids: list[uuid.UUID], scope: SearchScope
+    ) -> dict[uuid.UUID, ChunkRecord]:
+        """The given chunks, keyed by id; chunks outside the scope are left out."""
+        ...
+
+
+class EntityLinks(Protocol):
+    """Finds chunks through the knowledge graph. Implemented by the graph module, which
+    retrieval does not import (wired in main.py)."""
+
+    async def chunks_for_query(
+        self, session: AsyncSession, *, query: str, scope: SearchScope, limit: int
+    ) -> list[uuid.UUID]:
+        """Chunks in scope that mention the entities the query names, best first. Empty when
+        the query names none."""
+        ...
+
 
 @dataclass(frozen=True)
 class SearchResult:
@@ -71,11 +91,13 @@ class SearchService:
         index: ChunkIndex,
         reranker: Reranker | None = None,
         rerank_candidates: int = 10,
+        entity_links: EntityLinks | None = None,
     ) -> None:
         self._embeddings = embeddings
         self._index = index
         self._reranker = reranker
         self._rerank_candidates = rerank_candidates
+        self._entity_links = entity_links
 
     async def _rerank(
         self, reranker: Reranker, query: str, hits: list[SearchHit]
@@ -128,16 +150,26 @@ class SearchService:
         by_text = await self._index.fulltext_candidates(
             session, query=query, scope=scope, limit=limit
         )
+        rankings = {
+            "vector": [c.chunk.chunk_id for c in by_vector],
+            "fulltext": [c.chunk.chunk_id for c in by_text],
+        }
+        if self._entity_links is not None:
+            # Empty when the query names no known entity: the fusion is then unchanged.
+            rankings["graph"] = await self._entity_links.chunks_for_query(
+                session, query=query, scope=scope, limit=limit
+            )
         records = {c.chunk.chunk_id: c.chunk for c in (*by_vector, *by_text)}
         similarity = {c.chunk.chunk_id: c.value for c in by_vector}
-        fused = reciprocal_rank_fusion(
-            {
-                "vector": [c.chunk.chunk_id for c in by_vector],
-                "fulltext": [c.chunk.chunk_id for c in by_text],
-            }
-        )
+        fused = reciprocal_rank_fusion(rankings)
         # With a reranker, more fused results than requested are scored and the best kept.
         fused = fused[: max(top_k, self._rerank_candidates) if self._reranker else top_k]
+
+        # Chunks found only through the graph are loaded now; out-of-scope ones are dropped.
+        unloaded = [item.id for item in fused if item.id not in records]
+        if unloaded:
+            records |= await self._index.records(session, chunk_ids=unloaded, scope=scope)
+            fused = [item for item in fused if item.id in records]
 
         # Chunks found only by full-text search still get a similarity, for callers that
         # need an absolute relevance signal (e.g. deciding there is not enough evidence).
@@ -154,6 +186,7 @@ class SearchService:
                 similarity=similarity.get(item.id),
                 vector_rank=item.ranks.get("vector"),
                 fulltext_rank=item.ranks.get("fulltext"),
+                graph_rank=item.ranks.get("graph"),
             )
             for item in fused
         ]

@@ -106,6 +106,10 @@ class Settings(BaseSettings):
     # A newly found name joins an existing entity of the same type when their embeddings are at
     # least this similar and neither name contains the other (ADR 0016). 1 turns it off.
     graph_merge_threshold: float = Field(default=0.82, ge=0.5, le=1.0)
+    # Hybrid search adds, as a third ranked list, the chunks that mention entities named in the
+    # query ("entities") and also their most related entities ("neighbours"). Off by default:
+    # measured in ADR 0018.
+    graph_retrieval: Literal["none", "entities", "neighbours"] = "none"
 
     # --- Reranking ---------------------------------------------------------------------------
     # "bge-reranker-v2-m3": BAAI/bge-reranker-v2-m3 (int8 ONNX, multilingual, run locally) reorders

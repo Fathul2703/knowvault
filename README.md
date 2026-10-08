@@ -256,6 +256,7 @@ Secrets are never committed.
 | `EMBEDDING_CACHE_DIR` | API, worker on the host | Where the model is stored, relative to `apps/api`; Compose uses the `models` volume |
 | `EMBEDDING_THREADS`, `EMBEDDING_BATCH_SIZE` | API, worker | Optional ONNX Runtime threads per process and chunks per batch (defaults: runtime's choice, 8) |
 | `GRAPH_EXTRACTOR`, `GRAPH_MAX_ENTITIES_PER_CHUNK`, `GRAPH_MERGE_THRESHOLD` | Worker | Knowledge graph extraction: `heuristic` (default, offline) or `none`; entities kept per passage (12); name similarity needed to merge a name into an existing entity (0.82, `1` turns merging off) |
+| `GRAPH_RETRIEVAL` | API | Optional third list in hybrid search: the passages that mention entities named in the question (`entities`), also through their related entities (`neighbours`), or `none` (default). It lowered Success@1 on the evaluation set; see [ADR 0018](docs/adr/0018-graph-retrieval.md) |
 | `RERANKER`, `RERANK_CANDIDATES` | API | Optional cross-encoder for hybrid search: `none` (default) or `bge-reranker-v2-m3` (571 MB, fetched by `knowvault download-model`), and how many fused results it reorders (10). On a CPU it adds about 2.5 s per search for a small gain; see [ADR 0013](docs/adr/0013-reranking.md) |
 | `LLM_PROVIDER` | API | `fake` (default: quotes your documents without a language model, no key needed; refused in production) or `anthropic` |
 | `ANTHROPIC_API_KEY` | API | Required when `LLM_PROVIDER=anthropic` |
@@ -334,6 +335,11 @@ extractor can replace it later.
   that mention it, its other spellings and its related entities. The picture is an SVG laid out
   by a small deterministic force layout, and every node is a link, so it works with the keyboard
   ([ADR 0017](docs/adr/0017-graph-view.md)).
+- Search can use the graph too (`GRAPH_RETRIEVAL`): the passages that mention entities named in
+  the question become a third ranked list next to meaning and exact words. It is off by
+  default because on the evaluation set it ranked distractors and the wrong passage of the
+  right document higher (Success@1 87.4% → 83.8%); see
+  [ADR 0018](docs/adr/0018-graph-retrieval.md).
 
 ## Ask
 

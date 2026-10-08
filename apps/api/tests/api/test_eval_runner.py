@@ -94,3 +94,43 @@ async def test_restricts_modes(
     )
     assert [s.mode for s in report.summaries] == ["fulltext"]
     assert report.results[0].rank == 1
+
+
+async def test_graph_variants_run_on_the_same_database(
+    tmp_path: Path, settings: Settings, database: Database, storage: FilesystemStorage
+) -> None:
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "runbook.md").write_text(
+        "# Runbook\n\nERR_4711 means the connection to the storage cluster timed out."
+    )
+    (corpus / "policy.md").write_text("# Retention\n\nInvoices are kept for ten years.")
+
+    report = await run_retrieval_eval(
+        settings=settings,
+        database=database,
+        storage=storage,
+        embeddings=FakeEmbeddings(),
+        corpus=sorted(corpus.glob("*.md")),
+        questions=QUESTIONS,
+        modes=(SearchMode.HYBRID,),
+        graph_variants=("none", "entities"),
+    )
+
+    assert [s.mode for s in report.summaries] == [
+        "hybrid",
+        "hybrid+graph-none",
+        "hybrid+graph-entities",
+    ]
+    by_key = {(r.mode, r.question_id): r for r in report.results}
+    # Same database, same search: the variant without the graph repeats plain hybrid exactly.
+    assert all(
+        by_key[("hybrid+graph-none", q.id)].rank == by_key[("hybrid", q.id)].rank for q in QUESTIONS
+    )
+    # The question naming ERR_4711 is answered through the graph as well.
+    assert by_key[("hybrid+graph-entities", "q1")].graph_hits == 1
+    assert by_key[("hybrid+graph-none", "q1")].graph_hits == 0
+
+    markdown = to_markdown(report)
+    assert "| hybrid + graph (entities) | 100.0% |" in markdown
+    assert "`entities` contributed to the results of 1 of 3 questions" in markdown

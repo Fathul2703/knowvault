@@ -34,6 +34,7 @@ from knowvault.modules.assistant.application.prompts import PROMPT_VERSION
 from knowvault.modules.assistant.domain.model import Source
 from knowvault.modules.assistant.infrastructure.retriever import SearchRetriever
 from knowvault.modules.assistant.infrastructure.store import PostgresConversationStore
+from knowvault.modules.graph.infrastructure.entity_links import build_entity_links
 from knowvault.modules.retrieval.application.search import SearchService
 from knowvault.modules.retrieval.infrastructure.postgres_index import PostgresChunkIndex
 
@@ -310,6 +311,7 @@ async def run_answer_eval(
                 PostgresChunkIndex(),
                 reranker,
                 rerank_candidates=settings.rerank_candidates,
+                entity_links=build_entity_links(settings.graph_retrieval),
             ),
         ),
         models,

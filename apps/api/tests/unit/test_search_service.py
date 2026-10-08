@@ -63,6 +63,13 @@ class MemoryIndex:
         self.calls.append(("similarities", sorted(chunk_ids)))
         return {chunk_id: 0.1 for chunk_id in chunk_ids}
 
+    async def records(
+        self, session: AsyncSession, *, chunk_ids: list[uuid.UUID], **_: Any
+    ) -> dict[uuid.UUID, ChunkRecord]:
+        """Chunk 9 is out of scope."""
+        self.calls.append(("records", sorted(chunk_ids)))
+        return {chunk_id: record(chunk_id.int) for chunk_id in chunk_ids if chunk_id.int != 9}
+
 
 @pytest.fixture
 def parts() -> tuple[CountingEmbeddings, MemoryIndex, SearchService]:
@@ -212,3 +219,61 @@ async def test_single_method_modes_are_not_reranked(mode: SearchMode) -> None:
     assert reranker.calls == []
     assert result.reranker is None
     assert all(hit.rerank_score is None for hit in result.hits)
+
+
+class ListedLinks:
+    """The graph list: the given chunk numbers, best first."""
+
+    def __init__(self, *numbers: int) -> None:
+        self.numbers = numbers
+        self.limits: list[int] = []
+
+    async def chunks_for_query(
+        self, session: AsyncSession, *, limit: int, **_: Any
+    ) -> list[uuid.UUID]:
+        self.limits.append(limit)
+        return [uuid.UUID(int=n) for n in self.numbers]
+
+
+async def test_graph_list_is_fused_as_a_third_ranking() -> None:
+    index, links = MemoryIndex(), ListedLinks(2, 5)
+    service = SearchService(CountingEmbeddings(), index, entity_links=links)
+
+    result = await service.search(SESSION, query="q", scope=SCOPE, top_k=5)
+
+    by_id = {hit.chunk.chunk_id.int: hit for hit in result.hits}
+    # Chunk 2 is found by vector search and the graph, so it now outranks chunk 3.
+    assert [hit.chunk.chunk_id.int for hit in result.hits[:2]] == [2, 3]
+    assert (by_id[2].vector_rank, by_id[2].graph_rank) == (2, 1)
+    # A chunk found only through the graph is loaded, with its similarity filled in.
+    assert by_id[5].graph_rank == 2
+    assert by_id[5].similarity == 0.1
+    assert ("records", [uuid.UUID(int=5)]) in index.calls
+    assert links.limits == [30]
+
+
+async def test_an_empty_graph_list_changes_nothing() -> None:
+    plain = await SearchService(CountingEmbeddings(), MemoryIndex()).search(
+        SESSION, query="q", scope=SCOPE, top_k=4
+    )
+    linked = await SearchService(
+        CountingEmbeddings(), MemoryIndex(), entity_links=ListedLinks()
+    ).search(SESSION, query="q", scope=SCOPE, top_k=4)
+    assert [(h.chunk.chunk_id, h.score) for h in linked.hits] == [
+        (h.chunk.chunk_id, h.score) for h in plain.hits
+    ]
+    assert all(hit.graph_rank is None for hit in linked.hits)
+
+
+async def test_graph_chunks_outside_the_scope_are_dropped() -> None:
+    service = SearchService(CountingEmbeddings(), MemoryIndex(), entity_links=ListedLinks(9))
+    result = await service.search(SESSION, query="q", scope=SCOPE, top_k=5)
+    assert 9 not in {hit.chunk.chunk_id.int for hit in result.hits}
+
+
+@pytest.mark.parametrize("mode", [SearchMode.VECTOR, SearchMode.FULLTEXT])
+async def test_single_method_modes_do_not_use_the_graph(mode: SearchMode) -> None:
+    links = ListedLinks(5)
+    service = SearchService(CountingEmbeddings(), MemoryIndex(), entity_links=links)
+    await service.search(SESSION, query="q", scope=SCOPE, top_k=3, mode=mode)
+    assert links.limits == []

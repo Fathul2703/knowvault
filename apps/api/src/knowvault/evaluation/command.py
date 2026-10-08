@@ -28,6 +28,7 @@ from knowvault.evaluation.answers import review_sample, run_answer_eval
 from knowvault.evaluation.dataset import load_dataset
 from knowvault.evaluation.report import to_json, to_markdown
 from knowvault.evaluation.runner import run_retrieval_eval
+from knowvault.modules.graph.infrastructure.entity_links import GraphRetrieval
 from knowvault.modules.retrieval.domain.model import SearchMode
 
 ALEMBIC_INI = Path(knowvault.__file__).resolve().parents[2] / "alembic.ini"
@@ -43,6 +44,8 @@ class EvalOptions:
     keep_database: bool
     # Short tag for the report name and title, e.g. "fulltext-or".
     label: str | None = None
+    # Graph retrieval settings compared in hybrid mode on the same database.
+    graph_variants: tuple[GraphRetrieval, ...] = ()
 
 
 def eval_database_url(settings: Settings) -> str:
@@ -140,6 +143,7 @@ async def run(settings: Settings, options: EvalOptions) -> Path:
             top_k=options.top_k,
             reranker=build_reranker(env.settings),
             rerank_candidates=env.settings.rerank_candidates,
+            graph_variants=options.graph_variants,
         )
 
     options.output_dir.mkdir(parents=True, exist_ok=True)

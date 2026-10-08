@@ -168,6 +168,13 @@ def main(argv: list[str] | None = None) -> None:
     )
     evaluation.add_argument("--top-k", type=int, default=10)
     evaluation.add_argument(
+        "--graph-variants",
+        nargs="+",
+        default=[],
+        choices=["none", "entities", "neighbours"],
+        help="also run hybrid search with these graph retrieval settings on the same database",
+    )
+    evaluation.add_argument(
         "--keep-database", action="store_true", help="keep the *_eval database for inspection"
     )
     evaluation.add_argument(
@@ -239,6 +246,7 @@ def main(argv: list[str] | None = None) -> None:
                     top_k=args.top_k,
                     keep_database=args.keep_database,
                     label=args.label,
+                    graph_variants=tuple(args.graph_variants),
                 ),
             )
         )

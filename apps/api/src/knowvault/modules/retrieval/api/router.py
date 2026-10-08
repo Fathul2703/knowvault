@@ -11,6 +11,7 @@ from knowvault.core.db import SessionDep
 from knowvault.core.deps import EmbeddingsDep, RerankerDep, SettingsDep
 from knowvault.core.errors import Problem
 from knowvault.modules.identity.dependencies import CurrentUser, user_rate_limit
+from knowvault.modules.retrieval.api.dependencies import EntityLinksDep
 from knowvault.modules.retrieval.application.search import SearchService
 from knowvault.modules.retrieval.domain.model import MAX_TOP_K, SearchMode, SearchScope
 from knowvault.modules.retrieval.infrastructure.postgres_index import PostgresChunkIndex
@@ -73,10 +74,17 @@ class SearchResponse(BaseModel):
 
 
 def get_search_service(
-    embeddings: EmbeddingsDep, reranker: RerankerDep, settings: SettingsDep
+    embeddings: EmbeddingsDep,
+    reranker: RerankerDep,
+    entity_links: EntityLinksDep,
+    settings: SettingsDep,
 ) -> SearchService:
     return SearchService(
-        embeddings, PostgresChunkIndex(), reranker, rerank_candidates=settings.rerank_candidates
+        embeddings,
+        PostgresChunkIndex(),
+        reranker,
+        rerank_candidates=settings.rerank_candidates,
+        entity_links=entity_links,
     )
 
 

@@ -21,13 +21,17 @@ from knowvault.core.reranker import Reranker
 from knowvault.core.storage import ObjectStorage
 from knowvault.evaluation.dataset import Question, is_relevant
 from knowvault.evaluation.metrics import first_relevant_rank, mrr_at, percentile, success_at
+from knowvault.modules.graph.infrastructure.entity_links import (
+    GraphRetrieval,
+    build_entity_links,
+)
 from knowvault.modules.identity.credentials import hash_password, new_token
 from knowvault.modules.identity.models import User
 from knowvault.modules.ingestion.domain.chunking import ChunkingConfig
 from knowvault.modules.ingestion.infrastructure.chunks import Chunk
 from knowvault.modules.library.models import STATUS_READY, Document
 from knowvault.modules.library.service import LibraryService
-from knowvault.modules.retrieval.application.search import SearchService
+from knowvault.modules.retrieval.application.search import EntityLinks, SearchService
 from knowvault.modules.retrieval.domain.fusion import RRF_K
 from knowvault.modules.retrieval.domain.model import CANDIDATES_PER_LIST, SearchMode, SearchScope
 from knowvault.modules.retrieval.infrastructure.postgres_index import PostgresChunkIndex
@@ -54,6 +58,8 @@ class QuestionResult:
     # Cross-encoder scores (hybrid mode with a reranker only).
     top_rerank_score: float | None = None
     relevant_rerank_score: float | None = None
+    # Results that the graph list contributed to (hybrid mode with graph retrieval).
+    graph_hits: int = 0
 
 
 @dataclass(frozen=True)
@@ -141,9 +147,17 @@ async def evaluate(
     top_k: int,
     reranker: Reranker | None = None,
     rerank_candidates: int = 10,
+    entity_links: EntityLinks | None = None,
+    variant: str | None = None,
 ) -> list[QuestionResult]:
+    """Searches every question in every mode. Results of a `variant` (another configuration
+    of the same search) are labelled `<mode>+<variant>`."""
     service = SearchService(
-        embeddings, PostgresChunkIndex(), reranker, rerank_candidates=rerank_candidates
+        embeddings,
+        PostgresChunkIndex(),
+        reranker,
+        rerank_candidates=rerank_candidates,
+        entity_links=entity_links,
     )
     scope = SearchScope(owner_id=owner_id)
     results: list[QuestionResult] = []
@@ -164,7 +178,7 @@ async def evaluate(
                 QuestionResult(
                     question_id=question.id,
                     category=question.category,
-                    mode=mode.value,
+                    mode=f"{mode.value}+{variant}" if variant else mode.value,
                     rank=rank,
                     latency_ms=latency_ms,
                     top_similarity=found.hits[0].similarity if found.hits else None,
@@ -174,20 +188,21 @@ async def evaluate(
                     ),
                     top_rerank_score=found.hits[0].rerank_score if found.hits else None,
                     relevant_rerank_score=found.hits[rank - 1].rerank_score if rank else None,
+                    graph_hits=sum(1 for hit in found.hits if hit.graph_rank is not None),
                 )
             )
     return results
 
 
 def summarize(
-    results: Sequence[QuestionResult], questions: Sequence[Question], modes: Sequence[SearchMode]
+    results: Sequence[QuestionResult], questions: Sequence[Question], modes: Sequence[str]
 ) -> list[ModeSummary]:
     answerable = {q.id for q in questions if q.answerable}
     summaries = []
     for mode in modes:
-        rows = [r for r in results if r.mode == mode.value and r.question_id in answerable]
+        rows = [r for r in results if r.mode == mode and r.question_id in answerable]
         ranks = [r.rank for r in rows]
-        latencies = [r.latency_ms for r in results if r.mode == mode.value]
+        latencies = [r.latency_ms for r in results if r.mode == mode]
         by_category: dict[str, dict[str, float]] = {}
         for category in sorted({r.category for r in rows}):
             category_ranks = [r.rank for r in rows if r.category == category]
@@ -198,7 +213,7 @@ def summarize(
             }
         summaries.append(
             ModeSummary(
-                mode=mode.value,
+                mode=mode,
                 questions=len(rows),
                 success={k: success_at(ranks, k) for k in CUTOFFS},
                 mrr=mrr_at(ranks, 10),
@@ -260,7 +275,14 @@ async def run_retrieval_eval(
     top_k: int = 10,
     reranker: Reranker | None = None,
     rerank_candidates: int = 10,
+    graph_variants: Sequence[GraphRetrieval] = (),
 ) -> EvalReport:
+    """Ingests the corpus once and searches it in every mode.
+
+    Each of `graph_variants` adds a hybrid run with that graph retrieval on the same database.
+    Chunk ids, and so tie-breaks, differ between ingestions; comparing variants within one run
+    keeps that noise out of the comparison.
+    """
     owner_id, names = await ingest_corpus(
         settings=settings,
         database=database,
@@ -278,7 +300,25 @@ async def run_retrieval_eval(
         top_k=top_k,
         reranker=reranker,
         rerank_candidates=rerank_candidates,
+        entity_links=build_entity_links(settings.graph_retrieval),
     )
+    labels = [mode.value for mode in modes]
+    for graph_variant in graph_variants:
+        variant = f"graph-{graph_variant}"
+        results += await evaluate(
+            database=database,
+            embeddings=embeddings,
+            owner_id=owner_id,
+            document_names=names,
+            questions=questions,
+            modes=[SearchMode.HYBRID],
+            top_k=top_k,
+            reranker=reranker,
+            rerank_candidates=rerank_candidates,
+            entity_links=build_entity_links(graph_variant),
+            variant=variant,
+        )
+        labels.append(f"{SearchMode.HYBRID.value}+{variant}")
     chunking = ChunkingConfig(
         target_chars=settings.chunk_target_chars,
         max_chars=settings.chunk_max_chars,
@@ -298,10 +338,12 @@ async def run_retrieval_eval(
             "chunk_target_chars": chunking.target_chars,
             "chunk_max_chars": chunking.max_chars,
             "chunk_overlap_chars": chunking.overlap_chars,
+            "graph_retrieval": settings.graph_retrieval,
+            "graph_variants": list(graph_variants),
             "rrf_k": RRF_K,
             "candidates_per_list": CANDIDATES_PER_LIST,
         },
-        summaries=summarize(results, questions, modes),
+        summaries=summarize(results, questions, labels),
         results=list(results),
         questions=list(questions),
         similarity=similarity_distributions(results),
