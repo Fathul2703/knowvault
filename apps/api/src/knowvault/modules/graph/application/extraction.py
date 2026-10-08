@@ -5,7 +5,9 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from knowvault.core import jobs
-from knowvault.modules.graph.application.ports import EntityExtractor, GraphStore
+from knowvault.core.embeddings import EmbeddingModel
+from knowvault.modules.graph.application.ports import EntityExtractor, GraphStore, Resolution
+from knowvault.modules.graph.domain.model import ChunkGraph, EntityType
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +23,35 @@ class GraphExtraction:
         sessions: async_sessionmaker[AsyncSession],
         store: GraphStore,
         extractor: EntityExtractor,
+        embeddings: EmbeddingModel | None = None,
+        merge_threshold: float | None = None,
     ) -> None:
         self._sessions = sessions
         self._store = store
         self._extractor = extractor
+        self._embeddings = embeddings
+        self._merge_threshold = merge_threshold
+
+    async def _resolution(self, graphs: list[ChunkGraph]) -> Resolution | None:
+        """Embeddings of the names found, to recognise other ways of writing known names.
+
+        Codes are never merged by similarity: `ERR_4711` and `ERR_4712` look alike and differ.
+        """
+        if self._embeddings is None or self._merge_threshold is None:
+            return None
+        names: dict[tuple[str, str], str] = {}
+        for graph in graphs:
+            for entity in graph.entities:
+                if entity.type is EntityType.NAME:
+                    names.setdefault((entity.type.value, entity.key[:200]), entity.name)
+        if not names:
+            return None
+        vectors = await self._embeddings.embed_documents(list(names.values()))
+        return Resolution(
+            dict(zip(names, vectors, strict=True)),
+            self._embeddings.model_id,
+            self._merge_threshold,
+        )
 
     async def process(self, job: jobs.ClaimedJob) -> None:
         document_id = job.resource_id
@@ -40,8 +67,9 @@ class GraphExtraction:
                     await session.commit()
                 return
 
-            # Outside any transaction: a language-model extractor may take a while.
+            # Outside any transaction: extraction and embedding may take a while.
             graphs = await self._extractor.extract(document.chunks)
+            resolution = await self._resolution(graphs)
 
             async with self._sessions() as session:
                 if not await self._store.lock_current(session, document_id, version):
@@ -49,7 +77,9 @@ class GraphExtraction:
                     await jobs.mark_succeeded(session, job.id)
                     await session.commit()
                     return
-                counts = await self._store.replace_document_graph(session, document, graphs)
+                counts = await self._store.replace_document_graph(
+                    session, document, graphs, resolution
+                )
                 await jobs.mark_succeeded(session, job.id)
                 await session.commit()
             logger.info(

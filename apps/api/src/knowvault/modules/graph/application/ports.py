@@ -27,6 +27,17 @@ class DocumentChunks:
 
 
 @dataclass(frozen=True)
+class Resolution:
+    """How found names are matched to existing entities beyond their keys (ADR 0016)."""
+
+    # Embeddings of the found names, by (type, key).
+    vectors: dict[tuple[str, str], list[float]]
+    embedding_model: str
+    # Minimum cosine similarity to merge a name into an existing entity.
+    threshold: float
+
+
+@dataclass(frozen=True)
 class GraphCounts:
     entities: int
     mentions: int
@@ -47,7 +58,11 @@ class GraphStore(Protocol):
         ...
 
     async def replace_document_graph(
-        self, session: AsyncSession, document: DocumentChunks, graphs: list[ChunkGraph]
+        self,
+        session: AsyncSession,
+        document: DocumentChunks,
+        graphs: list[ChunkGraph],
+        resolution: Resolution | None = None,
     ) -> GraphCounts:
         """Replaces what was extracted from the document, inside the caller's transaction."""
         ...

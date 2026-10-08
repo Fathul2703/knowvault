@@ -9,6 +9,8 @@ from knowvault.modules.graph.domain.model import (
     CO_OCCURS,
     ChunkText,
     EntityType,
+    contains_other,
+    may_merge,
     normalize_name,
 )
 
@@ -97,3 +99,31 @@ def test_possessives_belong_to_the_name() -> None:
     )
     assert {"Customer", "Provider"} <= set(entities)
     assert not any(name.endswith(("'s", "\u2019s")) for name in entities)
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [
+        ("Business Days", "Business Day"),
+        ("Retry-After", "retry after"),
+        ("Release Notes", "Release Note"),
+        ("Data_Retention Policies", "Data Retention Policy"),
+        ("Addresses", "Address"),
+    ],
+)
+def test_lexical_variants_share_a_key(a: str, b: str) -> None:
+    assert normalize_name(a, EntityType.NAME) == normalize_name(b, EntityType.NAME)
+
+
+@pytest.mark.parametrize("word", ["Analysis", "Status", "Business", "Bus"])
+def test_words_that_only_look_plural_are_kept(word: str) -> None:
+    assert normalize_name(word, EntityType.NAME) == word.casefold()
+
+
+def test_names_that_contain_each_other_are_never_merged() -> None:
+    assert contains_other("Customer", "Customer Data")
+    assert contains_other("Bank Indonesia", "indonesia")
+    assert not contains_other("Netherlands", "Belanda")
+    assert not may_merge("Customer", "Customer Data", 0.99, 0.82)
+    assert may_merge("Belanda", "Netherlands", 0.88, 0.82)
+    assert not may_merge("Belanda", "Netherlands", 0.80, 0.82)

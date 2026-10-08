@@ -120,6 +120,19 @@ cd apps/api && uv run knowvault eval-review ../../eval/reviews/<run>-review.md
 
 prints the totals and lists sections left unmarked. Commit the filled sheet with its report.
 
+## Entity resolution
+
+```bash
+docker compose run --rm -v ./eval:/eval api knowvault eval-entities \
+  --pairs /eval/datasets/entity-pairs.jsonl --output-dir /eval/reports
+```
+
+`datasets/entity-pairs.jsonl` holds pairs of entity names labelled as the same entity or not
+(case, plural, punctuation, long forms, cross-lingual, abbreviations; related names, names
+sharing a word, the same kind of thing). The report compares the case-insensitive key, the
+lexical key and the lexical key plus name similarity with its guard, at several thresholds, and
+lists every wrong or missed merge (ADR 0016).
+
 ## Adding questions
 
 1. Add or edit a document in `corpus/` if needed.

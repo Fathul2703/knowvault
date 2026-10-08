@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v2.0** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval: ADR 0013, 0014; knowledge graph: ADR 0015); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v2.1** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval: ADR 0013, 0014; knowledge graph: ADR 0015, 0016); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -32,6 +32,7 @@
 | v1.8 | Phase 5 reranking (ADR 0013): port `Reranker` dan adapter `BAAI/bge-reranker-v2-m3` int8 (Apache-2.0; `jina-reranker-v2` ditolak karena lisensi non-komersial) sebagai tahap opsional di mode hybrid; diukur +2,1 poin Success@1 / MRR 0,941 → 0,953, 8 pertanyaan membaik dan 6 memburuk, latensi p50 71 ms → 2,5 detik; **tidak diaktifkan secara default** dan tidak dipakai sebagai evidence threshold. |
 | v1.9 | Phase 5 tuning chunking (ADR 0014): korpus eval ditambah 3 PDF tanpa heading (kasus unggahan paling umum); ukuran chunk menjadi setting; default berubah dari 1.800/2.400/200 ke **1.000/1.400/150** setelah diukur (hybrid Success@1 82,9% → 85,6%, MRR 0,902 → 0,920) karena chunk PDF besar menjadi "hub" yang mengalahkan passage yang benar. Dokumen lama perlu `knowvault reindex --all`. |
 | v2.0 | Phase 5 knowledge graph bagian 1 (ADR 0015): tabel `entities`, `entity_mentions`, `relations` (migrasi 0006) di Postgres; job `extract_graph` yang diantrekan lewat hook ingestion saat dokumen siap; port `EntityExtractor` dengan ekstraktor heuristik offline (kode/identifier dan nama berhuruf kapital, relasi ko-okurensi) karena belum ada API key; API baca `GET /api/v1/graph` dan detail entitas; `knowvault extract-graph` untuk backfill. Entity resolution, tampilan graph, dan graph-augmented retrieval menyusul. |
+| v2.1 | Phase 5 entity resolution (ADR 0016): kunci leksikal untuk nama (huruf besar-kecil, tanda hubung/garis bawah, jamak bahasa Inggris), lalu penggabungan berdasarkan kemiripan embedding nama bge-m3 ≥ 0,82 dengan pengaman "nama yang memuat nama lain tidak digabung"; kode tidak pernah digabung; tabel `entity_aliases` dan kolom embedding di `entities` (migrasi 0007). Diukur pada 36 pasangan berlabel: precision 100%, recall 17% → 67%. |
 
 ---
 
@@ -383,6 +384,8 @@ Citation lama tetap dapat ditampilkan walau dokumen sudah diubah atau dihapus; U
 **`retrieval_traces`** — `message_id`, `query_original`, `query_rewritten`, `candidates` (jsonb: chunk_id, rank vector, rank FTS, skor fusion), `selected_chunk_ids`, `params`. Hanya ID dan skor, bukan isi dokumen. Dasar debugging dan evaluasi.
 
 **`entities`** — `id`, `owner_id`, `type` (`code`, `name`, `person`, `organization`, `place`, `product`, `concept`), `name`, `normalized_name`; unique `(owner_id, type, normalized_name)` (ADR 0015).
+
+**`entity_aliases`** — `owner_id`, `type`, `normalized_name` (PK bersama), `entity_id`, `name`, `similarity`: nama lain yang digabung ke sebuah entitas berdasarkan kemiripan (ADR 0016). `entities` juga menyimpan `embedding` dan `embedding_model` untuk nama.
 
 **`entity_mentions`** — `entity_id`, `chunk_id` (PK bersama), `document_id`, `owner_id`, `count`. Ikut terhapus bersama chunk-nya.
 

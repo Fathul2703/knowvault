@@ -721,6 +721,16 @@ export interface components {
             /** Collection Id */
             collection_id?: string | null;
         };
+        /** EntityAliasOut */
+        EntityAliasOut: {
+            /** Name */
+            name: string;
+            /**
+             * Similarity
+             * @description Cosine similarity of the names when they were merged.
+             */
+            similarity: number;
+        };
         /** EntityMentionOut */
         EntityMentionOut: {
             /**
@@ -766,6 +776,11 @@ export interface components {
             mentions: components["schemas"]["EntityMentionOut"][];
             /** Neighbours */
             neighbours: components["schemas"]["EntityNeighbourOut"][];
+            /**
+             * Aliases
+             * @description Other ways of writing the name, merged into this entity by similarity.
+             */
+            aliases: components["schemas"]["EntityAliasOut"][];
         };
         /** GraphEdge */
         GraphEdge: {

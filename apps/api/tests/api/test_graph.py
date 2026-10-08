@@ -8,7 +8,10 @@ from sqlalchemy import func, select
 
 from knowvault.core.config import Settings
 from knowvault.core.db import Database
+from knowvault.modules.graph.application.extraction import GraphExtraction
+from knowvault.modules.graph.domain.heuristic import HeuristicExtractor
 from knowvault.modules.graph.infrastructure.models import Entity
+from knowvault.modules.graph.infrastructure.store import PostgresGraphStore
 from knowvault.worker import build_pipeline, run_once
 from tests.conftest import RegisterFn
 
@@ -173,3 +176,89 @@ async def test_no_graph_when_disabled(
 
 async def test_requires_authentication(client: AsyncClient) -> None:
     assert (await client.get(GRAPH)).status_code == 401
+
+
+class GroupEmbeddings:
+    """Names of the same group get the same vector; everything else is unrelated."""
+
+    def __init__(self, groups: list[set[str]]) -> None:
+        self._groups = groups
+
+    @property
+    def model_id(self) -> str:
+        return "groups"
+
+    @property
+    def dimensions(self) -> int:
+        return 1024
+
+    def _vector(self, text: str) -> list[float]:
+        index = next((i for i, g in enumerate(self._groups) if text in g), None)
+        vector = [0.0] * 1024
+        vector[index if index is not None else 1023 - (hash(text) % 500)] = 1.0
+        return vector
+
+    async def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return [self._vector(text) for text in texts]
+
+    async def embed_query(self, text: str) -> list[float]:
+        return self._vector(text)
+
+
+@pytest.fixture
+def run_resolving_worker(
+    settings: Settings, database: Database
+) -> Callable[[list[set[str]]], Awaitable[None]]:
+    async def _run(groups: list[set[str]]) -> None:
+        pipeline = build_pipeline(settings, database)
+        graph = GraphExtraction(
+            database.sessionmaker,
+            PostgresGraphStore(),
+            HeuristicExtractor(),
+            embeddings=GroupEmbeddings(groups),
+            merge_threshold=0.82,
+        )
+        while await run_once(database, pipeline, settings, graph):
+            pass
+
+    return _run
+
+
+async def test_other_ways_of_writing_a_name_join_its_entity(
+    ada: AsyncClient, run_resolving_worker: Callable[[list[set[str]]], Awaitable[None]]
+) -> None:
+    await note(ada, "Report", "Our office in the Netherlands opened in March.")
+    await run_resolving_worker([{"Netherlands", "Belanda"}])
+    await note(ada, "Laporan", "Kantor kami di Belanda dibuka bulan Maret.")
+    await note(ada, "Calendar", "The office counts Business Days. Each Business Day starts at 9.")
+    await run_resolving_worker([{"Netherlands", "Belanda"}])
+
+    nodes = by_name((await ada.get(GRAPH)).json())
+    # The first spelling names the entity; the other became an alias.
+    assert "Belanda" not in nodes
+    assert nodes["Netherlands"]["documents"] == 2
+    detail = (await ada.get(f"{GRAPH}/entities/{nodes['Netherlands']['id']}")).json()
+    assert detail["aliases"] == [{"name": "Belanda", "similarity": 1.0}]
+    # Plurals share a key without any similarity.
+    business = [name for name in nodes if name.startswith("Business Day")]
+    assert len(business) == 1
+
+
+async def test_names_containing_each_other_stay_apart(
+    ada: AsyncClient, run_resolving_worker: Callable[[list[set[str]]], Awaitable[None]]
+) -> None:
+    await note(ada, "Contract", "The Customer owns all Customer Data stored in the Platform.")
+    await run_resolving_worker([{"Customer", "Customer Data"}])
+
+    nodes = by_name((await ada.get(GRAPH)).json())
+    assert {"Customer", "Customer Data"} <= set(nodes)
+
+
+async def test_codes_are_never_merged_by_similarity(
+    ada: AsyncClient, run_resolving_worker: Callable[[list[set[str]]], Awaitable[None]]
+) -> None:
+    await note(ada, "Errors", "ERR_4711 is a timeout. ERR_4712 is a full quota.")
+    await run_resolving_worker([{"ERR_4711", "ERR_4712"}])
+
+    nodes = by_name((await ada.get(GRAPH)).json())
+    assert {"ERR_4711", "ERR_4712"} <= set(nodes)

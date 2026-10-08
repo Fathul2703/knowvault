@@ -4,15 +4,20 @@ import uuid
 from collections import defaultdict
 from dataclasses import dataclass
 
-from sqlalchemy import and_, column, delete, distinct, exists, func, or_, select, table
+from sqlalchemy import column, delete, distinct, exists, func, or_, select, table
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from knowvault.core import jobs
 from knowvault.modules.graph.application.extraction import EXTRACT_GRAPH_JOB
-from knowvault.modules.graph.application.ports import DocumentChunks, GraphCounts
-from knowvault.modules.graph.domain.model import ChunkGraph, ChunkText, EntityType
-from knowvault.modules.graph.infrastructure.models import Entity, EntityMention, Relation
+from knowvault.modules.graph.application.ports import DocumentChunks, GraphCounts, Resolution
+from knowvault.modules.graph.domain.model import ChunkGraph, ChunkText, EntityType, may_merge
+from knowvault.modules.graph.infrastructure.models import (
+    Entity,
+    EntityAlias,
+    EntityMention,
+    Relation,
+)
 
 # Only the columns the graph reads; it does not depend on the library or ingestion modules.
 _documents = table(
@@ -63,8 +68,91 @@ class PostgresGraphStore:
         )
         return current == content_version
 
+    async def _resolve(
+        self,
+        session: AsyncSession,
+        owner: uuid.UUID,
+        entity_type: str,
+        key: str,
+        name: str,
+        vector: list[float] | None,
+        resolution: Resolution | None,
+    ) -> uuid.UUID:
+        """The entity a found name refers to; created if none."""
+        found = await session.scalar(
+            select(Entity.id).where(
+                Entity.owner_id == owner, Entity.type == entity_type, Entity.normalized_name == key
+            )
+        )
+        if found is not None:
+            return found
+        found = await session.scalar(
+            select(EntityAlias.entity_id).where(
+                EntityAlias.owner_id == owner,
+                EntityAlias.type == entity_type,
+                EntityAlias.normalized_name == key,
+            )
+        )
+        if found is not None:
+            return found
+        if vector is not None and resolution is not None:
+            distance = Entity.embedding.cosine_distance(vector)
+            candidates = await session.execute(
+                select(Entity.id, Entity.name, (1 - distance).label("similarity"))
+                .where(
+                    Entity.owner_id == owner,
+                    Entity.type == entity_type,
+                    Entity.embedding_model == resolution.embedding_model,
+                    Entity.embedding.is_not(None),
+                )
+                .order_by(distance)
+                .limit(5)
+            )
+            for candidate_id, candidate_name, similarity in candidates:
+                if may_merge(name, candidate_name, float(similarity), resolution.threshold):
+                    await session.execute(
+                        insert(EntityAlias)
+                        .values(
+                            owner_id=owner,
+                            type=entity_type,
+                            normalized_name=key,
+                            entity_id=candidate_id,
+                            name=name,
+                            similarity=round(float(similarity), 4),
+                        )
+                        .on_conflict_do_nothing()
+                    )
+                    merged: uuid.UUID = candidate_id
+                    return merged
+        await session.execute(
+            insert(Entity)
+            .values(
+                id=uuid.uuid4(),
+                owner_id=owner,
+                type=entity_type,
+                normalized_name=key,
+                name=name,
+                embedding=vector,
+                embedding_model=resolution.embedding_model
+                if vector is not None and resolution
+                else None,
+            )
+            .on_conflict_do_nothing(constraint="uq_entities_owner_key")
+        )
+        # Inserted above, or by a concurrent extraction for the same owner.
+        created = await session.execute(
+            select(Entity.id).where(
+                Entity.owner_id == owner, Entity.type == entity_type, Entity.normalized_name == key
+            )
+        )
+        return created.scalar_one()
+
     async def replace_document_graph(
-        self, session: AsyncSession, document: DocumentChunks, graphs: list[ChunkGraph]
+        self,
+        session: AsyncSession,
+        document: DocumentChunks,
+        graphs: list[ChunkGraph],
+        resolution: Resolution | None = None,
     ) -> GraphCounts:
         owner = document.owner_id
         await session.execute(
@@ -72,41 +160,23 @@ class PostgresGraphStore:
         )
         await session.execute(delete(Relation).where(Relation.document_id == document.document_id))
 
-        # Entities: one per (type, key) per owner, created on first mention.
+        # Entities: one per (type, key) per owner, created on first mention unless the name is
+        # another way of writing an existing entity (ADR 0016).
         names: dict[tuple[str, str], str] = {}
         for graph in graphs:
             for entity in graph.entities:
-                names.setdefault((entity.type.value, entity.key), entity.name[:200])
+                names.setdefault((entity.type.value, entity.key[:200]), entity.name[:200])
         ids: dict[tuple[str, str], uuid.UUID] = {}
-        if names:
-            await session.execute(
-                insert(Entity)
-                .values(
-                    [
-                        {
-                            "id": uuid.uuid4(),
-                            "owner_id": owner,
-                            "type": entity_type,
-                            "normalized_name": key[:200],
-                            "name": name,
-                        }
-                        for (entity_type, key), name in names.items()
-                    ]
-                )
-                .on_conflict_do_nothing(constraint="uq_entities_owner_key")
+        for (entity_type, key), name in names.items():
+            ids[(entity_type, key)] = await self._resolve(
+                session,
+                owner,
+                entity_type,
+                key,
+                name,
+                resolution.vectors.get((entity_type, key)) if resolution else None,
+                resolution,
             )
-            rows = await session.execute(
-                select(Entity.type, Entity.normalized_name, Entity.id).where(
-                    Entity.owner_id == owner,
-                    or_(
-                        *(
-                            and_(Entity.type == entity_type, Entity.normalized_name == key[:200])
-                            for entity_type, key in names
-                        )
-                    ),
-                )
-            )
-            ids = {(entity_type, key): entity_id for entity_type, key, entity_id in rows}
 
         def entity_id(entity_type: EntityType, key: str) -> uuid.UUID:
             return ids[(entity_type.value, key[:200])]
@@ -160,7 +230,7 @@ class PostgresGraphStore:
                 ~exists().where(EntityMention.entity_id == Entity.id),
             )
         )
-        return GraphCounts(len(ids), len(mentions), len(relations))
+        return GraphCounts(len(set(ids.values())), len(mentions), len(relations))
 
     # --- Reads -----------------------------------------------------------------------------
 
@@ -283,7 +353,13 @@ class PostgresGraphStore:
             NeighbourView(n_id, name, n_type, int(weight))
             for n_id, name, n_type, weight in neighbour_rows
         ]
-        return EntityView(entity.id, entity.name, entity.type, mentions, neighbours)
+        alias_rows = await session.execute(
+            select(EntityAlias.name, EntityAlias.similarity)
+            .where(EntityAlias.entity_id == entity_id, EntityAlias.owner_id == owner_id)
+            .order_by(EntityAlias.similarity.desc(), EntityAlias.name)
+        )
+        aliases = [AliasView(name, float(similarity)) for name, similarity in alias_rows]
+        return EntityView(entity.id, entity.name, entity.type, mentions, neighbours, aliases)
 
 
 def snippet(content: str, name: str) -> str:
@@ -338,12 +414,19 @@ class NeighbourView:
 
 
 @dataclass(frozen=True)
+class AliasView:
+    name: str
+    similarity: float
+
+
+@dataclass(frozen=True)
 class EntityView:
     id: uuid.UUID
     name: str
     type: str
     mentions: list[MentionView]
     neighbours: list[NeighbourView]
+    aliases: list[AliasView]
 
 
 async def queue_extraction(

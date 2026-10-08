@@ -31,7 +31,7 @@ from knowvault.modules.retrieval.application.search import SearchService
 from knowvault.modules.retrieval.domain.fusion import RRF_K
 from knowvault.modules.retrieval.domain.model import CANDIDATES_PER_LIST, SearchMode, SearchScope
 from knowvault.modules.retrieval.infrastructure.postgres_index import PostgresChunkIndex
-from knowvault.worker import build_pipeline, run_once
+from knowvault.worker import build_graph_extraction, build_pipeline, run_once
 
 CUTOFFS = (1, 5, 10)
 
@@ -113,7 +113,8 @@ async def ingest_corpus(
 
     # The worker must read from the same storage the corpus was uploaded to.
     pipeline = build_pipeline(settings, database, embeddings, storage)
-    while await run_once(database, pipeline, settings):
+    graph = build_graph_extraction(settings, database, embeddings)
+    while await run_once(database, pipeline, settings, graph):
         pass
 
     async with database.sessionmaker() as session:
