@@ -8,7 +8,14 @@ from dataclasses import asdict
 from knowvault.evaluation.metrics import percentile
 from knowvault.evaluation.runner import CUTOFFS, EvalReport
 
-MODE_LABELS = {"hybrid": "hybrid (RRF)", "vector": "vector", "fulltext": "full text"}
+MODE_LABELS = {
+    "hybrid": "hybrid (RRF)",
+    "vector": "vector",
+    "fulltext": "full text",
+    "hybrid+graph-none": "hybrid, no graph",
+    "hybrid+graph-entities": "hybrid + graph (entities)",
+    "hybrid+graph-neighbours": "hybrid + graph (neighbours)",
+}
 # Longer lists of misses drown the rest of the report; the JSON report has every result.
 MAX_LISTED_MISSES = 10
 
@@ -49,6 +56,7 @@ def to_markdown(report: EvalReport) -> str:
         f"- Questions: {config['questions']} ({config['answerable_questions']} answerable)",
         f"- Hybrid: RRF k = {config['rrf_k']}, {config['candidates_per_list']} candidates per "
         f"method; top k = {config['top_k']}",
+        _graph_line(report),
         "",
         "A result counts as relevant when it comes from the labelled document and contains one of "
         "the labelled evidence passages. Metrics cover answerable questions only.",
@@ -178,3 +186,27 @@ def to_json(report: EvalReport) -> str:
         "results": [asdict(r) for r in report.results],
     }
     return json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+
+
+def _graph_line(report: EvalReport) -> str:
+    """How the graph took part, and in how many questions it changed the candidates."""
+    mode = report.config.get("graph_retrieval") or "none"
+    variants = list(report.config.get("graph_variants") or [])  # type: ignore[call-overload]
+    parts = [] if mode == "none" else [("hybrid", mode)]
+    parts += [(f"hybrid+graph-{variant}", variant) for variant in variants]
+    if not parts:
+        return "- Graph retrieval: none"
+    described = []
+    for label, variant in parts:
+        rows = [r for r in report.results if r.mode == label]
+        contributed = sum(1 for r in rows if r.graph_hits)
+        described.append(
+            f"`{variant}` contributed to the results of {contributed} of {len(rows)} questions"
+        )
+    prefix = "" if mode == "none" else f"`{mode}` in hybrid mode; "
+    return (
+        "- Graph retrieval: "
+        + prefix
+        + "chunks of entities named in the question as a third RRF list — "
+        + "; ".join(described)
+    )

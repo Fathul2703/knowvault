@@ -26,6 +26,7 @@ from knowvault.core.reranker import Reranker
 from knowvault.core.storage import ObjectStorage
 from knowvault.modules.assistant.api.router import router as assistant_router
 from knowvault.modules.graph.api.router import router as graph_router
+from knowvault.modules.graph.infrastructure.entity_links import build_entity_links
 from knowvault.modules.identity.router import router as identity_router
 from knowvault.modules.ingestion.api.router import router as ingestion_router
 from knowvault.modules.library.router import UPLOAD_PATH
@@ -79,6 +80,7 @@ def create_app(
     app.state.embeddings = embeddings
     app.state.chat_models = chat_models
     app.state.reranker = reranker
+    app.state.entity_links = build_entity_links(settings.graph_retrieval)
 
     register_error_handlers(app)
     # Middleware added last runs first: request context wraps everything so rejections are

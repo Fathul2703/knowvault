@@ -9,9 +9,11 @@ from knowvault.modules.graph.domain.model import (
     CO_OCCURS,
     ChunkText,
     EntityType,
+    QueryKeys,
     contains_other,
     may_merge,
     normalize_name,
+    query_keys,
 )
 
 
@@ -127,3 +129,17 @@ def test_names_that_contain_each_other_are_never_merged() -> None:
     assert not may_merge("Customer", "Customer Data", 0.99, 0.82)
     assert may_merge("Belanda", "Netherlands", 0.88, 0.82)
     assert not may_merge("Belanda", "Netherlands", 0.80, 0.82)
+
+
+def test_query_keys_cover_every_name_and_code_a_query_may_mention() -> None:
+    keys = query_keys("What does err_4711 mean for the Partner API's Business Days?")
+    assert "ERR_4711" in keys.codes
+    # Names are matched by their keys: case, plurals and possessives do not matter.
+    assert {"partner api", "business day", "api", "err 4711"} <= keys.names
+    # Runs are limited in length, so a long query yields a bounded number of keys.
+    long_query = " ".join(f"word{i}" for i in range(40))
+    assert max(len(name.split()) for name in query_keys(long_query).names) == 6
+
+
+def test_query_keys_of_an_empty_query() -> None:
+    assert query_keys("  ?! ") == QueryKeys(frozenset(), frozenset())

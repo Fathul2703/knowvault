@@ -29,6 +29,7 @@ from knowvault.modules.assistant.infrastructure.store import (
     PostgresConversationStore,
 )
 from knowvault.modules.identity.dependencies import CurrentUser
+from knowvault.modules.retrieval.api.dependencies import EntityLinksDep
 from knowvault.modules.retrieval.application.search import SearchService
 from knowvault.modules.retrieval.infrastructure.postgres_index import PostgresChunkIndex
 
@@ -75,10 +76,15 @@ def get_answer_service(
     store: Store,
     embeddings: EmbeddingsDep,
     reranker: RerankerDep,
+    entity_links: EntityLinksDep,
     models: ChatModelsDep,
 ) -> AnswerService:
     search = SearchService(
-        embeddings, PostgresChunkIndex(), reranker, rerank_candidates=settings.rerank_candidates
+        embeddings,
+        PostgresChunkIndex(),
+        reranker,
+        rerank_candidates=settings.rerank_candidates,
+        entity_links=entity_links,
     )
     retriever = SearchRetriever(database.sessionmaker, search)
     return AnswerService(

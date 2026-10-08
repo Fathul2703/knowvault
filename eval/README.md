@@ -28,6 +28,24 @@ every result). Commit the report together with the change it measures.
 the cross-encoder; the report then also shows the distribution of reranker scores for answerable
 and unanswerable questions. The measurements behind keeping it off are in ADR 0013.
 
+### Graph retrieval
+
+```bash
+uv run knowvault eval-retrieval … --graph-variants none entities neighbours
+```
+
+This adds a hybrid run for each `GRAPH_RETRIEVAL` setting on the **same** database, as extra
+rows in the report: `hybrid, no graph`, `hybrid + graph (entities)` and
+`hybrid + graph (neighbours)`. Compare variants within one report, not across reports.
+
+- Every ingestion gives chunks new random ids.
+- Ids break ties in full-text ranking and in the fusion, so two runs of the same configuration
+  differ by a few questions at Success@1 (84.7% and 87.4% in the runs for ADR 0018).
+- Within one run, `hybrid, no graph` repeats `hybrid (RRF)` exactly, so any difference between
+  the variants comes from the graph.
+
+The setup line says in how many questions the graph list changed the candidates.
+
 ## Contents
 
 | Path | What |

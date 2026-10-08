@@ -171,3 +171,15 @@ class PostgresChunkIndex:
             )
         )
         return {row.id: float(row.value) for row in rows}
+
+    async def records(
+        self, session: AsyncSession, *, chunk_ids: list[uuid.UUID], scope: SearchScope
+    ) -> dict[uuid.UUID, ChunkRecord]:
+        if not chunk_ids:
+            return {}
+        rows = await session.execute(
+            _scoped(_select_record(literal(0.0).label("value")), scope).where(
+                _chunks.c.id.in_(chunk_ids)
+            )
+        )
+        return {row.id: _candidate(row).chunk for row in rows}

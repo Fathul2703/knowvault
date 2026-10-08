@@ -63,3 +63,6 @@ class SearchHit:
     fulltext_rank: int | None
     # Cross-encoder relevance in [0, 1] when the hit was reranked (hybrid mode with a reranker).
     rerank_score: float | None = None
+    # 1-based rank among chunks that mention entities named in the query (hybrid mode with
+    # graph retrieval), when the chunk appeared there.
+    graph_rank: int | None = None

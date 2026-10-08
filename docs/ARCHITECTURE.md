@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v2.2** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval: ADR 0013, 0014; knowledge graph: ADR 0015, 0016, 0017); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v2.3** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval: ADR 0013, 0014; knowledge graph: ADR 0015–0018); keputusan implementasi dicatat di `docs/adr/`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -34,6 +34,7 @@
 | v2.0 | Phase 5 knowledge graph bagian 1 (ADR 0015): tabel `entities`, `entity_mentions`, `relations` (migrasi 0006) di Postgres; job `extract_graph` yang diantrekan lewat hook ingestion saat dokumen siap; port `EntityExtractor` dengan ekstraktor heuristik offline (kode/identifier dan nama berhuruf kapital, relasi ko-okurensi) karena belum ada API key; API baca `GET /api/v1/graph` dan detail entitas; `knowvault extract-graph` untuk backfill. Entity resolution, tampilan graph, dan graph-augmented retrieval menyusul. |
 | v2.1 | Phase 5 entity resolution (ADR 0016): kunci leksikal untuk nama (huruf besar-kecil, tanda hubung/garis bawah, jamak bahasa Inggris), lalu penggabungan berdasarkan kemiripan embedding nama bge-m3 ≥ 0,82 dengan pengaman "nama yang memuat nama lain tidak digabung"; kode tidak pernah digabung; tabel `entity_aliases` dan kolom embedding di `entities` (migrasi 0007). Diukur pada 36 pasangan berlabel: precision 100%, recall 17% → 67%. |
 | v2.2 | Phase 5 tampilan graph di web (ADR 0017): halaman `/graph` (60 entitas paling sering disebut, filter collection atau `?document=`, filter tipe, sorot tetangga saat hover/fokus) dan `/graph/entities/{id}` (passage per dokumen dengan tautan `#chunk-n`, alias, entitas terkait, pencarian full-text). SVG dengan layout force-directed buatan sendiri yang deterministik — tanpa dependensi baru dan tanpa mengubah CSP; setiap node adalah tautan sehingga bisa dipakai dengan keyboard dan screen reader. Tanpa perubahan API. |
+| v2.3 | Phase 5 graph-augmented retrieval (ADR 0018): daftar ketiga di RRF hybrid berisi chunk yang menyebut entitas yang dinamai di pertanyaan (`entities`) atau juga entitas tetangganya (`neighbours`), lewat port `EntityLinks` di retrieval yang diimplementasikan modul graph. Diukur pada database yang sama (`--graph-variants`, karena ID chunk acak membuat run terpisah berbeda ±1,5 poin S@1): S@1 turun (87,4% → 83,8%/84,7% dan 84,7% → 82,9%), terutama pada distractor dan dokumen panjang — maka `GRAPH_RETRIEVAL=none` sebagai default. Dataset belum punya pertanyaan multi-hop; ditinjau ulang setelah ada ekstraktor LLM atau revisi dataset. |
 
 ---
 
@@ -214,7 +215,7 @@ dimulai hanya setelah Definition of Done phase sebelumnya terpenuhi.
 - Peningkatan berbasis eval: reranker, tuning chunking, kalibrasi evidence threshold, LLM-as-judge yang dikalibrasi dengan label manual.
 - Ekstraksi entitas & relasi dari chunk (LLM + structured output), disimpan di tabel Postgres (`entities`, `entity_mentions`, `relations`) — tanpa graph DB terpisah.
 - Entity resolution sederhana (normalisasi + embedding similarity).
-- Graph-augmented retrieval: ekspansi query melalui entitas tetangga; dievaluasi terhadap baseline Phase 4.
+- Graph-augmented retrieval: ekspansi query melalui entitas tetangga; dievaluasi terhadap baseline Phase 4. — diukur di v2.3 (ADR 0018): tidak lebih baik dari hybrid, nonaktif secara default.
 - Visualisasi graph per collection (read-only) — selesai di v2.2 (ADR 0017), juga per dokumen.
 
 ### Phase 6 — AI Research Assistant

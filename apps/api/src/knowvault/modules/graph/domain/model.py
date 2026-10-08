@@ -80,6 +80,43 @@ def may_merge(new_name: str, existing_name: str, similarity: float, threshold: f
     return similarity >= threshold and not contains_other(new_name, existing_name)
 
 
+# Longest entity name looked up in a query, in words.
+MAX_QUERY_NAME_WORDS = 6
+_POSSESSIVE = re.compile(r"['\u2019]s$", re.IGNORECASE)
+
+
+@dataclass(frozen=True)
+class QueryKeys:
+    """Entity keys that a query may mention, by kind of key."""
+
+    names: frozenset[str]
+    codes: frozenset[str]
+
+
+def query_keys(query: str, max_words: int = MAX_QUERY_NAME_WORDS) -> QueryKeys:
+    """The keys of every run of up to `max_words` words in the query.
+
+    Looking these up finds the entities a query names without guessing which words are names:
+    "how many business days does the Netherlands office need?" yields "business day" and
+    "netherland office" among others, and only keys of existing entities match.
+    """
+    words = [
+        _POSSESSIVE.sub("", word.strip(_EDGE_PUNCTUATION))
+        for word in _SPACE.split(unicodedata.normalize("NFC", query))
+    ]
+    words = [word for word in words if word.strip(_EDGE_PUNCTUATION)]
+    names: set[str] = set()
+    codes: set[str] = set()
+    for start in range(len(words)):
+        for end in range(start + 1, min(len(words), start + max_words) + 1):
+            text = " ".join(words[start:end])
+            if name := normalize_name(text, EntityType.NAME):
+                names.add(name)
+            if end == start + 1:
+                codes.add(normalize_name(text, EntityType.CODE))
+    return QueryKeys(frozenset(names), frozenset(codes))
+
+
 @dataclass(frozen=True)
 class FoundEntity:
     """An entity as written in one chunk."""
