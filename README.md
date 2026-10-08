@@ -99,6 +99,37 @@ it). Change the value in `.env`, or run the underlying command without `make`. D
 behaves the other way round: when it fills in `${POSTGRES_PORT}` and similar values in
 `compose.yaml`, a variable exported in your shell takes precedence over `.env`.
 
+## Disk space
+
+A full development setup takes roughly 10–15 GB, most of it inside Docker:
+
+| What | Size | Notes |
+|---|---|---|
+| Docker images | ~4 GB | API/worker, web, PostgreSQL; production and E2E images when built |
+| Docker build cache | grows with every build | Often the largest item; safe to delete, builds get slower once |
+| `knowvault_models` volume | ~1.2 GB | bge-m3 (and the reranker if enabled); downloaded again if deleted |
+| `knowvault_pgdata`, `knowvault_uploads` | your data | Accounts, documents, uploaded files |
+| `knowvault_web_node_modules`, `knowvault_web_next` | ~0.8 GB | The web container's packages and build cache |
+| `apps/web/node_modules`, `apps/api/.venv`, `apps/web/.next` | ~1.2 GB | Local development and tests |
+| npm, uv and Playwright caches | ~3 GB | Shared with other projects; refilled when needed |
+
+To free space without touching your data or the downloaded models:
+
+```bash
+docker builder prune -a     # build cache
+docker volume prune         # unused anonymous volumes only (named volumes are kept)
+docker image prune          # dangling images
+npm cache clean --force
+```
+
+Docker Desktop returns the space to macOS gradually, or after a restart.
+
+To remove everything when you no longer need the project, export what you want to keep first,
+then run `docker compose down -v` (this deletes the database, uploads and models), remove the
+`knowvault-*` images (`docker image rm`), and delete the repository folder.
+`~/Library/Caches/ms-playwright`, `uv cache clean` and `npm cache clean --force` clear the tool
+caches.
+
 ## Local development without Docker
 
 Requirements: [uv](https://docs.astral.sh/uv/), Node.js 22.12+, and PostgreSQL 17 you can
