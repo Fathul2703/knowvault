@@ -22,6 +22,11 @@ export type ConversationScope = components["schemas"]["ConversationScope"];
 export type Message = components["schemas"]["MessageOut"];
 export type MessageStatus = components["schemas"]["MessageStatus"];
 export type Citation = components["schemas"]["CitationOut"];
+export type Graph = components["schemas"]["GraphOut"];
+export type GraphNode = components["schemas"]["GraphNode"];
+export type GraphEdge = components["schemas"]["GraphEdge"];
+export type Entity = components["schemas"]["EntityOut"];
+export type EntityMention = components["schemas"]["EntityMentionOut"];
 
 /** Typed client for the KnowVault API. Requests go to the same origin and carry the session cookie. */
 export const api = createClient<paths>({

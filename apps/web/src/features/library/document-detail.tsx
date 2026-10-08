@@ -116,6 +116,11 @@ export function DocumentDetail({ id }: { id: string }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {ready ? (
+            <Link href={`/graph?document=${doc.id}`} className={buttonClass("secondary")}>
+              Entities
+            </Link>
+          ) : null}
           {doc.kind === "note" ? (
             <Link href={`/library/notes/${doc.id}/edit`} className={buttonClass("secondary")}>
               Edit note

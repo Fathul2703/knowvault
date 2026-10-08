@@ -69,9 +69,10 @@ export function useDocuments(filters: DocumentFilters) {
   });
 }
 
-export function useDocument(id: string) {
+export function useDocument(id: string, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery<DocumentItem, ApiError>({
     queryKey: libraryKeys.document(id),
+    enabled,
     queryFn: () =>
       unwrap(api.GET("/api/v1/documents/{document_id}", { params: { path: { document_id: id } } })),
     refetchInterval: (query) =>
