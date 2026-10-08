@@ -33,7 +33,7 @@ from knowvault.modules.library.router import UPLOAD_PATH
 from knowvault.modules.library.router import router as library_router
 from knowvault.modules.retrieval.api.router import router as retrieval_router
 
-API_VERSION = "0.4.0"
+API_VERSION = "0.5.0"
 # Room for multipart boundaries and form fields around the file itself.
 _MULTIPART_OVERHEAD_BYTES = 64 * 1024
 

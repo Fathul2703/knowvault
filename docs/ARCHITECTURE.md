@@ -1,6 +1,6 @@
 # KnowVault — Architecture & Project Discovery
 
-> Status: **v2.3** — Phase 1–4 dirilis sebagai `v0.1.0` (keterbatasan di §20); Phase 5 berjalan (kualitas retrieval: ADR 0013, 0014; knowledge graph: ADR 0015–0018); keputusan implementasi dicatat di `docs/adr/`.
+> Status: **v2.4** — proyek selesai pada `v0.2.0` (2026-10-08): Phase 1–4 (MVP, `v0.1.0`) dan Phase 5 (kualitas retrieval: ADR 0013, 0014; knowledge graph: ADR 0015–0018). Yang tersisa memerlukan API key (eval jawaban dengan Claude, ekstraktor LLM, Phase 6) dan dicatat di §20. Ringkasan untuk pembaca: `docs/OVERVIEW.md`.
 > Tanggal: 2026-09-29
 > Pemilik: Fathul2703
 >
@@ -35,6 +35,7 @@
 | v2.1 | Phase 5 entity resolution (ADR 0016): kunci leksikal untuk nama (huruf besar-kecil, tanda hubung/garis bawah, jamak bahasa Inggris), lalu penggabungan berdasarkan kemiripan embedding nama bge-m3 ≥ 0,82 dengan pengaman "nama yang memuat nama lain tidak digabung"; kode tidak pernah digabung; tabel `entity_aliases` dan kolom embedding di `entities` (migrasi 0007). Diukur pada 36 pasangan berlabel: precision 100%, recall 17% → 67%. |
 | v2.2 | Phase 5 tampilan graph di web (ADR 0017): halaman `/graph` (60 entitas paling sering disebut, filter collection atau `?document=`, filter tipe, sorot tetangga saat hover/fokus) dan `/graph/entities/{id}` (passage per dokumen dengan tautan `#chunk-n`, alias, entitas terkait, pencarian full-text). SVG dengan layout force-directed buatan sendiri yang deterministik — tanpa dependensi baru dan tanpa mengubah CSP; setiap node adalah tautan sehingga bisa dipakai dengan keyboard dan screen reader. Tanpa perubahan API. |
 | v2.3 | Phase 5 graph-augmented retrieval (ADR 0018): daftar ketiga di RRF hybrid berisi chunk yang menyebut entitas yang dinamai di pertanyaan (`entities`) atau juga entitas tetangganya (`neighbours`), lewat port `EntityLinks` di retrieval yang diimplementasikan modul graph. Diukur pada database yang sama (`--graph-variants`, karena ID chunk acak membuat run terpisah berbeda ±1,5 poin S@1): S@1 turun (87,4% → 83,8%/84,7% dan 84,7% → 82,9%), terutama pada distractor dan dokumen panjang — maka `GRAPH_RETRIEVAL=none` sebagai default. Dataset belum punya pertanyaan multi-hop; ditinjau ulang setelah ada ekstraktor LLM atau revisi dataset. |
+| v2.4 | Penutupan proyek, rilis `v0.2.0`: video demo 41 detik dan screenshot README direkam otomatis dengan Playwright (`make demo`: stack E2E + model bge-m3 asli + model jawaban fake); coverage diukur (`make coverage`: ingestion 89,2%, retrieval 97,7%, assistant 96,2%, graph 91,1%); `docs/OVERVIEW.md` menjelaskan fitur dan cara kerja. Status §20 diperbarui. |
 
 ---
 
@@ -875,6 +876,14 @@ MVP (`v0.1.0`) dinyatakan selesai jika **semua** kriteria berikut terpenuhi.
 > demo publik atau video demo, screenshot/GIF di README, dan pengukuran coverage logika inti.
 > Kriteria lain diimplementasikan dan diuji (lihat `CHANGELOG.md`); kotak centang di bawah
 > belum diperbarui satu per satu.
+>
+> **Status saat penutupan proyek (`v0.2.0`, 2026-10-08):** video demo
+> (`docs/media/knowvault-demo.webm`), screenshot di README, dan coverage logika inti
+> (ingestion 89,2%, retrieval 97,7%, assistant 96,2% — target ≥ 85% terpenuhi) sudah ada.
+> **Satu-satunya kriteria yang belum terpenuhi** adalah laporan eval jawaban dengan Claude
+> beserta review manual ±30 jawaban; keduanya memerlukan `ANTHROPIC_API_KEY`, dan harness,
+> lembar review, serta `knowvault eval-review` sudah siap (`make eval-answers` dengan
+> `LLM_PROVIDER=anthropic`).
 
 ### Fungsional
 - [ ] Pengguna dapat register dengan kode undangan, login, logout; sesi dapat di-revoke. Admin dapat membuat undangan dan reset password via CLI.

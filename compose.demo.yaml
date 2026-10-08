@@ -1,0 +1,25 @@
+# Demo stack: the end-to-end stack with the real bge-m3 model, for recording the demo video and
+# the README screenshots (`make demo`). The database is still throwaway (tmpfs). The model comes
+# from the development stack's `models` volume (`make model-docker`), mounted read-only. Answers
+# still come from the offline fake model, so no API key is needed.
+#
+#   docker compose -f compose.e2e.yaml -f compose.demo.yaml -p knowvault-demo up -d --build --wait
+
+services:
+  api:
+    environment:
+      EMBEDDING_PROVIDER: bge-m3
+      EMBEDDING_CACHE_DIR: /data/models
+    volumes:
+      - models:/data/models:ro
+  worker:
+    environment:
+      EMBEDDING_PROVIDER: bge-m3
+      EMBEDDING_CACHE_DIR: /data/models
+    volumes:
+      - models:/data/models:ro
+
+volumes:
+  models:
+    external: true
+    name: knowvault_models

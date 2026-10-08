@@ -4,6 +4,79 @@ All notable changes to KnowVault. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] — 2026-10-08
+
+The closing release: Phase 5 (retrieval quality and the knowledge graph) and the missing pieces
+of the MVP's definition of done — a demo video, screenshots and measured test coverage. What the
+app does and how is explained in [How KnowVault works](docs/OVERVIEW.md).
+
+### Added
+
+- **Knowledge graph** ([ADR 0015](docs/adr/0015-knowledge-graph.md)):
+  - Entities (codes such as `ERR_4711` and capitalised names) and their co-occurrence in
+    passages are stored in PostgreSQL.
+  - A rule-based extractor runs offline after a document is processed;
+    `knowvault extract-graph` builds the graph for documents processed earlier.
+  - Read API: `GET /api/v1/graph` and `GET /api/v1/graph/entities/{id}`.
+- **Entity resolution** ([ADR 0016](docs/adr/0016-entity-resolution.md)):
+  - Lexical keys ignore case, hyphens and English plurals.
+  - A name joins an existing entity as an alias when bge-m3 finds the two names similar (≥ 0.82)
+    and neither name contains the other.
+  - Codes are never merged.
+  - `knowvault eval-entities` measures the rule on labelled pairs: precision 100%, recall 67%.
+- **Graph pages** ([ADR 0017](docs/adr/0017-graph-view.md)):
+  - `/graph` shows the most mentioned entities, by collection or document.
+  - `/graph/entities/{id}` shows an entity's passages, aliases and related entities.
+  - The picture is an SVG drawn by a small deterministic layout, and every node is a link.
+- **Optional search features, each measured and off by default:**
+  - a cross-encoder reranker, `BAAI/bge-reranker-v2-m3` ([ADR 0013](docs/adr/0013-reranking.md));
+  - graph-augmented retrieval, `GRAPH_RETRIEVAL=entities|neighbours`
+    ([ADR 0018](docs/adr/0018-graph-retrieval.md)).
+- **Evaluation:**
+  - The dataset is harder: an archived policy version, distractor documents, long documents
+    and three PDFs without headings (31 documents, 124 questions).
+  - `eval-retrieval --graph-variants` compares graph retrieval settings on the same database.
+- **Demo:**
+  - `make demo` records a 41-second tour with Playwright, with real search and the fake answer
+    model, and writes the README screenshots ([`docs/media`](docs/media/knowvault-demo.webm),
+    [`docs/images`](docs/images)).
+  - [`docs/OVERVIEW.md`](docs/OVERVIEW.md) explains what the app does and how.
+- `make coverage` measures API test coverage.
+
+### Changed
+
+- **Chunks are smaller:** about 1,000 characters (at most 1,400, overlap 150) instead of 1,800,
+  chosen by measurement with PDFs ([ADR 0014](docs/adr/0014-chunk-sizes.md)). Run
+  `knowvault reindex --all` to re-chunk existing documents.
+- **Development stack:** the web container's `node_modules` and `.next` are named volumes, so
+  anonymous volumes no longer pile up.
+- Dependencies updated, including a fix for GHSA-68fv-2mgg-jv7q in `source-map-js`.
+- API version 0.5.0 (graph endpoints).
+
+### Measured
+
+- **Retrieval** (124 questions, bge-m3, top 10):
+  - Hybrid Success@1 is 85–87% and Success@5 100%
+    ([report](eval/reports/2026-10-08-0911-retrieval-graph-run1.md)).
+  - Separate runs differ by about 1.5 points at Success@1, because tie-breaks depend on random
+    chunk ids, so variants are compared within one run.
+- **Reranker:** +2.1 points Success@1 for about 2.5 s more per search on a CPU, so it is off.
+- **Graph-augmented retrieval:** Success@1 fell in both runs (87.4% → 83.8% and 84.7% → 82.9%),
+  so it is off.
+- **Test coverage:** ingestion 89.2%, retrieval 97.7%, assistant 96.2%, graph 91.1% (374 API
+  tests).
+
+### Known limitations
+
+- **Answers have not been measured with Claude yet.** This needs an Anthropic API key. The
+  answer evaluation and the manual review sheet are ready for it (ADR 0010).
+- **Unsupported:**
+  - OCR for scanned PDFs;
+  - sentence-level citations;
+  - more than one machine.
+- **The graph is rule-based.** It has no typed relations and no multi-hop questions in the
+  evaluation set; a language-model extractor is the next step for both.
+
 ## [0.1.0] — 2026-10-04
 
 The first release: the MVP of docs/ARCHITECTURE.md (Phases 1–4). Upload documents, search them by
@@ -83,4 +156,5 @@ citations you can open — or refused when the documents do not contain the answ
 - The corpus and questions are synthetic and written by the same author; compare evaluation
   runs with each other rather than reading them as production quality.
 
+[0.2.0]: https://github.com/Fathul2703/knowvault/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Fathul2703/knowvault/releases/tag/v0.1.0
